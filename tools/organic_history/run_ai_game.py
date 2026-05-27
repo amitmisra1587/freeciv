@@ -31,6 +31,7 @@ def main() -> int:
     parser.add_argument("--extra-command", action="append", default=[], help="Additional server command before start; repeatable.")
     parser.add_argument("--clean-output-dir", action="store_true", help="Remove an existing run output directory before running.")
     parser.add_argument("--timeout", type=int, default=90)
+    parser.add_argument("--port", type=int, default=None, help="Freeciv server port; defaults to a run-specific port.")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "runs" / "organic_history_baseline_001")
     args = parser.parse_args()
 
@@ -58,7 +59,8 @@ def main() -> int:
     command_file = output_dir / "server_commands.serv"
     command_file.write_text("\n".join(commands) + "\n", encoding="utf-8")
     started = time.time()
-    command = [str(server), "--exit-on-end", "--saves", str(output_dir)]
+    port = args.port if args.port is not None else run_port(output_dir, args.seed)
+    command = [str(server), "--exit-on-end", "--port", str(port), "--saves", str(output_dir)]
     load_save = None
     if args.load_save:
         load_save = args.load_save if args.load_save.is_absolute() else ROOT / args.load_save
@@ -81,6 +83,7 @@ def main() -> int:
             "server": str(server),
             "command": command,
             "commandFile": str(command_file),
+            "port": port,
             "rulesetServ": str(ruleset_path) if ruleset_path else None,
             "scorelogPath": str(scorefile),
             "loadSave": str(load_save) if load_save else None,
@@ -105,6 +108,7 @@ def main() -> int:
         "server": str(server),
         "command": command,
         "commandFile": str(command_file),
+        "port": port,
         "rulesetServ": str(ruleset_path) if ruleset_path else None,
         "scorelogPath": str(scorefile),
         "loadSave": str(load_save) if load_save else None,
@@ -172,6 +176,11 @@ def is_relative_to(path: Path, parent: Path) -> bool:
     except ValueError:
         return False
     return True
+
+
+def run_port(output_dir: Path, seed: int) -> int:
+    path_total = sum(str(output_dir.resolve()).encode("utf-8"))
+    return 5600 + ((path_total + seed) % 1000)
 
 
 def find_server(build_dir: Path) -> Path | None:

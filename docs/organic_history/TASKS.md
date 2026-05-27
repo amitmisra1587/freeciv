@@ -132,3 +132,31 @@ tools/organic_history/full_overnight.sh
 - [ ] Tune civil-war thresholds through experiment commands only.
 - [ ] Solve loaded-save continuation automation before making mechanics default-on.
 - [ ] Add scenario fixtures for China, India, colonization, and collapse tests.
+
+## Phase 4: Overnight Feedback Loop
+
+- [x] Add resumable full overnight orchestration.
+- [x] Add `tools/organic_history/overnight_status.py`.
+- [x] Add `tools/organic_history/mechanics_profile.py`.
+- [x] Let experiments consume mechanics profile JSON.
+- [x] Update continuation checks to load non-final autosaves and record precise
+  blockers.
+- [x] Improve comparison verdicts with `safeToIterate`,
+  `candidatePromising`, deltas, and rates.
+- [x] Add generated-map regional/hegemony diagnostics.
+
+## Phase 4 Commands
+
+```bash
+cd /Users/amitmisra/code/freeciv
+tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_overnight --dry-run
+python3 tools/organic_history/overnight_status.py runs/organic_history_full_overnight
+tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_overnight --resume
+```
+
+## Next Tasks
+
+- [ ] Execute or resume `runs/organic_history_full_overnight`.
+- [ ] Inspect long-run threshold and comparison outputs.
+- [ ] Decide whether civil-war v1 is safe to keep iterating.
+- [ ] Add Earth/scenario fixtures for regional history tests.

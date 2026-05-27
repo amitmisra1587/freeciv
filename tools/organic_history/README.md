@@ -178,16 +178,47 @@ tools/organic_history/mechanics_gate.sh
 Run the full long orchestration:
 
 ```bash
-tools/organic_history/full_overnight.sh
+tools/organic_history/full_overnight.sh \
+  --output-dir runs/organic_history_full_overnight \
+  --resume
+```
+
+Preview or inspect the long orchestration:
+
+```bash
+tools/organic_history/full_overnight.sh \
+  --output-dir runs/organic_history_full_overnight \
+  --dry-run
+
+python3 tools/organic_history/overnight_status.py \
+  runs/organic_history_full_overnight
 ```
 
 The first gameplay mechanic uses Freeciv's built-in
 `Player:civil_war(probability)` and is only active when explicitly enabled via
 campaign commands. Normal gates keep mechanics off.
 
+Generate a mechanics profile from calibration output:
+
+```bash
+python3 tools/organic_history/mechanics_profile.py \
+  --campaign-dir runs/organic_history_full_overnight/03_calibration/campaign \
+  --thresholds-output runs/organic_history_full_overnight/04_thresholds/thresholds.json \
+  --profile-output runs/organic_history_full_overnight/04_thresholds/mechanics_v1_profile.json
+```
+
+Run generated-map regional diagnostics for a run:
+
+```bash
+python3 tools/organic_history/region_diagnostics.py \
+  --run-dir runs/organic_history_gate \
+  --output runs/organic_history_gate/region_metrics.json
+```
+
 ## Next Tooling Targets
 
-1. Inspect `runs/organic_history_mechanics_ab_long/experiment_summary.json`.
-2. Tune civil-war thresholds only through experiment commands.
-3. Add robust save/load continuation once Freeciv loaded-save automation is solved.
-4. Add scenario fixtures for China, India, colonization, and collapse tests.
+1. Run or resume `runs/organic_history_full_overnight`.
+2. Inspect `07_mechanics_ab_long/experiment/experiment_summary.json`.
+3. Tune civil-war thresholds only through mechanics profile/experiment commands.
+4. Add robust save/load continuation once Freeciv loaded-save automation is solved.
+5. Add Earth/scenario fixtures for China, India, colonization, and collapse tests.

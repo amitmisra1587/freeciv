@@ -41,16 +41,16 @@ def main() -> int:
     continued_dir = output_dir / "continued"
     first_result = run_segment(args, first_dir, args.first_turns)
     first_summary = analyze_or_failure(first_dir, first_result.returncode)
-    final_save = first_summary.get("finalSave") or find_final_save(first_dir)
+    load_source = find_latest_autosave(first_dir)
 
     continued_result = None
     continued_summary: dict[str, Any] = {
         "success": False,
-        "error": "first segment did not produce a final save",
+        "error": "first segment did not produce a non-final autosave",
     }
-    if first_summary.get("success") and final_save:
+    if first_summary.get("success") and load_source:
         continued_result = run_segment(args, continued_dir, args.final_turns,
-                                       load_save=Path(final_save))
+                                       load_save=Path(load_source))
         continued_summary = analyze_or_failure(continued_dir,
                                                continued_result.returncode)
 
@@ -59,6 +59,8 @@ def main() -> int:
                         and continued_summary.get("success")
                         and num(continued_summary.get("finalTurn")) > num(first_summary.get("finalTurn"))),
         "first": compact(first_summary),
+        "loadSource": str(load_source) if load_source else None,
+        "loadSourceIsAutosave": bool(load_source and "-auto.sav" in str(load_source)),
         "continued": compact(continued_summary),
         "continuedGreaterThanFirst": num(continued_summary.get("finalTurn")) > num(first_summary.get("finalTurn")),
         "notes": [],
@@ -107,6 +109,11 @@ def analyze_or_failure(run_dir: Path, returncode: int) -> dict[str, Any]:
 
 def find_final_save(run_dir: Path) -> Path | None:
     saves = sorted(run_dir.glob("*final.sav*"))
+    return saves[-1] if saves else None
+
+
+def find_latest_autosave(run_dir: Path) -> Path | None:
+    saves = sorted(run_dir.glob("*-auto.sav*"))
     return saves[-1] if saves else None
 
 

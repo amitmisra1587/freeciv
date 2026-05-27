@@ -32,7 +32,7 @@ PRESETS = {
         "turns": 300,
         "players": 10,
         "saveturns": 25,
-        "timeout": 1200,
+        "timeout": 1800,
         "jobs": 1,
     },
     "mechanics_probe": {
@@ -48,7 +48,7 @@ PRESETS = {
         "turns": 300,
         "players": 10,
         "saveturns": 25,
-        "timeout": 1200,
+        "timeout": 1800,
         "jobs": 1,
     },
 }
@@ -104,9 +104,7 @@ def main() -> int:
     for seed in seeds:
         run_dir = output_dir / f"seed_{seed:04d}"
         existing_summary = read_json(run_dir / "run_summary.json")
-        if (existing_summary.get("success")
-                and not args.clean
-                and not args.rerun_failed):
+        if existing_summary.get("success") and not args.clean:
             summaries.append(existing_summary)
             continue
 

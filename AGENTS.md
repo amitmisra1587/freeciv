@@ -83,10 +83,17 @@ tools/organic_history/mechanics_gate.sh
 ```
 
 Use the full overnight runner for calibration, continuation check, mechanics
-gate, and long A/B comparison:
+gate, and long A/B comparison. It supports `--dry-run`, `--resume`, and
+`--output-dir`:
 
 ```bash
-tools/organic_history/full_overnight.sh
+tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_overnight --resume
+```
+
+Inspect progress with:
+
+```bash
+python3 tools/organic_history/overnight_status.py runs/organic_history_full_overnight
 ```
 
 Organic-history mechanics must remain off by default. Enable them only through

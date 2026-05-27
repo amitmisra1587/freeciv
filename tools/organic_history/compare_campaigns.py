@@ -57,10 +57,33 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
     baseline_domination = num(baseline_summary.get("aggregate", {}).get("dominationWarnings"))
     candidate_domination = num(candidate_summary.get("aggregate", {}).get("dominationWarnings"))
     runaway = civil_war_triggered > max(3, len(seed_comparisons) * 2)
-    worse = (candidate_failed > baseline_failed
+    failure_delta = candidate_failed - baseline_failed
+    city_delta = (num(candidate_summary.get("aggregate", {}).get("meanFinalCities"))
+                  - num(baseline_summary.get("aggregate", {}).get("meanFinalCities")))
+    city_share_delta = (num(candidate_summary.get("aggregate", {}).get("meanMaxCityShare"))
+                        - num(baseline_summary.get("aggregate", {}).get("meanMaxCityShare")))
+    domination_delta = candidate_domination - baseline_domination
+    stagnation_delta = (num(candidate_summary.get("aggregate", {}).get("stagnationWarnings"))
+                        - num(baseline_summary.get("aggregate", {}).get("stagnationWarnings")))
+    checks = num(candidate_mechanics.get("civilWarChecks"))
+    noops = num(candidate_mechanics.get("civilWarNoop"))
+    trigger_rate = civil_war_triggered / checks if checks else 0.0
+    noop_rate = noops / checks if checks else 0.0
+    worse = (failure_delta > 0
              or candidate_final_min <= 0
-             or candidate_domination > baseline_domination
+             or domination_delta > 0
              or runaway)
+    safe = not worse and mechanic_logs > 0
+    promising = safe and (civil_war_triggered > 0 or city_share_delta < 0)
+    reasons = []
+    if mechanic_logs > 0:
+        reasons.append("mechanic logs present")
+    if failure_delta <= 0:
+        reasons.append("no additional failures")
+    if not runaway:
+        reasons.append("no runaway civil-war warning")
+    if civil_war_triggered == 0:
+        reasons.append("no civil-war triggers yet")
 
     return {
         "baseline": str(baseline_dir),
@@ -70,6 +93,20 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
         "seedComparisons": seed_comparisons,
         "runawayCivilWarWarning": runaway,
         "candidateWorseThanBaseline": worse,
+        "safeToIterate": safe,
+        "candidatePromising": promising,
+        "reasons": reasons,
+        "deltas": {
+            "failures": failure_delta,
+            "meanFinalCities": round(city_delta, 3),
+            "meanMaxCityShare": round(city_share_delta, 3),
+            "dominationWarnings": domination_delta,
+            "stagnationWarnings": stagnation_delta,
+        },
+        "rates": {
+            "civilWarTriggerRate": round(trigger_rate, 3),
+            "civilWarNoopRate": round(noop_rate, 3),
+        },
         "mechanicLogsPresent": mechanic_logs > 0,
         "civilWarTriggered": civil_war_triggered,
     }

@@ -25,6 +25,7 @@ def main() -> int:
     parser.add_argument("--timeout", type=int, default=600)
     parser.add_argument("--preset", choices=["mechanics_probe", "mechanics_ab_long"], default=None)
     parser.add_argument("--thresholds", type=Path, default=None)
+    parser.add_argument("--profile", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, default=ROOT / "runs" / "organic_history_mechanics_ab")
     parser.add_argument("--clean", action="store_true")
     args = parser.parse_args()
@@ -38,16 +39,19 @@ def main() -> int:
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    thresholds = read_json(args.thresholds) if args.thresholds else {}
-    recommended = thresholds.get("recommended", {})
-    mechanic_commands = [
-        "lua cmd organic_history_mechanics_enabled = true",
-        "lua cmd organic_history_civil_war_enabled = true",
-        f"lua cmd organic_history_civil_war_stress_threshold = {int(recommended.get('civilWarStressThreshold', 45))}",
-        f"lua cmd organic_history_civil_war_min_cities = {int(recommended.get('civilWarMinCities', 8))}",
-        f"lua cmd organic_history_civil_war_probability = {int(recommended.get('civilWarProbability', 8))}",
-        f"lua cmd organic_history_civil_war_cooldown = {int(recommended.get('civilWarCooldown', 40))}",
-    ]
+    profile = read_json(args.profile) if args.profile else {}
+    mechanic_commands = profile.get("luaCommands")
+    if not mechanic_commands:
+        thresholds = read_json(args.thresholds) if args.thresholds else {}
+        recommended = thresholds.get("recommended", {})
+        mechanic_commands = [
+            "lua cmd organic_history_mechanics_enabled = true",
+            "lua cmd organic_history_civil_war_enabled = true",
+            f"lua cmd organic_history_civil_war_stress_threshold = {int(recommended.get('civilWarStressThreshold', 45))}",
+            f"lua cmd organic_history_civil_war_min_cities = {int(recommended.get('civilWarMinCities', 8))}",
+            f"lua cmd organic_history_civil_war_probability = {int(recommended.get('civilWarProbability', 8))}",
+            f"lua cmd organic_history_civil_war_cooldown = {int(recommended.get('civilWarCooldown', 40))}",
+        ]
     manifest = {
         "rulesetServ": str(args.ruleset_serv),
         "seeds": args.seeds,
@@ -56,6 +60,7 @@ def main() -> int:
         "saveturns": args.saveturns,
         "timeout": args.timeout,
         "thresholds": str(args.thresholds) if args.thresholds else None,
+        "profile": str(args.profile) if args.profile else None,
         "mechanicCommands": mechanic_commands,
     }
     write_json(output_dir / "experiment_manifest.json", manifest)
@@ -95,7 +100,7 @@ def apply_preset(args: argparse.Namespace) -> None:
         args.turns = 300
         args.players = 10
         args.saveturns = 25
-        args.timeout = 1200
+        args.timeout = 1800
 
 
 def run_campaign(
