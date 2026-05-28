@@ -326,9 +326,104 @@ base scenario using Freeciv's Lua edit APIs (`edit.create_player`,
 `edit.city_create`) and save with `scensave`, rather than directly editing all
 savegame player/city sections by hand.
 
+The first practical authored fixture is `earth_ancient_v1.sav`. Regenerate it
+with:
+
+```bash
+python3 tools/organic_history/create_scenario_fixture.py --include-v1
+```
+
+Its historical actor/start plan is
+`data/organic_history/scenarios/earth_ancient_v1_starts.json`; validation checks
+that the saved fixture contains the expected fixed players and city coordinates:
+
+```bash
+python3 tools/organic_history/validate_scenario.py \
+  data/organic_history/scenarios/earth_ancient_v1.sav \
+  --starts-plan data/organic_history/scenarios/earth_ancient_v1_starts.json \
+  --turns 20 \
+  --players 7 \
+  --output-dir runs/organic_history_ancient_v1_validate \
+  --timeout 240
+```
+
+## Next Command-Gated Mechanic
+
+Phase 6 calibration succeeded for both generated-map and `earth_ancient_v1`
+80-turn campaigns. Generated maps showed higher city unrest, migration pressure,
+reform pressure, and lower institution cohesion; `earth_ancient_v1` stayed more
+cohesive and had near-zero succession risk.
+
+Selected mechanic: **dynastic stress / succession-risk probe**. It should feed a
+small, bounded succession-risk bonus into the existing civil-war eligibility
+calculation, rather than adding a new effect. This is lower risk than direct
+migration/climate instability because it reuses existing event-risk,
+institution, and civil-war diagnostics and remains behind explicit commands.
+
+Guardrails:
+
+- Keep all mechanics off by default.
+- Require `organic_history_mechanics_enabled`,
+  `organic_history_civil_war_enabled`, and a new dynastic probe flag.
+- Log base stress, succession risk, cohesion/reform pressure, effective stress,
+  and skip/action before relaxing thresholds.
+- Keep the existing civil-war min turn, min cities, cooldown, probability, and
+  one-success-per-turn constraints.
+- Stop if comparisons lose `safeToIterate`, show failures, or show runaway
+  trigger/check rates.
+
+Implementation/probe sequence after the disabled-by-default Lua probe exists:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --seeds 1-3 \
+  --turns 80 \
+  --players 8 \
+  --saveturns 10 \
+  --timeout 600 \
+  --extra-command "lua cmd organic_history_mechanics_enabled = true" \
+  --extra-command "lua cmd organic_history_civil_war_enabled = true" \
+  --extra-command "lua cmd organic_history_dynastic_stress_enabled = true" \
+  --extra-command "lua cmd organic_history_dynastic_stress_max_bonus = 10" \
+  --output-dir runs/organic_history_dynastic_stress_generated_80 \
+  --clean \
+  --label dynastic_stress_generated_80
+
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --scenario data/organic_history/scenarios/earth_ancient_v1.sav \
+  --seeds 1-3 \
+  --turns 80 \
+  --players 7 \
+  --saveturns 10 \
+  --timeout 600 \
+  --extra-command "lua cmd organic_history_mechanics_enabled = true" \
+  --extra-command "lua cmd organic_history_civil_war_enabled = true" \
+  --extra-command "lua cmd organic_history_dynastic_stress_enabled = true" \
+  --extra-command "lua cmd organic_history_dynastic_stress_max_bonus = 10" \
+  --output-dir runs/organic_history_dynastic_stress_ancient_v1_80 \
+  --clean \
+  --label dynastic_stress_ancient_v1_80
+
+python3 tools/organic_history/compare_campaigns.py \
+  --baseline runs/organic_history_phase6_generated_80 \
+  --candidate runs/organic_history_dynastic_stress_generated_80 \
+  --output runs/organic_history_dynastic_stress_calibration/generated_comparison.json \
+  --csv-output runs/organic_history_dynastic_stress_calibration/generated_comparison.csv
+
+python3 tools/organic_history/compare_campaigns.py \
+  --baseline runs/organic_history_phase6_ancient_v1_80 \
+  --candidate runs/organic_history_dynastic_stress_ancient_v1_80 \
+  --output runs/organic_history_dynastic_stress_calibration/ancient_v1_comparison.json \
+  --csv-output runs/organic_history_dynastic_stress_calibration/ancient_v1_comparison.csv
+```
+
 ## Next Tooling Targets
 
-1. Run Phase 6 calibration campaigns over generated-map and scenario presets.
-2. Build script-assisted `earth_ancient_v1` starts with fixed players/cities.
-3. Run a longer v2 A/B only if the probe remains safe and has non-zero checks.
-4. Add robust save/load continuation once Freeciv loaded-save automation is solved.
+1. Add the disabled-by-default dynastic stress probe controls and diagnostics.
+2. Run the generated-map and `earth_ancient_v1` dynastic stress probes above.
+3. Extend `earth_ancient_v1` beyond initial actors/cities with technologies,
+   diplomacy, and era-specific setup.
+4. Run a longer v2 A/B only if probes remain safe and have non-zero checks.
+5. Add robust save/load continuation once Freeciv loaded-save automation is solved.

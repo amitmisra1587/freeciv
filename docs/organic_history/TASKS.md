@@ -210,6 +210,77 @@ tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_o
 - [x] Research hand-authored scenario start generation. Recommended path is
   script-assisted generation with Freeciv Lua edit APIs (`edit.create_player`,
   `edit.city_create`) followed by `scensave`, not broad manual save editing.
-- [ ] Build `earth_ancient_v1` with fixed historical players/cities.
-- [ ] Run Phase 6 calibration campaigns.
-- [ ] Select the next command-gated gameplay mechanic from calibrated diagnostics.
+- [x] Build `earth_ancient_v1` with fixed historical players/cities.
+- [ ] Extend `earth_ancient_v1` with ancient-era technologies, diplomacy, and
+  scenario-specific calibration once the fixture has campaign coverage.
+- [x] Run Phase 6 calibration campaigns:
+  `runs/organic_history_phase6_generated_80`,
+  `runs/organic_history_phase6_ancient_v1_80`, and
+  `runs/organic_history_phase6_calibration/comparison_summary.json`.
+  Both campaigns succeeded and `safeToIterate` is true.
+- [x] Select the next command-gated gameplay mechanic from calibrated diagnostics.
+
+## Phase 7: Dynastic Stress Civil-War Probe
+
+- [x] Decision: use dynastic stress / succession-risk as the next
+  command-gated mechanic, feeding a bounded succession-risk bonus into the
+  existing civil-war eligibility path.
+- [ ] Add disabled-by-default Lua controls for the dynastic stress probe. It
+  must require explicit mechanics, civil-war, and dynastic probe commands.
+- [ ] Log dynastic probe diagnostics with base stress, succession risk,
+  institution cohesion/reform pressure, effective stress, and skip/action.
+- [ ] Keep gameplay effects limited to the existing command-gated
+  `Player:civil_war(probability)` call; do not add new default-on effects.
+- [ ] Probe generated-map and `earth_ancient_v1` 80-turn campaigns before any
+  long A/B or tuning.
+
+## Phase 7 Probe Commands
+
+Run after the disabled-by-default dynastic probe controls/logs exist:
+
+```bash
+cd /Users/amitmisra/code/freeciv
+
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --seeds 1-3 \
+  --turns 80 \
+  --players 8 \
+  --saveturns 10 \
+  --timeout 600 \
+  --extra-command "lua cmd organic_history_mechanics_enabled = true" \
+  --extra-command "lua cmd organic_history_civil_war_enabled = true" \
+  --extra-command "lua cmd organic_history_dynastic_stress_enabled = true" \
+  --extra-command "lua cmd organic_history_dynastic_stress_max_bonus = 10" \
+  --output-dir runs/organic_history_dynastic_stress_generated_80 \
+  --clean \
+  --label dynastic_stress_generated_80
+
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --scenario data/organic_history/scenarios/earth_ancient_v1.sav \
+  --seeds 1-3 \
+  --turns 80 \
+  --players 7 \
+  --saveturns 10 \
+  --timeout 600 \
+  --extra-command "lua cmd organic_history_mechanics_enabled = true" \
+  --extra-command "lua cmd organic_history_civil_war_enabled = true" \
+  --extra-command "lua cmd organic_history_dynastic_stress_enabled = true" \
+  --extra-command "lua cmd organic_history_dynastic_stress_max_bonus = 10" \
+  --output-dir runs/organic_history_dynastic_stress_ancient_v1_80 \
+  --clean \
+  --label dynastic_stress_ancient_v1_80
+
+python3 tools/organic_history/compare_campaigns.py \
+  --baseline runs/organic_history_phase6_generated_80 \
+  --candidate runs/organic_history_dynastic_stress_generated_80 \
+  --output runs/organic_history_dynastic_stress_calibration/generated_comparison.json \
+  --csv-output runs/organic_history_dynastic_stress_calibration/generated_comparison.csv
+
+python3 tools/organic_history/compare_campaigns.py \
+  --baseline runs/organic_history_phase6_ancient_v1_80 \
+  --candidate runs/organic_history_dynastic_stress_ancient_v1_80 \
+  --output runs/organic_history_dynastic_stress_calibration/ancient_v1_comparison.json \
+  --csv-output runs/organic_history_dynastic_stress_calibration/ancient_v1_comparison.csv
+```

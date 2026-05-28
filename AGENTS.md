@@ -135,6 +135,16 @@ thresholds.
 Scenario fixtures live under `data/organic_history/scenarios/`. They are loaded
 through `run_ai_game.py --load-scenario`, which passes `--ruleset organic_history`
 to the server so ruleset Lua diagnostics remain active.
+Regenerate the map-only v0 fixtures plus the authored ancient v1 fixture with:
+
+```bash
+python3 tools/organic_history/create_scenario_fixture.py --include-v1
+```
+
+`earth_ancient_v1.sav` is generated with Freeciv server/Lua edit APIs and
+`scensave`; its expected fixed actors/cities are in
+`data/organic_history/scenarios/earth_ancient_v1_starts.json` and are checked by
+`tools/organic_history/validate_scenario.py --starts-plan ...`.
 
 ## Coding Rules
 

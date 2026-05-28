@@ -1,0 +1,76 @@
+{
+  "fixture": "earth_ancient_v1",
+  "baseScenario": "data/scenarios/earth-small.sav",
+  "ruleset": "organic_history",
+  "generationMode": "freeciv-server lua edit APIs plus scensave",
+  "notes": [
+    "Coordinates are in the 80x50 earth-small native coordinate space.",
+    "The start coordinates preserve the intended historical actor starts.",
+    "City coordinates are the authored city tiles; Athens and Parsa are slightly offset from their nation start positions to satisfy the default citymindist on the compact map."
+  ],
+  "actors": [
+    {
+      "id": "egypt",
+      "leader": "Narmer",
+      "nation": "Egyptian",
+      "style": "Classical",
+      "research": "Masonry",
+      "start": {"x": 38, "y": 21},
+      "city": {"name": "Memphis", "x": 38, "y": 21}
+    },
+    {
+      "id": "sumer",
+      "leader": "Gilgamesh",
+      "nation": "Sumerian",
+      "style": "Babylonian",
+      "research": "Pottery",
+      "start": {"x": 44, "y": 19},
+      "city": {"name": "Uruk", "x": 44, "y": 19}
+    },
+    {
+      "id": "india",
+      "leader": "Chandragupta",
+      "nation": "Indian",
+      "style": "Classical",
+      "research": "Alphabet",
+      "start": {"x": 50, "y": 21},
+      "city": {"name": "Pataliputra", "x": 50, "y": 21}
+    },
+    {
+      "id": "china",
+      "leader": "Qin Shi Huang",
+      "nation": "Chinese",
+      "style": "Asian",
+      "research": "Bronze Working",
+      "start": {"x": 59, "y": 17},
+      "city": {"name": "Chang'an", "x": 59, "y": 17}
+    },
+    {
+      "id": "rome",
+      "leader": "Romulus",
+      "nation": "Roman",
+      "style": "Classical",
+      "research": "Warrior Code",
+      "start": {"x": 36, "y": 17},
+      "city": {"name": "Roma", "x": 36, "y": 17}
+    },
+    {
+      "id": "greece",
+      "leader": "Pericles",
+      "nation": "Greek",
+      "style": "Classical",
+      "research": "Alphabet",
+      "start": {"x": 38, "y": 18},
+      "city": {"name": "Athens", "x": 40, "y": 16}
+    },
+    {
+      "id": "persia",
+      "leader": "Cyrus",
+      "nation": "Persian",
+      "style": "Classical",
+      "research": "Horseback Riding",
+      "start": {"x": 46, "y": 18},
+      "city": {"name": "Parsa", "x": 47, "y": 16}
+    }
+  ]
+}
