@@ -266,6 +266,19 @@ def build_campaign_summary(
                                          for summary in succeeded)),
             "organicPrestigeLogs": int(sum(num(summary.get("logCounts", {}).get("prestige"))
                                            for summary in succeeded)),
+            "organicCityPressureLogs": int(sum(num(summary.get("logCounts", {}).get("cityPressure"))
+                                               for summary in succeeded)),
+            "organicInstitutionLogs": int(sum(num(summary.get("logCounts", {}).get("institution"))
+                                             for summary in succeeded)),
+            "organicEventRiskLogs": int(sum(num(summary.get("logCounts", {}).get("eventRisk"))
+                                           for summary in succeeded)),
+            "meanCityUnrest": round(mean_metric(succeeded, "cityPressure", "unrest"), 3),
+            "meanCityAutonomy": round(mean_metric(succeeded, "cityPressure", "autonomy"), 3),
+            "meanMigrationPressure": round(mean_metric(succeeded, "cityPressure", "migration_pressure"), 3),
+            "meanInstitutionCohesion": round(mean_metric(succeeded, "institutions", "cohesion"), 3),
+            "meanReformPressure": round(mean_metric(succeeded, "institutions", "reform_pressure"), 3),
+            "meanSuccessionRisk": round(mean_metric(succeeded, "eventRisks", "succession"), 3),
+            "meanFiscalRisk": round(mean_metric(succeeded, "eventRisks", "fiscal"), 3),
             "civilWarChecks": int(sum(num(summary.get("mechanics", {}).get("civilWarChecks"))
                                       for summary in succeeded)),
             "civilWarEligibleChecks": int(sum(num(summary.get("mechanics", {}).get("civilWarEligibleChecks"))
@@ -303,6 +316,16 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
         "mechanicLogs",
         "regionLogs",
         "prestigeLogs",
+        "cityPressureLogs",
+        "institutionLogs",
+        "eventRiskLogs",
+        "meanCityUnrest",
+        "meanCityAutonomy",
+        "meanMigrationPressure",
+        "meanInstitutionCohesion",
+        "meanReformPressure",
+        "meanSuccessionRisk",
+        "meanFiscalRisk",
         "civilWarChecks",
         "civilWarEligibleChecks",
         "civilWarTriggered",
@@ -321,6 +344,9 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
             log_counts = summary.get("logCounts", {})
             stress = summary.get("organicStress", {})
             mechanics = summary.get("mechanics", {})
+            city_pressure = summary.get("cityPressure", {})
+            institutions = summary.get("institutions", {})
+            event_risks = summary.get("eventRisks", {})
             writer.writerow({
                 "seed": summary.get("seed"),
                 "success": summary.get("success"),
@@ -337,6 +363,16 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
                 "mechanicLogs": log_counts.get("mechanic"),
                 "regionLogs": log_counts.get("region"),
                 "prestigeLogs": log_counts.get("prestige"),
+                "cityPressureLogs": log_counts.get("cityPressure"),
+                "institutionLogs": log_counts.get("institution"),
+                "eventRiskLogs": log_counts.get("eventRisk"),
+                "meanCityUnrest": metric_mean(city_pressure, "unrest"),
+                "meanCityAutonomy": metric_mean(city_pressure, "autonomy"),
+                "meanMigrationPressure": metric_mean(city_pressure, "migration_pressure"),
+                "meanInstitutionCohesion": metric_mean(institutions, "cohesion"),
+                "meanReformPressure": metric_mean(institutions, "reform_pressure"),
+                "meanSuccessionRisk": metric_mean(event_risks, "succession"),
+                "meanFiscalRisk": metric_mean(event_risks, "fiscal"),
                 "civilWarChecks": mechanics.get("civilWarChecks"),
                 "civilWarEligibleChecks": mechanics.get("civilWarEligibleChecks"),
                 "civilWarTriggered": mechanics.get("civilWarTriggered"),
@@ -386,6 +422,18 @@ def num(value: Any) -> float:
     if isinstance(value, (int, float)):
         return float(value)
     return 0.0
+
+
+def metric_mean(summary: dict[str, Any], key: str) -> float:
+    value = summary.get(key, {})
+    if not isinstance(value, dict):
+        return 0.0
+    return num(value.get("mean"))
+
+
+def mean_metric(summaries: list[dict[str, Any]], section: str, key: str) -> float:
+    values = [metric_mean(summary.get(section, {}), key) for summary in summaries]
+    return mean(values)
 
 
 def merge_count_maps(count_maps: Any) -> dict[str, int]:

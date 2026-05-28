@@ -170,6 +170,9 @@ def main() -> int:
     metadata["organicEventLogCount"] = combined_log.count("organic_history_event")
     metadata["organicRegionLogCount"] = combined_log.count("organic_history_region")
     metadata["organicPrestigeLogCount"] = combined_log.count("organic_history_prestige")
+    metadata["organicCityPressureLogCount"] = combined_log.count("organic_history_city_pressure")
+    metadata["organicInstitutionLogCount"] = combined_log.count("organic_history_institution")
+    metadata["organicEventRiskLogCount"] = combined_log.count("organic_history_event_risk")
     metadata["finalTurnSeen"] = final_turn_seen(save_files)
     metadata["success"] = (completed.returncode == 0
                            and not metadata["logFailureFragments"]

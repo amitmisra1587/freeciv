@@ -195,3 +195,21 @@ tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_o
 - [x] Add logging-only regional hegemony and prestige diagnostics.
 - [x] Compare generated-map and scenario campaigns with like-for-like 80-turn
   runs.
+
+## Phase 6: Prototype-Parity Diagnostics
+
+- [x] Add logging-only city pressure state using Freeciv cities as the province
+  analogue.
+- [x] Parse and aggregate `organic_history_city_pressure` diagnostics in run and
+  campaign summaries.
+- [x] Add logging-only scenario archetype/state-form, institutional cohesion, and
+  reform-pressure diagnostics.
+- [x] Add logging-only pressure-event risk diagnostics for succession, fiscal,
+  plague, trade disruption, climate, and frontier pressure.
+- [x] Add `tools/organic_history/city_pressure_gate.sh`.
+- [x] Research hand-authored scenario start generation. Recommended path is
+  script-assisted generation with Freeciv Lua edit APIs (`edit.create_player`,
+  `edit.city_create`) followed by `scensave`, not broad manual save editing.
+- [ ] Build `earth_ancient_v1` with fixed historical players/cities.
+- [ ] Run Phase 6 calibration campaigns.
+- [ ] Select the next command-gated gameplay mechanic from calibrated diagnostics.

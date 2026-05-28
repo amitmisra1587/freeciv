@@ -18,6 +18,20 @@ STRESS_RE = re.compile(r"\borganic_history_stability\b.*\bstress=(?P<stress>-?\d
 RISK_RE = re.compile(r'\borganic_history_stability\b.*\brisk="?(?P<risk>[A-Za-z_]+)"?')
 MECHANIC_RE = re.compile(r"\borganic_history_mechanic\b.*\btype=(?P<type>[A-Za-z0-9_]+)")
 REASON_RE = re.compile(r'\breason="?(?P<reason>[A-Za-z0-9_]+)"?')
+FLOAT_FIELD_RE = r'\b{field}=(-?\d+(?:\.\d+)?)'
+CITY_PRESSURE_FIELDS = [
+    "population_pressure",
+    "food_pressure",
+    "economic_pressure",
+    "garrison_pressure",
+    "development",
+    "unrest",
+    "autonomy",
+    "climate_stress",
+    "migration_pressure",
+]
+INSTITUTION_FIELDS = ["cohesion", "reform_pressure"]
+EVENT_RISK_FIELDS = ["succession", "fiscal", "plague", "trade_disruption", "climate", "frontier"]
 
 
 def main() -> int:
@@ -95,6 +109,9 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
         },
         "logCounts": log_metrics["counts"],
         "organicStress": log_metrics["stress"],
+        "cityPressure": log_metrics["cityPressure"],
+        "institutions": log_metrics["institutions"],
+        "eventRisks": log_metrics["eventRisks"],
         "mechanics": log_metrics["mechanics"],
         "finalPlayers": final_players,
         "perTurn": score_metrics.get("perTurn", []),
@@ -121,6 +138,9 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         "mechanic": 0,
         "region": 0,
         "prestige": 0,
+        "cityPressure": 0,
+        "institution": 0,
+        "eventRisk": 0,
     }
     mechanics = {
         "civilWarChecks": 0,
@@ -134,6 +154,9 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
     }
     stress_values: list[int] = []
     high_risk = 0
+    city_pressure_values: dict[str, list[float]] = {field: [] for field in CITY_PRESSURE_FIELDS}
+    institution_values: dict[str, list[float]] = {field: [] for field in INSTITUTION_FIELDS}
+    event_risk_values: dict[str, list[float]] = {field: [] for field in EVENT_RISK_FIELDS}
     for log_path in sorted(run_dir.glob("server_*.log")):
         for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
             if "organic_history turn_begin" in line:
@@ -146,6 +169,15 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
                 counts["region"] += 1
             if "organic_history_prestige" in line:
                 counts["prestige"] += 1
+            if "organic_history_city_pressure" in line:
+                counts["cityPressure"] += 1
+                collect_float_fields(line, CITY_PRESSURE_FIELDS, city_pressure_values)
+            if "organic_history_institution" in line:
+                counts["institution"] += 1
+                collect_float_fields(line, INSTITUTION_FIELDS, institution_values)
+            if "organic_history_event_risk" in line:
+                counts["eventRisk"] += 1
+                collect_float_fields(line, EVENT_RISK_FIELDS, event_risk_values)
             if "organic_history_stability" in line:
                 counts["stability"] += 1
                 stress_match = STRESS_RE.search(line)
@@ -188,6 +220,9 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
             "highRiskTurns": high_risk,
         },
         "mechanics": mechanics,
+        "cityPressure": summarize_float_fields(city_pressure_values),
+        "institutions": summarize_float_fields(institution_values),
+        "eventRisks": summarize_float_fields(event_risk_values),
     }
 
 
@@ -213,8 +248,37 @@ def compact_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "maxCityShare": summary.get("maxCityShare"),
         "logCounts": summary.get("logCounts"),
         "organicStress": summary.get("organicStress"),
+        "cityPressure": summary.get("cityPressure"),
+        "institutions": summary.get("institutions"),
+        "eventRisks": summary.get("eventRisks"),
         "mechanics": summary.get("mechanics"),
     }
+
+
+def collect_float_fields(
+    line: str,
+    fields: list[str],
+    values: dict[str, list[float]],
+) -> None:
+    for field in fields:
+        match = re.search(FLOAT_FIELD_RE.format(field=re.escape(field)), line)
+        if match:
+            values[field].append(float(match.group(1)))
+
+
+def summarize_float_fields(values: dict[str, list[float]]) -> dict[str, Any]:
+    return {
+        field: {
+            "count": len(field_values),
+            "mean": round(mean(field_values), 3),
+            "max": round(max(field_values), 3) if field_values else 0,
+        }
+        for field, field_values in values.items()
+    }
+
+
+def mean(values: list[float]) -> float:
+    return sum(values) / len(values) if values else 0.0
 
 
 if __name__ == "__main__":

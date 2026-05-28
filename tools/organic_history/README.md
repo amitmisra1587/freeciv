@@ -283,12 +283,52 @@ python3 tools/organic_history/compare_campaigns.py \
 
 Scenario region boxes are stored in
 `data/organic_history/scenario_regions.json`; the Lua ruleset logs
-`organic_history_region` and `organic_history_prestige` diagnostics without
-changing gameplay.
+`organic_history_region`, `organic_history_prestige`,
+`organic_history_city_pressure`, `organic_history_institution`, and
+`organic_history_event_risk` diagnostics without changing gameplay.
+
+## Prototype-Parity Diagnostics
+
+City pressure diagnostics are the first Freeciv-side analogue to the prototype's
+province pressure model. They remain logging-only and track bounded per-city
+signals for unrest, autonomy, development, food/economic/garrison pressure,
+climate stress, migration pressure, and occupation turns.
+
+Run the focused gate:
+
+```bash
+tools/organic_history/city_pressure_gate.sh
+```
+
+Campaign summaries aggregate:
+
+```text
+organicCityPressureLogs
+organicInstitutionLogs
+organicEventRiskLogs
+meanCityUnrest
+meanCityAutonomy
+meanMigrationPressure
+meanInstitutionCohesion
+meanReformPressure
+meanSuccessionRisk
+meanFiscalRisk
+```
+
+The first institution diagnostics are also logging-only. They infer broad
+prototype-like archetypes/state forms from dominant scenario regions and city
+counts, then log cohesion and reform pressure. Event-risk diagnostics forecast
+succession, fiscal, plague, trade disruption, climate, and frontier pressure
+without applying effects.
+
+For hand-authored future scenarios, prefer script-assisted generation from a
+base scenario using Freeciv's Lua edit APIs (`edit.create_player`,
+`edit.city_create`) and save with `scensave`, rather than directly editing all
+savegame player/city sections by hand.
 
 ## Next Tooling Targets
 
-1. Run a longer v2 A/B only if the probe remains safe and has non-zero checks.
-2. Add robust save/load continuation once Freeciv loaded-save automation is solved.
-3. Replace the minimal Earth fixtures with hand-authored historical city/player
-   starts once scenario infrastructure remains stable.
+1. Run Phase 6 calibration campaigns over generated-map and scenario presets.
+2. Build script-assisted `earth_ancient_v1` starts with fixed players/cities.
+3. Run a longer v2 A/B only if the probe remains safe and has non-zero checks.
+4. Add robust save/load continuation once Freeciv loaded-save automation is solved.

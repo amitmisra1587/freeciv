@@ -22,4 +22,19 @@ if ! grep -q "organic_history_region" runs/organic_history_scenario_gate/server_
   exit 1
 fi
 
+if ! grep -q "organic_history_city_pressure" runs/organic_history_scenario_gate/server_*.log; then
+  echo "FAIL: no organic_history_city_pressure logs found"
+  exit 1
+fi
+
+if ! grep -q "organic_history_institution" runs/organic_history_scenario_gate/server_*.log; then
+  echo "FAIL: no organic_history_institution logs found"
+  exit 1
+fi
+
+if ! grep -q "organic_history_event_risk" runs/organic_history_scenario_gate/server_*.log; then
+  echo "FAIL: no organic_history_event_risk logs found"
+  exit 1
+fi
+
 echo "SUCCESS: scenario gate passed"

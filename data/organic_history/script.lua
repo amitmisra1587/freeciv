@@ -31,6 +31,8 @@ organic_history_civil_war_probability =
 organic_history_civil_war_last_turn = organic_history_civil_war_last_turn or {}
 organic_history_civil_war_success_this_turn = false
 organic_history_prestige = organic_history_prestige or {}
+organic_history_city_pressure = organic_history_city_pressure or {}
+organic_history_institutions = organic_history_institutions or {}
 
 
 -- Place Ruins at the location of the destroyed city.
@@ -458,6 +460,16 @@ function organic_history_risk_for(stress)
   return "low"
 end
 
+function organic_history_clamp(value, low, high)
+  if value < low then
+    return low
+  elseif value > high then
+    return high
+  end
+
+  return value
+end
+
 function organic_history_update_prestige(player, cities, culture, wars)
   local player_id = organic_history_player_id(player)
   local prestige = organic_history_prestige[player_id] or 0
@@ -499,6 +511,263 @@ function organic_history_region_for_tile(tile)
   end
 
   return "unknown", "Unknown"
+end
+
+function organic_history_city_key(city)
+  if city.id ~= nil then
+    return tostring(city.id)
+  end
+
+  return city.name
+end
+
+function organic_history_region_archetype(region_id)
+  if region_id == "china" then
+    return "imperial", "empire"
+  elseif region_id == "india" then
+    return "agrarian", "kingdom"
+  elseif region_id == "near_east" then
+    return "regional", "regional_kingdom"
+  elseif region_id == "europe" then
+    return "scholarly", "city_league"
+  elseif region_id == "steppe" then
+    return "nomadic", "nomadic_confederation"
+  elseif region_id == "africa" then
+    return "defensive", "defensive_kingdom"
+  elseif region_id == "americas" then
+    return "regional", "regional_polity"
+  end
+
+  return "regional", "regional_polity"
+end
+
+function organic_history_city_pressure_baseline(region_id)
+  if region_id == "steppe" then
+    return 0.22, 0.28
+  elseif region_id == "africa" or region_id == "near_east" then
+    return 0.18, 0.12
+  elseif region_id == "india" then
+    return 0.12, 0.08
+  elseif region_id == "americas" then
+    return 0.08, 0.10
+  end
+
+  return 0.05, 0.04
+end
+
+function organic_history_update_city_pressure(city, player, turn, stress, wars,
+                                              player_gold, player_city_count)
+  local key = organic_history_city_key(city)
+  local state = organic_history_city_pressure[key]
+  local region_id, region_name = organic_history_region_for_tile(city.tile)
+  local climate_base, migration_base = organic_history_city_pressure_baseline(region_id)
+  local owner_id = organic_history_player_id(player)
+  local size = city.size or 1
+  local garrison = city.tile:num_units()
+
+  if state == nil then
+    state = {
+      owner = owner_id,
+      occupation_turns = 0,
+      development = 0.28,
+      unrest = 0.10,
+      autonomy = 0.12,
+      climate_stress = climate_base,
+      migration_pressure = migration_base
+    }
+  end
+
+  if state.owner ~= owner_id then
+    state.owner = owner_id
+    state.occupation_turns = 0
+    state.unrest = organic_history_clamp(state.unrest + 0.12, 0, 1)
+    state.autonomy = organic_history_clamp(state.autonomy + 0.08, 0, 1)
+  else
+    state.occupation_turns = state.occupation_turns + 1
+  end
+
+  local population_pressure = organic_history_clamp((size - 4) / 16, 0, 1)
+  local food_pressure = organic_history_clamp(population_pressure * 0.45
+                                             + state.climate_stress * 0.35, 0, 1)
+  local economic_pressure = 0
+  if player_gold < 0 then
+    economic_pressure = 0.35
+  elseif player_gold < player_city_count * 2 then
+    economic_pressure = 0.16
+  end
+  economic_pressure = organic_history_clamp(economic_pressure
+                                            + state.autonomy * 0.12
+                                            - state.development * 0.08, 0, 1)
+  local garrison_pressure = organic_history_clamp((size - garrison) / 12
+                                                  + wars * 0.04, 0, 1)
+
+  state.climate_stress = organic_history_clamp(state.climate_stress * 0.985
+                                               + climate_base * 0.015, 0, 1)
+  state.migration_pressure = organic_history_clamp(state.migration_pressure * 0.975
+                                                   + migration_base * 0.012
+                                                   + state.climate_stress * 0.01
+                                                   + wars * 0.006, 0, 1)
+  state.development = organic_history_clamp(state.development * 0.995
+                                            + size * 0.001
+                                            - state.unrest * 0.0015, 0, 1)
+  state.unrest = organic_history_clamp(state.unrest * 0.90
+                                       + stress / 1000
+                                       + food_pressure * 0.08
+                                       + economic_pressure * 0.08
+                                       + garrison_pressure * 0.06
+                                       + state.migration_pressure * 0.04
+                                       - state.development * 0.035, 0, 1)
+  state.autonomy = organic_history_clamp(state.autonomy * 0.985
+                                         + state.unrest * 0.012
+                                         + (state.occupation_turns < 12 and 0.004 or 0)
+                                         - state.development * 0.002, 0, 1)
+  state.region_id = region_id
+  state.region_name = region_name
+  organic_history_city_pressure[key] = state
+
+  log.normal('organic_history_city_pressure turn=%d city=%q city_id=%s player=%d region=%q size=%d garrison=%d occupation_turns=%d population_pressure=%.3f food_pressure=%.3f economic_pressure=%.3f garrison_pressure=%.3f development=%.3f unrest=%.3f autonomy=%.3f climate_stress=%.3f migration_pressure=%.3f',
+             turn, city.name, key, owner_id, region_id, size, garrison,
+             state.occupation_turns, population_pressure, food_pressure,
+             economic_pressure, garrison_pressure, state.development,
+             state.unrest, state.autonomy, state.climate_stress,
+             state.migration_pressure)
+
+  return {
+    unrest = state.unrest,
+    autonomy = state.autonomy,
+    development = state.development,
+    climate_stress = state.climate_stress,
+    migration_pressure = state.migration_pressure,
+    population_pressure = population_pressure,
+    food_pressure = food_pressure,
+    economic_pressure = economic_pressure,
+    garrison_pressure = garrison_pressure,
+    region_id = region_id
+  }
+end
+
+function organic_history_pressure_summary_init()
+  return {
+    cities = 0,
+    unrest = 0,
+    autonomy = 0,
+    development = 0,
+    climate_stress = 0,
+    migration_pressure = 0,
+    population_pressure = 0,
+    economic_pressure = 0,
+    garrison_pressure = 0,
+    regions = {}
+  }
+end
+
+function organic_history_pressure_summary_add(summary, pressure)
+  summary.cities = summary.cities + 1
+  summary.unrest = summary.unrest + pressure.unrest
+  summary.autonomy = summary.autonomy + pressure.autonomy
+  summary.development = summary.development + pressure.development
+  summary.climate_stress = summary.climate_stress + pressure.climate_stress
+  summary.migration_pressure = summary.migration_pressure + pressure.migration_pressure
+  summary.population_pressure = summary.population_pressure + pressure.population_pressure
+  summary.economic_pressure = summary.economic_pressure + pressure.economic_pressure
+  summary.garrison_pressure = summary.garrison_pressure + pressure.garrison_pressure
+  summary.regions[pressure.region_id] = (summary.regions[pressure.region_id] or 0) + 1
+end
+
+function organic_history_pressure_summary_finish(summary)
+  if summary.cities <= 0 then
+    return summary
+  end
+
+  summary.unrest = summary.unrest / summary.cities
+  summary.autonomy = summary.autonomy / summary.cities
+  summary.development = summary.development / summary.cities
+  summary.climate_stress = summary.climate_stress / summary.cities
+  summary.migration_pressure = summary.migration_pressure / summary.cities
+  summary.population_pressure = summary.population_pressure / summary.cities
+  summary.economic_pressure = summary.economic_pressure / summary.cities
+  summary.garrison_pressure = summary.garrison_pressure / summary.cities
+  return summary
+end
+
+function organic_history_dominant_region(summary)
+  local dominant = "unknown"
+  local count = 0
+
+  for region_id, region_count in pairs(summary.regions) do
+    if region_count > count then
+      dominant = region_id
+      count = region_count
+    end
+  end
+
+  return dominant
+end
+
+function organic_history_update_institution(player, turn, cities, stress,
+                                            wars, pressure_summary)
+  local player_id = organic_history_player_id(player)
+  local institution = organic_history_institutions[player_id]
+  local core_region = organic_history_dominant_region(pressure_summary)
+  local archetype, default_form = organic_history_region_archetype(core_region)
+
+  if cities >= 14 and default_form ~= "nomadic_confederation" then
+    default_form = "empire"
+    archetype = "imperial"
+  end
+
+  if institution == nil then
+    institution = {
+      state_form = default_form,
+      archetype = archetype,
+      cohesion = 0.54,
+      reform_pressure = 0.0
+    }
+  end
+
+  local cohesion = institution.cohesion * 0.97
+                   + (1 - stress / 100) * 0.025
+                   + (1 - pressure_summary.unrest) * 0.008
+                   - wars * 0.006
+  local reform_pressure = institution.reform_pressure * 0.985
+                          + math.max(0, 0.46 - cohesion) * 0.035
+                          + math.max(0, cities - 10) * 0.003
+                          + pressure_summary.autonomy * 0.01
+
+  institution.state_form = default_form
+  institution.archetype = archetype
+  institution.core_region = core_region
+  institution.cohesion = organic_history_clamp(cohesion, 0, 1)
+  institution.reform_pressure = organic_history_clamp(reform_pressure, 0, 1)
+  organic_history_institutions[player_id] = institution
+
+  log.normal('organic_history_institution turn=%d player=%d archetype=%q state_form=%q core_region=%q cohesion=%.3f reform_pressure=%.3f cities=%d stress=%d',
+             turn, player_id, institution.archetype, institution.state_form,
+             core_region, institution.cohesion, institution.reform_pressure,
+             cities, stress)
+
+  return institution
+end
+
+function organic_history_log_event_risks(turn, player, cities, stress, wars,
+                                         gold, pressure_summary, institution)
+  local succession = organic_history_clamp((stress - 45) / 55
+                                           + institution.reform_pressure * 0.35
+                                           + math.max(0, cities - 8) * 0.02, 0, 1)
+  local fiscal = organic_history_clamp(math.max(0, -gold) / 220
+                                       + pressure_summary.economic_pressure * 0.55, 0, 1)
+  local plague = organic_history_clamp(pressure_summary.population_pressure * 0.55
+                                       + pressure_summary.development * 0.25, 0, 1)
+  local trade = organic_history_clamp(pressure_summary.economic_pressure * 0.45
+                                      + math.max(0, cities - 6) * 0.015, 0, 1)
+  local climate = organic_history_clamp(pressure_summary.climate_stress, 0, 1)
+  local frontier = organic_history_clamp(pressure_summary.migration_pressure
+                                         + pressure_summary.garrison_pressure * 0.25, 0, 1)
+
+  log.normal('organic_history_event_risk turn=%d player=%d succession=%.3f fiscal=%.3f plague=%.3f trade_disruption=%.3f climate=%.3f frontier=%.3f state_form=%q core_region=%q',
+             turn, organic_history_player_id(player), succession, fiscal,
+             plague, trade, climate, frontier, institution.state_form,
+             institution.core_region or "unknown")
 end
 
 function organic_history_log_regional_hegemony(turn)
@@ -565,6 +834,18 @@ function organic_history_log_player_metrics(turn, year)
     local risk = organic_history_risk_for(stress)
     local prestige = organic_history_update_prestige(player, cities, culture,
                                                      wars)
+    local pressure_summary = organic_history_pressure_summary_init()
+
+    for city in player:cities_iterate() do
+      local pressure = organic_history_update_city_pressure(city, player, turn,
+                                                           stress, wars, gold,
+                                                           cities)
+      organic_history_pressure_summary_add(pressure_summary, pressure)
+    end
+    pressure_summary = organic_history_pressure_summary_finish(pressure_summary)
+    local institution = organic_history_update_institution(player, turn, cities,
+                                                          stress, wars,
+                                                          pressure_summary)
 
     log.normal('organic_history_metric turn=%d year=%d player=%d name=%q nation=%q alive=%s cities=%d units=%d gold=%d culture=%d government=%q',
                turn, year, player.id, player.name, nation,
@@ -575,6 +856,8 @@ function organic_history_log_player_metrics(turn, year)
                risk)
     log.normal('organic_history_prestige turn=%d player=%d cities=%d culture=%d wars=%d prestige=%d',
                turn, player.id, cities, culture, wars, prestige)
+    organic_history_log_event_risks(turn, player, cities, stress, wars, gold,
+                                    pressure_summary, institution)
   end
 end
 
