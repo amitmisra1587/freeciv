@@ -372,7 +372,23 @@ Guardrails:
 - Stop if comparisons lose `safeToIterate`, show failures, or show runaway
   trigger/check rates.
 
-Implementation/probe sequence after the disabled-by-default Lua probe exists:
+Run the focused gate:
+
+```bash
+tools/organic_history/dynastic_stress_gate.sh
+```
+
+Probe results from the initial 80-turn calibration:
+
+```text
+generated-map:   safeToIterate=true, checks=3, triggers=1, meanDynasticBonus=0.074
+earth_ancient_v1: safeToIterate=true, checks=0, triggers=0, meanDynasticBonus=0.0
+```
+
+The generated-map probe shows the path can become active under pressure. The
+authored ancient scenario remains stable, which is the expected control result.
+
+Implementation/probe sequence:
 
 ```bash
 python3 tools/organic_history/run_campaign.py \
@@ -421,9 +437,8 @@ python3 tools/organic_history/compare_campaigns.py \
 
 ## Next Tooling Targets
 
-1. Add the disabled-by-default dynastic stress probe controls and diagnostics.
-2. Run the generated-map and `earth_ancient_v1` dynastic stress probes above.
-3. Extend `earth_ancient_v1` beyond initial actors/cities with technologies,
+1. Extend `earth_ancient_v1` beyond initial actors/cities with technologies,
    diplomacy, and era-specific setup.
-4. Run a longer v2 A/B only if probes remain safe and have non-zero checks.
-5. Add robust save/load continuation once Freeciv loaded-save automation is solved.
+2. Run a longer dynastic stress A/B only if probes remain safe and have bounded
+   non-zero checks/triggers.
+3. Add robust save/load continuation once Freeciv loaded-save automation is solved.

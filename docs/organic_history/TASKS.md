@@ -225,14 +225,24 @@ tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_o
 - [x] Decision: use dynastic stress / succession-risk as the next
   command-gated mechanic, feeding a bounded succession-risk bonus into the
   existing civil-war eligibility path.
-- [ ] Add disabled-by-default Lua controls for the dynastic stress probe. It
+- [x] Add disabled-by-default Lua controls for the dynastic stress probe. It
   must require explicit mechanics, civil-war, and dynastic probe commands.
-- [ ] Log dynastic probe diagnostics with base stress, succession risk,
+- [x] Log dynastic probe diagnostics with base stress, succession risk,
   institution cohesion/reform pressure, effective stress, and skip/action.
-- [ ] Keep gameplay effects limited to the existing command-gated
+- [x] Keep gameplay effects limited to the existing command-gated
   `Player:civil_war(probability)` call; do not add new default-on effects.
-- [ ] Probe generated-map and `earth_ancient_v1` 80-turn campaigns before any
+- [x] Probe generated-map and `earth_ancient_v1` 80-turn campaigns before any
   long A/B or tuning.
+- [x] Add `tools/organic_history/dynastic_stress_gate.sh`.
+
+Phase 7 probe result:
+
+- Generated-map probe: 3/3 runs succeeded, `safeToIterate: true`,
+  `civilWarChecks: 3`, `civilWarTriggered: 1`, mean dynastic bonus `0.074`.
+- `earth_ancient_v1` probe: 3/3 runs succeeded, `safeToIterate: true`,
+  `civilWarChecks: 0`, `civilWarTriggered: 0`, mean dynastic bonus `0.0`.
+- Interpretation: the probe is active and can produce bounded checks/triggers
+  where pressure exists, while the authored ancient scenario remains stable.
 
 ## Phase 7 Probe Commands
 

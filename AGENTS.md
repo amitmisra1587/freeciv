@@ -96,6 +96,13 @@ city pressure, institution/state-form, or event-risk logs:
 tools/organic_history/city_pressure_gate.sh
 ```
 
+Use the dynastic stress gate after editing the command-gated dynastic
+stress/succession-risk probe:
+
+```bash
+tools/organic_history/dynastic_stress_gate.sh
+```
+
 Use the full overnight runner for calibration, continuation check, mechanics
 gate, and long A/B comparison. It supports `--dry-run`, `--resume`, and
 `--output-dir`:

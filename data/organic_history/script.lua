@@ -28,11 +28,16 @@ organic_history_civil_war_cooldown =
     organic_history_civil_war_cooldown or 40
 organic_history_civil_war_probability =
     organic_history_civil_war_probability or 8
+organic_history_dynastic_stress_enabled =
+    organic_history_dynastic_stress_enabled or false
+organic_history_dynastic_stress_max_bonus =
+    organic_history_dynastic_stress_max_bonus or 10
 organic_history_civil_war_last_turn = organic_history_civil_war_last_turn or {}
 organic_history_civil_war_success_this_turn = false
 organic_history_prestige = organic_history_prestige or {}
 organic_history_city_pressure = organic_history_city_pressure or {}
 organic_history_institutions = organic_history_institutions or {}
+organic_history_event_risks = organic_history_event_risks or {}
 
 
 -- Place Ruins at the location of the destroyed city.
@@ -763,11 +768,21 @@ function organic_history_log_event_risks(turn, player, cities, stress, wars,
   local climate = organic_history_clamp(pressure_summary.climate_stress, 0, 1)
   local frontier = organic_history_clamp(pressure_summary.migration_pressure
                                          + pressure_summary.garrison_pressure * 0.25, 0, 1)
+  local risks = {
+    succession = succession,
+    fiscal = fiscal,
+    plague = plague,
+    trade_disruption = trade,
+    climate = climate,
+    frontier = frontier
+  }
+  organic_history_event_risks[organic_history_player_id(player)] = risks
 
   log.normal('organic_history_event_risk turn=%d player=%d succession=%.3f fiscal=%.3f plague=%.3f trade_disruption=%.3f climate=%.3f frontier=%.3f state_form=%q core_region=%q',
              turn, organic_history_player_id(player), succession, fiscal,
              plague, trade, climate, frontier, institution.state_form,
              institution.core_region or "unknown")
+  return risks
 end
 
 function organic_history_log_regional_hegemony(turn)
@@ -877,6 +892,47 @@ function organic_history_civil_war_log(kind, turn, player, stress, extra)
              organic_history_civil_war_stress_threshold, extra or "")
 end
 
+function organic_history_dynastic_probe_context(player, base_stress)
+  local player_id = organic_history_player_id(player)
+  local risks = organic_history_event_risks[player_id] or {}
+  local institution = organic_history_institutions[player_id] or {}
+  local succession = risks.succession or 0
+  local cohesion = institution.cohesion or 0
+  local reform_pressure = institution.reform_pressure or 0
+  local max_bonus = organic_history_dynastic_stress_max_bonus or 0
+  local bonus = 0
+
+  if organic_history_mechanics_enabled
+     and organic_history_civil_war_enabled
+     and organic_history_dynastic_stress_enabled then
+    bonus = math.floor(organic_history_clamp(succession, 0, 1) * max_bonus)
+  end
+
+  return {
+    succession = succession,
+    cohesion = cohesion,
+    reform_pressure = reform_pressure,
+    bonus = bonus,
+    effective_stress = organic_history_clamp(base_stress + bonus, 0, 100),
+    max_bonus = max_bonus
+  }
+end
+
+function organic_history_dynastic_probe_log(turn, player, base_stress, context,
+                                            action, reason)
+  if not (organic_history_mechanics_enabled
+          and organic_history_civil_war_enabled
+          and organic_history_dynastic_stress_enabled) then
+    return
+  end
+
+  log.normal('organic_history_dynastic_probe turn=%d player=%d action=%q reason=%q base_stress=%d succession_risk=%.3f cohesion=%.3f reform_pressure=%.3f bonus=%d max_bonus=%d effective_stress=%d threshold=%d',
+             turn, organic_history_player_id(player), action, reason,
+             base_stress, context.succession, context.cohesion,
+             context.reform_pressure, context.bonus, context.max_bonus,
+             context.effective_stress, organic_history_civil_war_stress_threshold)
+end
+
 function organic_history_check_civil_wars(turn)
   if not organic_history_mechanics_enabled
      or not organic_history_civil_war_enabled then
@@ -889,47 +945,82 @@ function organic_history_check_civil_wars(turn)
     local gold = player:gold()
     local culture = player:culture()
     local wars = organic_history_war_count(player)
-    local stress = organic_history_stress_for(player, cities, units, gold,
-                                             culture, wars)
+    local base_stress = organic_history_stress_for(player, cities, units, gold,
+                                                  culture, wars)
+    local dynastic = organic_history_dynastic_probe_context(player, base_stress)
+    local stress = dynastic.effective_stress
     local last_turn = organic_history_civil_war_last_turn[player.id] or -999999
     local cooldown_until = last_turn + organic_history_civil_war_cooldown
 
     if organic_history_player_excluded(player) then
+      organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                         "skip", "excluded")
       organic_history_civil_war_log("civil_war_skip", turn, player, stress,
-                                    'reason="excluded"')
+                                    'reason="excluded" base_stress=' .. base_stress
+                                    .. " dynastic_bonus=" .. dynastic.bonus)
     elseif not player.is_alive then
+      organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                         "skip", "not_alive")
       organic_history_civil_war_log("civil_war_skip", turn, player, stress,
-                                    'reason="not_alive"')
+                                    'reason="not_alive" base_stress=' .. base_stress
+                                    .. " dynastic_bonus=" .. dynastic.bonus)
     elseif turn < organic_history_civil_war_min_turn then
+      organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                         "skip", "early_turn")
       organic_history_civil_war_log("civil_war_skip", turn, player, stress,
-                                    'reason="early_turn"')
+                                    'reason="early_turn" base_stress=' .. base_stress
+                                    .. " dynastic_bonus=" .. dynastic.bonus)
     elseif cities < organic_history_civil_war_min_cities then
+      organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                         "skip", "small_state")
       organic_history_civil_war_log("civil_war_skip", turn, player, stress,
-                                    'reason="small_state" cities=' .. cities)
+                                    'reason="small_state" cities=' .. cities
+                                    .. " base_stress=" .. base_stress
+                                    .. " dynastic_bonus=" .. dynastic.bonus)
     elseif turn < cooldown_until then
+      organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                         "cooldown", "cooldown")
       organic_history_civil_war_log("civil_war_cooldown", turn, player, stress,
-                                    "until=" .. cooldown_until)
+                                    "until=" .. cooldown_until
+                                    .. " base_stress=" .. base_stress
+                                    .. " dynastic_bonus=" .. dynastic.bonus)
     elseif stress < organic_history_civil_war_stress_threshold then
+      organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                         "skip", "low_effective_stress")
       organic_history_civil_war_log("civil_war_skip", turn, player, stress,
-                                    'reason="low_stress"')
+                                    'reason="low_stress" base_stress=' .. base_stress
+                                    .. " dynastic_bonus=" .. dynastic.bonus)
     elseif organic_history_civil_war_success_this_turn then
+      organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                         "skip", "turn_success_limit")
       organic_history_civil_war_log("civil_war_skip", turn, player, stress,
-                                    'reason="turn_success_limit"')
+                                    'reason="turn_success_limit" base_stress=' .. base_stress
+                                    .. " dynastic_bonus=" .. dynastic.bonus)
     else
       local successor
 
+      organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                         "check", "eligible")
       organic_history_civil_war_log("civil_war_check", turn, player, stress,
                                     "eligible=true probability="
-                                    .. organic_history_civil_war_probability)
+                                    .. organic_history_civil_war_probability
+                                    .. " base_stress=" .. base_stress
+                                    .. " dynastic_bonus=" .. dynastic.bonus)
       organic_history_civil_war_last_turn[player.id] = turn
       successor = player:civil_war(organic_history_civil_war_probability)
       if successor == nil then
+        organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                           "noop", "no_successor")
         organic_history_civil_war_log("civil_war_noop", turn, player, stress,
-                                      'result="no_successor"')
+                                      'result="no_successor" base_stress=' .. base_stress
+                                      .. " dynastic_bonus=" .. dynastic.bonus)
       else
         organic_history_civil_war_success_this_turn = true
-        log.normal('organic_history_mechanic type=civil_war_triggered turn=%d player=%d successor=%d stress=%d',
-                   turn, player.id, successor.id, stress)
+        organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                           "triggered", "successor")
+        log.normal('organic_history_mechanic type=civil_war_triggered turn=%d player=%d successor=%d stress=%d base_stress=%d dynastic_bonus=%d',
+                   turn, player.id, successor.id, stress, base_stress,
+                   dynastic.bonus)
       end
     end
   end

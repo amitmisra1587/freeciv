@@ -55,6 +55,9 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
             "candidateCivilWarInert": bool(cand.get("mechanics", {}).get("civilWarInert")),
             "candidateCivilWarTopSkipReason": top_count_key(cand.get("mechanics", {}).get("civilWarSkipReasons", {})),
             "candidateMechanicLogs": num(cand.get("logCounts", {}).get("mechanic")),
+            "candidateDynasticProbeLogs": num(cand.get("logCounts", {}).get("dynasticProbe")),
+            "candidateMeanDynasticBonus": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "bonus"),
+            "candidateMeanDynasticEffectiveStress": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "effective_stress"),
         })
 
     baseline_failed = num(baseline_summary.get("runsFailed"))
@@ -81,13 +84,14 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
     noop_rate = noops / checks if checks else 0.0
     check_rate = checks / mechanic_logs if mechanic_logs else 0.0
     skip_reasons = count_map(candidate_mechanics.get("civilWarSkipReasons", {}))
+    dynastic_actions = count_map(candidate_mechanics.get("dynasticProbeActions", {}))
     inert = mechanic_logs > 0 and checks == 0 and civil_war_triggered == 0
     worse = (failure_delta > 0
              or candidate_final_min <= 0
              or domination_delta > 0
              or runaway)
     safe = not worse and (mechanic_logs > 0 or scenario_comparison)
-    promising = safe and (civil_war_triggered > 0 or city_share_delta < 0)
+    promising = safe and not inert and (civil_war_triggered > 0 or city_share_delta < 0)
     reasons = []
     if mechanic_logs > 0:
         reasons.append("mechanic logs present")
@@ -138,6 +142,10 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
         "candidateCivilWarEligibleChecks": eligible_checks,
         "candidateCivilWarSkipReasons": skip_reasons,
         "candidateCivilWarTopSkipReason": top_count_key(skip_reasons),
+        "candidateDynasticProbeLogs": num(candidate_mechanics.get("organicDynasticProbeLogs")),
+        "candidateDynasticProbeActions": dynastic_actions,
+        "candidateMeanDynasticBonus": num(candidate_mechanics.get("meanDynasticBonus")),
+        "candidateMeanDynasticEffectiveStress": num(candidate_mechanics.get("meanDynasticEffectiveStress")),
         "civilWarTriggered": civil_war_triggered,
     }
 
@@ -174,6 +182,15 @@ def num(value: Any) -> float:
     if isinstance(value, (int, float)):
         return float(value)
     return 0.0
+
+
+def metric_mean(summary: Any, key: str) -> float:
+    if not isinstance(summary, dict):
+        return 0.0
+    value = summary.get(key, {})
+    if not isinstance(value, dict):
+        return 0.0
+    return num(value.get("mean"))
 
 
 def count_map(value: Any) -> dict[str, int]:

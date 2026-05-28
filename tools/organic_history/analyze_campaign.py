@@ -32,6 +32,15 @@ CITY_PRESSURE_FIELDS = [
 ]
 INSTITUTION_FIELDS = ["cohesion", "reform_pressure"]
 EVENT_RISK_FIELDS = ["succession", "fiscal", "plague", "trade_disruption", "climate", "frontier"]
+DYNASTIC_PROBE_FIELDS = [
+    "base_stress",
+    "succession_risk",
+    "cohesion",
+    "reform_pressure",
+    "bonus",
+    "effective_stress",
+]
+ACTION_RE = re.compile(r'\baction="?(?P<action>[A-Za-z0-9_]+)"?')
 
 
 def main() -> int:
@@ -112,6 +121,7 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
         "cityPressure": log_metrics["cityPressure"],
         "institutions": log_metrics["institutions"],
         "eventRisks": log_metrics["eventRisks"],
+        "dynasticProbe": log_metrics["dynasticProbe"],
         "mechanics": log_metrics["mechanics"],
         "finalPlayers": final_players,
         "perTurn": score_metrics.get("perTurn", []),
@@ -141,6 +151,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         "cityPressure": 0,
         "institution": 0,
         "eventRisk": 0,
+        "dynasticProbe": 0,
     }
     mechanics = {
         "civilWarChecks": 0,
@@ -157,6 +168,8 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
     city_pressure_values: dict[str, list[float]] = {field: [] for field in CITY_PRESSURE_FIELDS}
     institution_values: dict[str, list[float]] = {field: [] for field in INSTITUTION_FIELDS}
     event_risk_values: dict[str, list[float]] = {field: [] for field in EVENT_RISK_FIELDS}
+    dynastic_probe_values: dict[str, list[float]] = {field: [] for field in DYNASTIC_PROBE_FIELDS}
+    dynastic_actions: dict[str, int] = {}
     for log_path in sorted(run_dir.glob("server_*.log")):
         for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
             if "organic_history turn_begin" in line:
@@ -178,6 +191,12 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
             if "organic_history_event_risk" in line:
                 counts["eventRisk"] += 1
                 collect_float_fields(line, EVENT_RISK_FIELDS, event_risk_values)
+            if "organic_history_dynastic_probe" in line:
+                counts["dynasticProbe"] += 1
+                collect_float_fields(line, DYNASTIC_PROBE_FIELDS, dynastic_probe_values)
+                action_match = ACTION_RE.search(line)
+                action = action_match.group("action") if action_match else "unknown"
+                dynastic_actions[action] = dynastic_actions.get(action, 0) + 1
             if "organic_history_stability" in line:
                 counts["stability"] += 1
                 stress_match = STRESS_RE.search(line)
@@ -223,6 +242,10 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         "cityPressure": summarize_float_fields(city_pressure_values),
         "institutions": summarize_float_fields(institution_values),
         "eventRisks": summarize_float_fields(event_risk_values),
+        "dynasticProbe": {
+            "fields": summarize_float_fields(dynastic_probe_values),
+            "actions": dict(sorted(dynastic_actions.items())),
+        },
     }
 
 
@@ -251,6 +274,7 @@ def compact_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "cityPressure": summary.get("cityPressure"),
         "institutions": summary.get("institutions"),
         "eventRisks": summary.get("eventRisks"),
+        "dynasticProbe": summary.get("dynasticProbe"),
         "mechanics": summary.get("mechanics"),
     }
 
