@@ -30,6 +30,17 @@ The v1 historical actor/start plan is structured data in:
 Athens and Parsa are slightly offset from their earth-small nation start tiles
 so the compact 80x50 map can keep the default city spacing.
 
+The v1 starts plan also carries era setup:
+
+- starting gold
+- known ancient technologies
+- current research targets
+- diplomacy metadata scaffolding
+
+The diplomacy entries are not applied to Freeciv diplomatic state yet. They are
+metadata for future scenario enrichment because the current safe server/Lua
+authoring path does not expose arbitrary initial diplomacy editing.
+
 Historical regions are defined in:
 
 - `data/organic_history/scenario_regions.json` for Python tooling
@@ -57,7 +68,7 @@ Regenerate all v0 fixtures plus the authored ancient v1 fixture:
 python3 tools/organic_history/create_scenario_fixture.py --include-v1
 ```
 
-Validate v1 and its expected players/cities:
+Validate v1 and its expected players, cities, gold, technologies, and research:
 
 ```sh
 python3 tools/organic_history/validate_scenario.py \

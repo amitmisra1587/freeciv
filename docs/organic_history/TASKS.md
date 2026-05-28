@@ -211,8 +211,15 @@ tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_o
   script-assisted generation with Freeciv Lua edit APIs (`edit.create_player`,
   `edit.city_create`) followed by `scensave`, not broad manual save editing.
 - [x] Build `earth_ancient_v1` with fixed historical players/cities.
-- [ ] Extend `earth_ancient_v1` with ancient-era technologies, diplomacy, and
+- [x] Extend `earth_ancient_v1` with ancient-era technologies, diplomacy, and
   scenario-specific calibration once the fixture has campaign coverage.
+  Era setup now validates starting gold, known technologies, and current
+  research. Diplomacy is metadata scaffolding only until a safe Freeciv
+  scenario diplomacy authoring path exists.
+- [x] Run 120-turn dynastic stress A/B after era enrichment:
+  generated-map comparison is `safeToIterate: true` with 10 checks, 0 triggers,
+  and mean dynastic bonus 0.359; `earth_ancient_v1` comparison is
+  `safeToIterate: true` with 0 checks/triggers and mean dynastic bonus 0.003.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

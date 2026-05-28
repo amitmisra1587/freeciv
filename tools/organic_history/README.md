@@ -335,7 +335,8 @@ python3 tools/organic_history/create_scenario_fixture.py --include-v1
 
 Its historical actor/start plan is
 `data/organic_history/scenarios/earth_ancient_v1_starts.json`; validation checks
-that the saved fixture contains the expected fixed players and city coordinates:
+that the saved fixture contains the expected fixed players, city coordinates,
+starting gold, known technologies, and current research:
 
 ```bash
 python3 tools/organic_history/validate_scenario.py \
@@ -345,6 +346,24 @@ python3 tools/organic_history/validate_scenario.py \
   --players 7 \
   --output-dir runs/organic_history_ancient_v1_validate \
   --timeout 240
+```
+
+The starts plan also contains diplomacy metadata. Those entries are not applied
+to Freeciv diplomatic state yet because the safe server/Lua authoring path does
+not expose arbitrary initial diplomacy editing.
+
+`earth_ancient_v1` currently validates:
+
+- seven fixed actors/cities and coordinates
+- starting gold
+- known ancient technologies
+- current research targets
+
+The 120-turn dynastic stress A/B after era enrichment is safe:
+
+```text
+generated-map:    safeToIterate=true, checks=10, triggers=0, meanDynasticBonus=0.359
+earth_ancient_v1: safeToIterate=true, checks=0,  triggers=0, meanDynasticBonus=0.003
 ```
 
 ## Next Command-Gated Mechanic

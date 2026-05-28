@@ -6,7 +6,34 @@
   "notes": [
     "Coordinates are in the 80x50 earth-small native coordinate space.",
     "The start coordinates preserve the intended historical actor starts.",
-    "City coordinates are the authored city tiles; Athens and Parsa are slightly offset from their nation start positions to satisfy the default citymindist on the compact map."
+    "City coordinates are the authored city tiles; Athens and Parsa are slightly offset from their nation start positions to satisfy the default citymindist on the compact map.",
+    "Diplomacy entries are metadata scaffolding only; Freeciv does not expose a safe scenario-authoring Lua API for arbitrary initial diplomatic states yet."
+  ],
+  "diplomacy": [
+    {
+      "a": "rome",
+      "b": "greece",
+      "stance": "rivalry",
+      "note": "Central Mediterranean and Hellenic competition pressure."
+    },
+    {
+      "a": "egypt",
+      "b": "sumer",
+      "stance": "trade_rivalry",
+      "note": "Nile and Fertile Crescent regional interaction."
+    },
+    {
+      "a": "persia",
+      "b": "sumer",
+      "stance": "regional_pressure",
+      "note": "Near East successor-state pressure."
+    },
+    {
+      "a": "india",
+      "b": "china",
+      "stance": "distant_peers",
+      "note": "Parallel agrarian civilizational cores."
+    }
   ],
   "actors": [
     {
@@ -15,6 +42,8 @@
       "nation": "Egyptian",
       "style": "Classical",
       "research": "Masonry",
+      "techs": ["Masonry", "Pottery"],
+      "gold": 80,
       "start": {"x": 38, "y": 21},
       "city": {"name": "Memphis", "x": 38, "y": 21}
     },
@@ -24,6 +53,8 @@
       "nation": "Sumerian",
       "style": "Babylonian",
       "research": "Pottery",
+      "techs": ["Pottery", "Writing"],
+      "gold": 75,
       "start": {"x": 44, "y": 19},
       "city": {"name": "Uruk", "x": 44, "y": 19}
     },
@@ -33,6 +64,8 @@
       "nation": "Indian",
       "style": "Classical",
       "research": "Alphabet",
+      "techs": ["Alphabet", "Pottery"],
+      "gold": 70,
       "start": {"x": 50, "y": 21},
       "city": {"name": "Pataliputra", "x": 50, "y": 21}
     },
@@ -42,6 +75,8 @@
       "nation": "Chinese",
       "style": "Asian",
       "research": "Bronze Working",
+      "techs": ["Bronze Working", "Pottery"],
+      "gold": 70,
       "start": {"x": 59, "y": 17},
       "city": {"name": "Chang'an", "x": 59, "y": 17}
     },
@@ -51,6 +86,8 @@
       "nation": "Roman",
       "style": "Classical",
       "research": "Warrior Code",
+      "techs": ["Warrior Code", "Bronze Working"],
+      "gold": 65,
       "start": {"x": 36, "y": 17},
       "city": {"name": "Roma", "x": 36, "y": 17}
     },
@@ -60,6 +97,8 @@
       "nation": "Greek",
       "style": "Classical",
       "research": "Alphabet",
+      "techs": ["Alphabet", "Writing"],
+      "gold": 75,
       "start": {"x": 38, "y": 18},
       "city": {"name": "Athens", "x": 40, "y": 16}
     },
@@ -69,6 +108,8 @@
       "nation": "Persian",
       "style": "Classical",
       "research": "Horseback Riding",
+      "techs": ["Horseback Riding", "Bronze Working"],
+      "gold": 70,
       "start": {"x": 46, "y": 18},
       "city": {"name": "Parsa", "x": 47, "y": 16}
     }

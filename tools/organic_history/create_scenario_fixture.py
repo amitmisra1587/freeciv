@@ -166,15 +166,18 @@ def write_ancient_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
     for actor in actors:
         city = actor["city"]
         start = actor["start"]
+        techs = actor.get("techs", [])
         lines.append(
             "  {id = %s, player = %s, nation = %s, city = %s, "
-            "x = %d, y = %d, start_x = %d, start_y = %d},"
+            "x = %d, y = %d, start_x = %d, start_y = %d, gold = %d, techs = {%s}},"
             % (
                 lua_string(actor["id"]),
                 lua_string(actor["leader"]),
                 lua_string(actor["nation"]),
                 lua_string(city["name"]),
                 city["x"], city["y"], start["x"], start["y"],
+                int(actor.get("gold", 50)),
+                ", ".join(lua_string(tech) for tech in techs),
             )
         )
     lines.extend([
@@ -202,6 +205,21 @@ def write_ancient_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
         "    error(string.format('failed to create city %s at %d,%d', start.city, start.x, start.y))",
         "  end",
         "  placed = placed + 1",
+        "  local gold_delta = start.gold - player:gold()",
+        "  if gold_delta ~= 0 then",
+        "    edit.change_gold(player, gold_delta)",
+        "  end",
+        "  local granted = 0",
+        "  for _, tech_name in ipairs(start.techs) do",
+        "    local tech = find.tech_type(tech_name)",
+        "    if tech == nil then",
+        "      error(string.format('missing technology %s', tech_name))",
+        "    end",
+        "    edit.give_tech(player, tech, 0, false, 'organic_history_scenario')",
+        "    granted = granted + 1",
+        "  end",
+        "  log.normal('organic_history_authoring_era fixture=%q id=%q player=%q gold=%d techs=%d',",
+        f"             {fixture}, start.id, player.name, start.gold, granted)",
         "  log.normal('organic_history_authoring_start fixture=%q id=%q player=%q nation=%q city=%q x=%d y=%d start_x=%d start_y=%d',",
         f"             {fixture}, start.id, player.name, nation:rule_name(), start.city, start.x, start.y, start.start_x, start.start_y)",
         "end",

@@ -83,13 +83,22 @@ def resolve_starts_plan(plan_arg: Path | None, scenario: Path) -> Path | None:
 
 def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
-    players = parse_save_players(read_save_text(scenario))
+    save_text = read_save_text(scenario)
+    players = parse_save_players(save_text)
+    research = parse_research(save_text)
+    tech_vector = parse_technology_vector(save_text)
     missing_players: list[str] = []
     missing_cities: list[str] = []
     misplaced_cities: list[str] = []
+    gold_mismatches: list[str] = []
+    missing_techs: list[str] = []
+    research_mismatches: list[str] = []
     player_matches = 0
     city_matches = 0
     coordinate_matches = 0
+    gold_matches = 0
+    tech_matches = 0
+    research_matches = 0
 
     for actor in plan.get("actors", []):
         player = next((candidate for candidate in players
@@ -99,6 +108,24 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
             missing_players.append(actor["id"])
             continue
         player_matches += 1
+        if "gold" in actor:
+            if player.get("gold") == actor["gold"]:
+                gold_matches += 1
+            else:
+                gold_mismatches.append(actor["id"])
+
+        player_number = player.get("number")
+        research_row = research.get(player_number) if isinstance(player_number, int) else None
+        if research_row is not None and actor.get("research"):
+            if research_row.get("now_name") == actor["research"]:
+                research_matches += 1
+            else:
+                research_mismatches.append(actor["id"])
+        for tech in actor.get("techs", []):
+            if research_row is not None and tech_known(research_row, tech_vector, tech):
+                tech_matches += 1
+            else:
+                missing_techs.append(f"{actor['id']}:{tech}")
 
         city_plan = actor["city"]
         city = next((candidate for candidate in player.get("cities", [])
@@ -113,7 +140,8 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
             misplaced_cities.append(actor["id"])
 
     actor_count = len(plan.get("actors", []))
-    success = not missing_players and not missing_cities and not misplaced_cities
+    success = (not missing_players and not missing_cities and not misplaced_cities
+               and not gold_mismatches and not missing_techs and not research_mismatches)
     return {
         "startPlan": str(plan_path),
         "startPlanSuccess": success,
@@ -121,9 +149,15 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
         "expectedPlayerMatches": player_matches,
         "expectedCityMatches": city_matches,
         "expectedCityCoordinateMatches": coordinate_matches,
+        "expectedGoldMatches": gold_matches,
+        "expectedTechMatches": tech_matches,
+        "expectedResearchMatches": research_matches,
         "missingPlayers": missing_players,
         "missingCities": missing_cities,
         "misplacedCities": misplaced_cities,
+        "goldMismatches": gold_mismatches,
+        "missingTechs": missing_techs,
+        "researchMismatches": research_mismatches,
     }
 
 
@@ -140,10 +174,11 @@ def parse_save_players(text: str) -> list[dict[str, object]]:
     city_header: list[str] | None = None
 
     for line in text.splitlines():
-        if re.fullmatch(r"\[player\d+\]", line):
+        player_match = re.fullmatch(r"\[player(\d+)\]", line)
+        if player_match:
             if current is not None:
                 players.append(current)
-            current = {"cities": []}
+            current = {"number": int(player_match.group(1)), "cities": []}
             city_header = None
             continue
         if line.startswith("[") and current is not None:
@@ -167,6 +202,8 @@ def parse_save_players(text: str) -> list[dict[str, object]]:
             current["name"] = parse_save_value(line)
         elif line.startswith("nation="):
             current["nation"] = parse_save_value(line)
+        elif line.startswith("gold="):
+            current["gold"] = int(parse_save_value(line))
         elif line.startswith("ncities="):
             current["ncities"] = int(parse_save_value(line))
         elif line.startswith("c={"):
@@ -198,6 +235,51 @@ def parse_save_value(line: str) -> str:
 
 def parse_csv_fields(text: str) -> list[str]:
     return next(csv.reader([text]))
+
+
+def parse_technology_vector(text: str) -> list[str]:
+    for line in text.splitlines():
+        if line.startswith("technology_vector="):
+            return parse_csv_fields(line.split("=", 1)[1])
+    return []
+
+
+def parse_research(text: str) -> dict[int, dict[str, object]]:
+    rows: dict[int, dict[str, object]] = {}
+    in_research = False
+    header: list[str] | None = None
+    for line in text.splitlines():
+        if line == "[research]":
+            in_research = True
+            continue
+        if in_research and line.startswith("["):
+            break
+        if not in_research:
+            continue
+        if line.startswith("r={"):
+            header = parse_csv_fields(line.removeprefix("r={"))
+            continue
+        if header is None or line == "}":
+            continue
+        row = parse_csv_fields(line)
+        if len(row) != len(header):
+            continue
+        values = dict(zip(header, row))
+        try:
+            number = int(values["number"])
+        except (KeyError, ValueError):
+            continue
+        rows[number] = values
+    return rows
+
+
+def tech_known(research_row: dict[str, object], tech_vector: list[str], tech: str) -> bool:
+    try:
+        index = tech_vector.index(tech)
+    except ValueError:
+        return False
+    done = str(research_row.get("done", ""))
+    return index < len(done) and done[index] == "1"
 
 
 if __name__ == "__main__":
