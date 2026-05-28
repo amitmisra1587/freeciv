@@ -30,6 +30,7 @@ organic_history_civil_war_probability =
     organic_history_civil_war_probability or 8
 organic_history_civil_war_last_turn = organic_history_civil_war_last_turn or {}
 organic_history_civil_war_success_this_turn = false
+organic_history_prestige = organic_history_prestige or {}
 
 
 -- Place Ruins at the location of the destroyed city.
@@ -384,6 +385,7 @@ function organic_history_turn_begin(turn, year)
   organic_history_civil_war_success_this_turn = false
   log.normal("organic_history turn_begin turn=%d year=%d", turn, year)
   organic_history_log_player_metrics(turn, year)
+  organic_history_log_regional_hegemony(turn)
   organic_history_check_civil_wars(turn)
 end
 
@@ -456,6 +458,99 @@ function organic_history_risk_for(stress)
   return "low"
 end
 
+function organic_history_update_prestige(player, cities, culture, wars)
+  local player_id = organic_history_player_id(player)
+  local prestige = organic_history_prestige[player_id] or 0
+
+  prestige = prestige + cities + math.floor(culture / 200) - wars
+  if prestige < 0 then
+    prestige = 0
+  end
+
+  organic_history_prestige[player_id] = prestige
+  return prestige
+end
+
+organic_history_scenario_region_order = {
+  "americas", "europe", "near_east", "africa", "steppe", "india", "china"
+}
+
+organic_history_scenario_regions = {
+  africa = {name = "Africa", x_min = 38, x_max = 55, y_min = 27, y_max = 49},
+  americas = {name = "Americas", x_min = 0, x_max = 29, y_min = 8, y_max = 43},
+  china = {name = "China", x_min = 63, x_max = 74, y_min = 16, y_max = 30},
+  europe = {name = "Europe", x_min = 36, x_max = 50, y_min = 10, y_max = 25},
+  india = {name = "India", x_min = 55, x_max = 64, y_min = 23, y_max = 34},
+  near_east = {name = "Near East", x_min = 47, x_max = 58, y_min = 22, y_max = 33},
+  steppe = {name = "Steppe", x_min = 48, x_max = 69, y_min = 6, y_max = 18}
+}
+
+function organic_history_region_for_tile(tile)
+  if tile == nil then
+    return "unknown", "Unknown"
+  end
+
+  for _, region_id in ipairs(organic_history_scenario_region_order) do
+    local region = organic_history_scenario_regions[region_id]
+    if tile.x >= region.x_min and tile.x <= region.x_max
+       and tile.y >= region.y_min and tile.y <= region.y_max then
+      return region_id, region.name
+    end
+  end
+
+  return "unknown", "Unknown"
+end
+
+function organic_history_log_regional_hegemony(turn)
+  local regions = {}
+
+  for _, region_id in ipairs(organic_history_scenario_region_order) do
+    regions[region_id] = {total = 0, players = {}}
+  end
+
+  for player in players_iterate() do
+    for city in player:cities_iterate() do
+      local region_id = organic_history_region_for_tile(city.tile)
+      local region = regions[region_id]
+
+      if region ~= nil then
+        local player_id = organic_history_player_id(player)
+        region.total = region.total + 1
+        region.players[player_id] = (region.players[player_id] or 0) + 1
+      end
+    end
+  end
+
+  for _, region_id in ipairs(organic_history_scenario_region_order) do
+    local region = regions[region_id]
+    local region_def = organic_history_scenario_regions[region_id]
+    local leader = -1
+    local leader_cities = 0
+
+    for player_id, count in pairs(region.players) do
+      if count > leader_cities then
+        leader = player_id
+        leader_cities = count
+      end
+    end
+
+    local leader_share = 0
+    local classification = "empty"
+    if region.total > 0 then
+      leader_share = leader_cities / region.total
+      if leader_share >= 0.67 then
+        classification = "hegemon"
+      else
+        classification = "contested"
+      end
+    end
+
+    log.normal('organic_history_region turn=%d region=%q name=%q total_cities=%d leader=%d leader_cities=%d leader_share=%.3f classification=%q',
+               turn, region_id, region_def.name, region.total, leader,
+               leader_cities, leader_share, classification)
+  end
+end
+
 function organic_history_log_player_metrics(turn, year)
   for player in players_iterate() do
     local cities = player:num_cities()
@@ -468,6 +563,8 @@ function organic_history_log_player_metrics(turn, year)
     local stress = organic_history_stress_for(player, cities, units, gold,
                                              culture, wars)
     local risk = organic_history_risk_for(stress)
+    local prestige = organic_history_update_prestige(player, cities, culture,
+                                                     wars)
 
     log.normal('organic_history_metric turn=%d year=%d player=%d name=%q nation=%q alive=%s cities=%d units=%d gold=%d culture=%d government=%q',
                turn, year, player.id, player.name, nation,
@@ -476,6 +573,8 @@ function organic_history_log_player_metrics(turn, year)
     log.normal('organic_history_stability turn=%d player=%d cities=%d units=%d gold=%d culture=%d wars=%d stress=%d risk=%q',
                turn, player.id, cities, units, gold, culture, wars, stress,
                risk)
+    log.normal('organic_history_prestige turn=%d player=%d cities=%d culture=%d wars=%d prestige=%d',
+               turn, player.id, cities, culture, wars, prestige)
   end
 end
 

@@ -51,6 +51,33 @@ PRESETS = {
         "timeout": 1800,
         "jobs": 1,
     },
+    "scenario_ancient": {
+        "seeds": "1-3",
+        "turns": 80,
+        "players": 8,
+        "saveturns": 10,
+        "timeout": 600,
+        "jobs": 1,
+        "scenario": "data/organic_history/scenarios/earth_ancient_v0.sav",
+    },
+    "scenario_medieval": {
+        "seeds": "1-3",
+        "turns": 80,
+        "players": 10,
+        "saveturns": 10,
+        "timeout": 600,
+        "jobs": 1,
+        "scenario": "data/organic_history/scenarios/earth_medieval_v0.sav",
+    },
+    "scenario_1450": {
+        "seeds": "1-3",
+        "turns": 80,
+        "players": 10,
+        "saveturns": 10,
+        "timeout": 600,
+        "jobs": 1,
+        "scenario": "data/organic_history/scenarios/earth_1450_v0.sav",
+    },
 }
 
 
@@ -60,6 +87,8 @@ def main() -> int:
     parser.add_argument("--seeds", default="1-3", help="Seed range/list, e.g. 1-12 or 1,3,5.")
     parser.add_argument("--turns", type=int, default=50)
     parser.add_argument("--players", type=int, default=6)
+    parser.add_argument("--scenario", type=Path, default=None,
+                        help="Optional scenario savegame to load for each run.")
     parser.add_argument("--saveturns", type=int, default=10)
     parser.add_argument("--timeout", type=int, default=240)
     parser.add_argument("--jobs", type=int, default=1)
@@ -91,6 +120,7 @@ def main() -> int:
         "seeds": seeds,
         "turns": args.turns,
         "players": args.players,
+        "scenario": str(args.scenario) if args.scenario else None,
         "saveturns": args.saveturns,
         "timeout": args.timeout,
         "preset": args.preset,
@@ -150,6 +180,7 @@ def apply_preset(args: argparse.Namespace, preset: dict[str, Any]) -> None:
     args.saveturns = preset["saveturns"]
     args.timeout = preset["timeout"]
     args.jobs = preset["jobs"]
+    args.scenario = Path(preset["scenario"]) if preset.get("scenario") else args.scenario
 
 
 def parse_seeds(seed_text: str) -> list[int]:
@@ -182,6 +213,8 @@ def run_seed(args: argparse.Namespace, seed: int, run_dir: Path) -> subprocess.C
         "--timeout", str(args.timeout),
         "--clean-output-dir",
     ]
+    if args.scenario:
+        command.extend(["--load-scenario", str(args.scenario)])
     for extra_command in args.extra_command:
         command.extend(["--extra-command", extra_command])
     return subprocess.run(command, cwd=ROOT, text=True)
@@ -206,6 +239,7 @@ def build_campaign_summary(
         "runsFailed": len(failures),
         "turns": args.turns,
         "players": args.players,
+        "scenario": str(args.scenario) if args.scenario else None,
         "label": args.label,
         "seeds": seeds,
         "failures": failures,
@@ -228,14 +262,26 @@ def build_campaign_summary(
                                         for summary in succeeded)),
             "organicMechanicLogs": int(sum(num(summary.get("logCounts", {}).get("mechanic"))
                                            for summary in succeeded)),
+            "organicRegionLogs": int(sum(num(summary.get("logCounts", {}).get("region"))
+                                         for summary in succeeded)),
+            "organicPrestigeLogs": int(sum(num(summary.get("logCounts", {}).get("prestige"))
+                                           for summary in succeeded)),
             "civilWarChecks": int(sum(num(summary.get("mechanics", {}).get("civilWarChecks"))
                                       for summary in succeeded)),
+            "civilWarEligibleChecks": int(sum(num(summary.get("mechanics", {}).get("civilWarEligibleChecks"))
+                                             for summary in succeeded)),
             "civilWarTriggered": int(sum(num(summary.get("mechanics", {}).get("civilWarTriggered"))
                                          for summary in succeeded)),
             "civilWarNoop": int(sum(num(summary.get("mechanics", {}).get("civilWarNoop"))
                                     for summary in succeeded)),
             "civilWarSkips": int(sum(num(summary.get("mechanics", {}).get("civilWarSkips"))
                                      for summary in succeeded)),
+            "civilWarSkipReasons": merge_count_maps(
+                summary.get("mechanics", {}).get("civilWarSkipReasons", {})
+                for summary in succeeded
+            ),
+            "civilWarInertRuns": int(sum(1 for summary in succeeded
+                                        if summary.get("mechanics", {}).get("civilWarInert"))),
         },
     }
 
@@ -255,10 +301,15 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
         "stabilityLogs",
         "eventLogs",
         "mechanicLogs",
+        "regionLogs",
+        "prestigeLogs",
         "civilWarChecks",
+        "civilWarEligibleChecks",
         "civilWarTriggered",
         "civilWarNoop",
         "civilWarSkips",
+        "civilWarTopSkipReason",
+        "civilWarInert",
         "meanStress",
         "maxStress",
         "highRiskTurns",
@@ -284,10 +335,15 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
                 "stabilityLogs": log_counts.get("stability"),
                 "eventLogs": log_counts.get("event"),
                 "mechanicLogs": log_counts.get("mechanic"),
+                "regionLogs": log_counts.get("region"),
+                "prestigeLogs": log_counts.get("prestige"),
                 "civilWarChecks": mechanics.get("civilWarChecks"),
+                "civilWarEligibleChecks": mechanics.get("civilWarEligibleChecks"),
                 "civilWarTriggered": mechanics.get("civilWarTriggered"),
                 "civilWarNoop": mechanics.get("civilWarNoop"),
                 "civilWarSkips": mechanics.get("civilWarSkips"),
+                "civilWarTopSkipReason": top_count_key(mechanics.get("civilWarSkipReasons", {})),
+                "civilWarInert": mechanics.get("civilWarInert"),
                 "meanStress": stress.get("mean"),
                 "maxStress": stress.get("max"),
                 "highRiskTurns": stress.get("highRiskTurns"),
@@ -330,6 +386,24 @@ def num(value: Any) -> float:
     if isinstance(value, (int, float)):
         return float(value)
     return 0.0
+
+
+def merge_count_maps(count_maps: Any) -> dict[str, int]:
+    merged: dict[str, int] = {}
+    for count_map in count_maps:
+        if not isinstance(count_map, dict):
+            continue
+        for key, value in count_map.items():
+            if isinstance(key, str):
+                merged[key] = merged.get(key, 0) + int(num(value))
+    return dict(sorted(merged.items()))
+
+
+def top_count_key(count_map: Any) -> str | None:
+    if not isinstance(count_map, dict) or not count_map:
+        return None
+    key, _ = max(count_map.items(), key=lambda item: num(item[1]))
+    return key if isinstance(key, str) else None
 
 
 def mean(values: list[float]) -> float:

@@ -66,9 +66,10 @@ def main() -> int:
     write_json(output_dir / "experiment_manifest.json", manifest)
 
     baseline_dir = output_dir / "baseline"
-    candidate_dir = output_dir / "mechanics_v1"
+    candidate_label = str(profile.get("name") or "mechanics_v1")
+    candidate_dir = output_dir / candidate_label
     baseline_result = run_campaign(args, baseline_dir, "baseline", [])
-    candidate_result = run_campaign(args, candidate_dir, "mechanics_v1", mechanic_commands)
+    candidate_result = run_campaign(args, candidate_dir, candidate_label, mechanic_commands)
     compare_result = subprocess.run([
         sys.executable,
         "tools/organic_history/compare_campaigns.py",

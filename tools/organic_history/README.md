@@ -207,6 +207,27 @@ python3 tools/organic_history/mechanics_profile.py \
   --profile-output runs/organic_history_full_overnight/04_thresholds/mechanics_v1_profile.json
 ```
 
+The default profile mode is conservative (`--mode safe`). If a long A/B run is
+safe but inert, generate a bounded probe profile instead:
+
+```bash
+python3 tools/organic_history/mechanics_profile.py \
+  --campaign-dir runs/organic_history_full_overnight/03_calibration/campaign \
+  --thresholds-output runs/organic_history_profile_v2_probe/thresholds.json \
+  --profile-output runs/organic_history_profile_v2_probe/mechanics_v2_probe_profile.json \
+  --mode probe
+
+python3 tools/organic_history/run_experiment.py \
+  --preset mechanics_probe \
+  --profile runs/organic_history_profile_v2_probe/mechanics_v2_probe_profile.json \
+  --output-dir runs/organic_history_mechanics_v2_probe \
+  --clean
+```
+
+Campaign and experiment summaries include civil-war eligibility diagnostics:
+`civilWarSkipReasons`, `civilWarInertRuns`, `candidateMechanicInert`, and
+`civilWarChecksPer1000MechanicLogs`. Use these before relaxing thresholds.
+
 Run generated-map regional diagnostics for a run:
 
 ```bash
@@ -215,10 +236,59 @@ python3 tools/organic_history/region_diagnostics.py \
   --output runs/organic_history_gate/region_metrics.json
 ```
 
+## Scenario Fixtures
+
+Generate the minimal organic-history Earth fixtures:
+
+```bash
+python3 tools/organic_history/create_scenario_fixture.py
+```
+
+Validate that the ancient fixture loads with the organic-history ruleset and Lua
+diagnostics:
+
+```bash
+tools/organic_history/scenario_gate.sh
+```
+
+Run a short scenario campaign:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --preset scenario_ancient \
+  --output-dir runs/organic_history_scenario_ancient_gate \
+  --clean
+```
+
+Compare a like-for-like generated-map baseline with the scenario campaign:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --seeds 1-3 \
+  --turns 80 \
+  --players 8 \
+  --saveturns 10 \
+  --timeout 600 \
+  --output-dir runs/organic_history_generated_80_gate \
+  --clean \
+  --label generated_80
+
+python3 tools/organic_history/compare_campaigns.py \
+  --baseline runs/organic_history_generated_80_gate \
+  --candidate runs/organic_history_scenario_ancient_gate \
+  --output runs/organic_history_scenario_comparison/comparison_summary.json \
+  --csv-output runs/organic_history_scenario_comparison/comparison_metrics.csv
+```
+
+Scenario region boxes are stored in
+`data/organic_history/scenario_regions.json`; the Lua ruleset logs
+`organic_history_region` and `organic_history_prestige` diagnostics without
+changing gameplay.
+
 ## Next Tooling Targets
 
-1. Run or resume `runs/organic_history_full_overnight`.
-2. Inspect `07_mechanics_ab_long/experiment/experiment_summary.json`.
-3. Tune civil-war thresholds only through mechanics profile/experiment commands.
-4. Add robust save/load continuation once Freeciv loaded-save automation is solved.
-5. Add Earth/scenario fixtures for China, India, colonization, and collapse tests.
+1. Run a longer v2 A/B only if the probe remains safe and has non-zero checks.
+2. Add robust save/load continuation once Freeciv loaded-save automation is solved.
+3. Replace the minimal Earth fixtures with hand-authored historical city/player
+   starts once scenario infrastructure remains stable.

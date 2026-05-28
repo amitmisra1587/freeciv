@@ -22,6 +22,7 @@ def main() -> int:
     parser.add_argument("--server", type=Path, default=None, help="Explicit freeciv server binary path.")
     parser.add_argument("--ruleset-serv", type=Path, default=None, help="Optional .serv file to load before baseline commands.")
     parser.add_argument("--load-save", type=Path, default=None, help="Load an existing savegame before applying commands.")
+    parser.add_argument("--load-scenario", type=Path, default=None, help="Load a scenario savegame and start it with AI players.")
     parser.add_argument("--turns", type=int, default=20)
     parser.add_argument("--players", type=int, default=4)
     parser.add_argument("--seed", type=int, default=1)
@@ -47,24 +48,44 @@ def main() -> int:
         print("ERROR: Freeciv server binary not found. Build first with: meson setup build-organic -Dclients=[] -Dfcmp=[] -Dtools=[] -Ddebug=true && ninja -C build-organic", file=sys.stderr)
         return 2
 
+    if args.load_save and args.load_scenario:
+        print("ERROR: use only one of --load-save or --load-scenario.", file=sys.stderr)
+        return 2
+
+    start_game = args.load_save is None
     commands = baseline_commands(args.turns, args.players, args.seed,
                                  args.saveturns, scorefile.name, args.skill,
                                  args.extra_command,
-                                 start_game=args.load_save is None)
+                                 start_game=start_game)
     ruleset_path = None
+    scenario_ruleset = None
     if args.ruleset_serv:
         ruleset_path = args.ruleset_serv if args.ruleset_serv.is_absolute() else ROOT / args.ruleset_serv
-        commands.insert(0, f"read {ruleset_path}")
+        if args.load_scenario:
+            scenario_ruleset = ruleset_from_serv(ruleset_path)
+            if scenario_ruleset is None:
+                print(f"ERROR: --load-scenario requires a simple rulesetdir in {ruleset_path}", file=sys.stderr)
+                return 2
+        else:
+            commands.insert(0, f"read {ruleset_path}")
 
     command_file = output_dir / "server_commands.serv"
     command_file.write_text("\n".join(commands) + "\n", encoding="utf-8")
     started = time.time()
     port = args.port if args.port is not None else run_port(output_dir, args.seed)
     command = [str(server), "--exit-on-end", "--port", str(port), "--saves", str(output_dir)]
+    if scenario_ruleset:
+        command.extend(["--ruleset", scenario_ruleset])
     load_save = None
-    if args.load_save:
-        load_save = args.load_save if args.load_save.is_absolute() else ROOT / args.load_save
-        command.extend(["-f", str(load_save)])
+    load_scenario = None
+    load_path = args.load_save or args.load_scenario
+    if load_path:
+        resolved_load_path = load_path if load_path.is_absolute() else ROOT / load_path
+        if args.load_scenario:
+            load_scenario = resolved_load_path
+        else:
+            load_save = resolved_load_path
+        command.extend(["-f", str(resolved_load_path)])
     command.extend(["-r", str(command_file)])
     run_env = server_environment()
     try:
@@ -85,8 +106,10 @@ def main() -> int:
             "commandFile": str(command_file),
             "port": port,
             "rulesetServ": str(ruleset_path) if ruleset_path else None,
+            "scenarioRuleset": scenario_ruleset,
             "scorelogPath": str(scorefile),
             "loadSave": str(load_save) if load_save else None,
+            "loadScenario": str(load_scenario) if load_scenario else None,
             "stdoutPath": str(output_dir / "server_stdout.log"),
             "stderrPath": str(output_dir / "server_stderr.log"),
             "returncode": None,
@@ -110,8 +133,10 @@ def main() -> int:
         "commandFile": str(command_file),
         "port": port,
         "rulesetServ": str(ruleset_path) if ruleset_path else None,
+        "scenarioRuleset": scenario_ruleset,
         "scorelogPath": str(scorefile),
         "loadSave": str(load_save) if load_save else None,
+        "loadScenario": str(load_scenario) if load_scenario else None,
         "stdoutPath": str(output_dir / "server_stdout.log"),
         "stderrPath": str(output_dir / "server_stderr.log"),
         "returncode": completed.returncode,
@@ -143,6 +168,8 @@ def main() -> int:
     metadata["organicMetricLogCount"] = combined_log.count("organic_history_metric")
     metadata["organicStabilityLogCount"] = combined_log.count("organic_history_stability")
     metadata["organicEventLogCount"] = combined_log.count("organic_history_event")
+    metadata["organicRegionLogCount"] = combined_log.count("organic_history_region")
+    metadata["organicPrestigeLogCount"] = combined_log.count("organic_history_prestige")
     metadata["finalTurnSeen"] = final_turn_seen(save_files)
     metadata["success"] = (completed.returncode == 0
                            and not metadata["logFailureFragments"]
@@ -181,6 +208,19 @@ def is_relative_to(path: Path, parent: Path) -> bool:
 def run_port(output_dir: Path, seed: int) -> int:
     path_total = sum(str(output_dir.resolve()).encode("utf-8"))
     return 5600 + ((path_total + seed) % 1000)
+
+
+def ruleset_from_serv(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split()
+        if len(parts) == 2 and parts[0] == "rulesetdir":
+            return parts[1]
+    return None
 
 
 def find_server(build_dir: Path) -> Path | None:
@@ -248,7 +288,11 @@ def server_environment() -> dict[str, str]:
     if env.get("FREECIV_DATA_PATH"):
         data_path = data_path + os.pathsep + env["FREECIV_DATA_PATH"]
     env["FREECIV_DATA_PATH"] = data_path
-    scenario_path = str(ROOT / "data" / "scenarios")
+    scenario_paths = [
+        str(ROOT / "data" / "organic_history" / "scenarios"),
+        str(ROOT / "data" / "scenarios"),
+    ]
+    scenario_path = os.pathsep.join(scenario_paths)
     if env.get("FREECIV_SCENARIO_PATH"):
         scenario_path = scenario_path + os.pathsep + env["FREECIV_SCENARIO_PATH"]
     env["FREECIV_SCENARIO_PATH"] = scenario_path

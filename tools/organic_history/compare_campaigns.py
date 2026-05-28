@@ -29,6 +29,11 @@ def main() -> int:
 def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]:
     baseline_summary = read_json(baseline_dir / "campaign_summary.json")
     candidate_summary = read_json(candidate_dir / "campaign_summary.json")
+    baseline_manifest = read_json(baseline_dir / "campaign_manifest.json")
+    candidate_manifest = read_json(candidate_dir / "campaign_manifest.json")
+    baseline_scenario = baseline_summary.get("scenario") or baseline_manifest.get("scenario")
+    candidate_scenario = candidate_summary.get("scenario") or candidate_manifest.get("scenario")
+    scenario_comparison = bool(baseline_scenario or candidate_scenario)
     baseline_runs = load_run_summaries(baseline_dir)
     candidate_runs = load_run_summaries(candidate_dir)
     seed_comparisons = []
@@ -44,7 +49,11 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
             "baselineMaxCityShare": num(base.get("maxCityShare")),
             "candidateMaxCityShare": num(cand.get("maxCityShare")),
             "candidateCivilWarChecks": num(cand.get("mechanics", {}).get("civilWarChecks")),
+            "candidateCivilWarEligibleChecks": num(cand.get("mechanics", {}).get("civilWarEligibleChecks")),
             "candidateCivilWarTriggered": num(cand.get("mechanics", {}).get("civilWarTriggered")),
+            "candidateCivilWarSkips": num(cand.get("mechanics", {}).get("civilWarSkips")),
+            "candidateCivilWarInert": bool(cand.get("mechanics", {}).get("civilWarInert")),
+            "candidateCivilWarTopSkipReason": top_count_key(cand.get("mechanics", {}).get("civilWarSkipReasons", {})),
             "candidateMechanicLogs": num(cand.get("logCounts", {}).get("mechanic")),
         })
 
@@ -66,14 +75,18 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
     stagnation_delta = (num(candidate_summary.get("aggregate", {}).get("stagnationWarnings"))
                         - num(baseline_summary.get("aggregate", {}).get("stagnationWarnings")))
     checks = num(candidate_mechanics.get("civilWarChecks"))
+    eligible_checks = num(candidate_mechanics.get("civilWarEligibleChecks")) or checks
     noops = num(candidate_mechanics.get("civilWarNoop"))
     trigger_rate = civil_war_triggered / checks if checks else 0.0
     noop_rate = noops / checks if checks else 0.0
+    check_rate = checks / mechanic_logs if mechanic_logs else 0.0
+    skip_reasons = count_map(candidate_mechanics.get("civilWarSkipReasons", {}))
+    inert = mechanic_logs > 0 and checks == 0 and civil_war_triggered == 0
     worse = (failure_delta > 0
              or candidate_final_min <= 0
              or domination_delta > 0
              or runaway)
-    safe = not worse and mechanic_logs > 0
+    safe = not worse and (mechanic_logs > 0 or scenario_comparison)
     promising = safe and (civil_war_triggered > 0 or city_share_delta < 0)
     reasons = []
     if mechanic_logs > 0:
@@ -84,12 +97,23 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
         reasons.append("no runaway civil-war warning")
     if civil_war_triggered == 0:
         reasons.append("no civil-war triggers yet")
+    if inert:
+        reasons.append("mechanic inert: no civil-war eligibility checks")
 
     return {
         "baseline": str(baseline_dir),
         "candidate": str(candidate_dir),
         "baselineSummary": baseline_summary,
         "candidateSummary": candidate_summary,
+        "baselineManifest": baseline_manifest,
+        "candidateManifest": candidate_manifest,
+        "comparisonContext": {
+            "baselineScenario": baseline_scenario,
+            "candidateScenario": candidate_scenario,
+            "baselineTurns": baseline_summary.get("turns"),
+            "candidateTurns": candidate_summary.get("turns"),
+            "scenarioComparison": scenario_comparison,
+        },
         "seedComparisons": seed_comparisons,
         "runawayCivilWarWarning": runaway,
         "candidateWorseThanBaseline": worse,
@@ -106,8 +130,14 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
         "rates": {
             "civilWarTriggerRate": round(trigger_rate, 3),
             "civilWarNoopRate": round(noop_rate, 3),
+            "civilWarCheckRate": round(check_rate, 6),
+            "civilWarChecksPer1000MechanicLogs": round(check_rate * 1000, 3),
         },
         "mechanicLogsPresent": mechanic_logs > 0,
+        "candidateMechanicInert": inert,
+        "candidateCivilWarEligibleChecks": eligible_checks,
+        "candidateCivilWarSkipReasons": skip_reasons,
+        "candidateCivilWarTopSkipReason": top_count_key(skip_reasons),
         "civilWarTriggered": civil_war_triggered,
     }
 
@@ -144,6 +174,21 @@ def num(value: Any) -> float:
     if isinstance(value, (int, float)):
         return float(value)
     return 0.0
+
+
+def count_map(value: Any) -> dict[str, int]:
+    if not isinstance(value, dict):
+        return {}
+    counts = {key: int(num(count)) for key, count in value.items()
+              if isinstance(key, str)}
+    return dict(sorted(counts.items()))
+
+
+def top_count_key(value: Any) -> str | None:
+    counts = count_map(value)
+    if not counts:
+        return None
+    return max(counts.items(), key=lambda item: item[1])[0]
 
 
 if __name__ == "__main__":

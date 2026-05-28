@@ -128,10 +128,18 @@ tools/organic_history/full_overnight.sh
 
 ## Next Tasks
 
-- [ ] Inspect `runs/organic_history_mechanics_ab_long/experiment_summary.json`.
-- [ ] Tune civil-war thresholds through experiment commands only.
+- [x] Inspect completed `runs/organic_history_full_overnight` long A/B output.
+- [x] Confirm civil-war v1 is safe but inert (`safeToIterate: true`,
+  `candidatePromising: false`, zero checks/triggers).
+- [x] Add civil-war skip-reason and inertness diagnostics.
+- [x] Add bounded `mechanics_profile.py --mode probe` support.
+- [x] Run focused v2 probe:
+  `runs/organic_history_mechanics_v2_probe/experiment_summary.json`.
+- [ ] Run a longer v2 A/B only after the probe remains safe with non-zero checks.
 - [ ] Solve loaded-save continuation automation before making mechanics default-on.
-- [ ] Add scenario fixtures for China, India, colonization, and collapse tests.
+- [x] Add minimal Earth scenario fixtures and scenario gate.
+- [ ] Replace minimal fixtures with hand-authored China, India, colonization, and
+  collapse starts.
 
 ## Phase 4: Overnight Feedback Loop
 
@@ -156,7 +164,34 @@ tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_o
 
 ## Next Tasks
 
-- [ ] Execute or resume `runs/organic_history_full_overnight`.
-- [ ] Inspect long-run threshold and comparison outputs.
-- [ ] Decide whether civil-war v1 is safe to keep iterating.
-- [ ] Add Earth/scenario fixtures for regional history tests.
+- [x] Execute `runs/organic_history_full_overnight`.
+- [x] Inspect long-run threshold and comparison outputs.
+- [x] Decide whether civil-war v1 is safe to keep iterating.
+- [x] Add minimal Earth/scenario fixtures for regional history tests.
+
+## Phase 5A: Civil-War Eligibility Probes
+
+- [x] Re-analyze long A/B artifacts with skip-reason diagnostics.
+- [x] Identify v1 inertness root cause: dominant post-start skip pressure is
+  `small_state` from too-high `civilWarMinCities`.
+- [x] Generate a command-gated v2 probe profile from calibration data.
+- [x] Run focused v2 probe with no failures, non-zero eligibility checks, and
+  one civil-war trigger.
+- [ ] If v2 remains safe, run a longer A/B before considering scenario-specific
+  tuning.
+
+## Phase 5B: Scenario Infrastructure
+
+- [x] Document scenario format and organic-history region conventions.
+- [x] Add generated minimal Earth fixtures:
+  `earth_ancient_v0.sav`, `earth_medieval_v0.sav`, `earth_1450_v0.sav`.
+- [x] Add `run_ai_game.py --load-scenario` with active organic-history ruleset
+  loading.
+- [x] Add scenario campaign presets (`scenario_ancient`, `scenario_medieval`,
+  `scenario_1450`).
+- [x] Add scenario region definitions and generated-map/scenario region
+  diagnostics.
+- [x] Add `scenario_gate.sh`.
+- [x] Add logging-only regional hegemony and prestige diagnostics.
+- [x] Compare generated-map and scenario campaigns with like-for-like 80-turn
+  runs.

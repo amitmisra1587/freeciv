@@ -1,0 +1,58 @@
+{
+  "scenario": "earth_small_v0",
+  "map": {
+    "height": 50,
+    "width": 80
+  },
+  "regions": {
+    "africa": {
+      "name": "Africa",
+      "x_max": 55,
+      "x_min": 38,
+      "y_max": 49,
+      "y_min": 27
+    },
+    "americas": {
+      "name": "Americas",
+      "x_max": 29,
+      "x_min": 0,
+      "y_max": 43,
+      "y_min": 8
+    },
+    "china": {
+      "name": "China",
+      "x_max": 74,
+      "x_min": 63,
+      "y_max": 30,
+      "y_min": 16
+    },
+    "europe": {
+      "name": "Europe",
+      "x_max": 50,
+      "x_min": 36,
+      "y_max": 25,
+      "y_min": 10
+    },
+    "india": {
+      "name": "India",
+      "x_max": 64,
+      "x_min": 55,
+      "y_max": 34,
+      "y_min": 23
+    },
+    "near_east": {
+      "name": "Near East",
+      "x_max": 58,
+      "x_min": 47,
+      "y_max": 33,
+      "y_min": 22
+    },
+    "steppe": {
+      "name": "Steppe",
+      "x_max": 69,
+      "x_min": 48,
+      "y_max": 18,
+      "y_min": 6
+    }
+  }
+}

@@ -16,11 +16,13 @@ def main() -> int:
     parser.add_argument("--campaign-dir", type=Path, required=True)
     parser.add_argument("--thresholds-output", type=Path, required=True)
     parser.add_argument("--profile-output", type=Path, required=True)
+    parser.add_argument("--mode", choices=["safe", "probe"], default="safe",
+                        help="Profile style: safe keeps conservative defaults; probe lowers bounded eligibility thresholds.")
     args = parser.parse_args()
 
     thresholds = calibrate(args.campaign_dir)
     write_json(args.thresholds_output, thresholds)
-    profile = build_profile(thresholds, args.thresholds_output)
+    profile = build_profile(thresholds, args.thresholds_output, args.mode)
     write_json(args.profile_output, profile)
     print(json.dumps({
         "thresholds": str(args.thresholds_output),
@@ -30,8 +32,9 @@ def main() -> int:
     return 0
 
 
-def build_profile(thresholds: dict[str, Any], thresholds_path: Path) -> dict[str, Any]:
-    recommended = thresholds.get("recommended", {})
+def build_profile(thresholds: dict[str, Any], thresholds_path: Path, mode: str) -> dict[str, Any]:
+    source_recommended = thresholds.get("recommended", {})
+    recommended = profile_recommendations(thresholds, source_recommended, mode)
     commands = [
         "lua cmd organic_history_mechanics_enabled = true",
         "lua cmd organic_history_civil_war_enabled = true",
@@ -41,11 +44,65 @@ def build_profile(thresholds: dict[str, Any], thresholds_path: Path) -> dict[str
         f"lua cmd organic_history_civil_war_cooldown = {int(recommended.get('civilWarCooldown', 40))}",
     ]
     return {
-        "name": "mechanics_v1",
+        "name": "mechanics_v1" if mode == "safe" else "mechanics_v2_probe",
+        "mode": mode,
         "sourceThresholds": str(thresholds_path),
+        "sourceRecommended": source_recommended,
         "recommended": recommended,
+        "rationale": profile_rationale(thresholds, source_recommended, recommended, mode),
         "luaCommands": commands,
     }
+
+
+def profile_recommendations(
+    thresholds: dict[str, Any],
+    source_recommended: dict[str, Any],
+    mode: str,
+) -> dict[str, Any]:
+    if mode == "safe":
+        return dict(source_recommended)
+
+    stress = thresholds.get("stress", {})
+    final_cities = thresholds.get("finalCities", {})
+    current_min_cities = int(source_recommended.get("civilWarMinCities", 8))
+    current_stress = int(source_recommended.get("civilWarStressThreshold", 45))
+    stress_probe = int(round(num(stress.get("p90")) or num(stress.get("p75")) or current_stress))
+    total_cities_p50 = num(final_cities.get("p50"))
+    total_cities_min = num(final_cities.get("min"))
+    city_probe = int(round(total_cities_p50 / 6)) if total_cities_p50 else current_min_cities
+    if total_cities_min:
+        city_probe = min(city_probe, int(round(total_cities_min / 4)))
+
+    recommended = dict(source_recommended)
+    recommended["civilWarStressThreshold"] = max(35, min(current_stress, stress_probe))
+    recommended["civilWarMinCities"] = max(8, min(current_min_cities, city_probe))
+    recommended["civilWarProbability"] = min(6, int(source_recommended.get("civilWarProbability", 8)))
+    recommended["civilWarCooldown"] = max(40, int(source_recommended.get("civilWarCooldown", 40)))
+    return recommended
+
+
+def profile_rationale(
+    thresholds: dict[str, Any],
+    source_recommended: dict[str, Any],
+    recommended: dict[str, Any],
+    mode: str,
+) -> list[str]:
+    if mode == "safe":
+        return ["safe mode preserves calibration recommendations"]
+    return [
+        "probe mode is command-gated and keeps mechanics disabled by default",
+        "stress threshold uses at most the calibrated p90 stress value to produce eligibility checks sooner than p95",
+        "minimum cities is bounded below the v1 total-cities/3 rule because v1 produced zero eligibility checks",
+        "probability is capped at 6 and cooldown is at least 40 to reduce runaway civil-war risk",
+        f"v1 recommended {source_recommended}",
+        f"probe recommended {recommended}",
+    ]
+
+
+def num(value: Any) -> float:
+    if isinstance(value, (int, float)):
+        return float(value)
+    return 0.0
 
 
 def write_json(path: Path, data: Any) -> None:

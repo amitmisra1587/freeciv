@@ -17,6 +17,7 @@ from parse_scorelog import parse_scorelog
 STRESS_RE = re.compile(r"\borganic_history_stability\b.*\bstress=(?P<stress>-?\d+)")
 RISK_RE = re.compile(r'\borganic_history_stability\b.*\brisk="?(?P<risk>[A-Za-z_]+)"?')
 MECHANIC_RE = re.compile(r"\borganic_history_mechanic\b.*\btype=(?P<type>[A-Za-z0-9_]+)")
+REASON_RE = re.compile(r'\breason="?(?P<reason>[A-Za-z0-9_]+)"?')
 
 
 def main() -> int:
@@ -118,13 +119,18 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         "stability": 0,
         "event": 0,
         "mechanic": 0,
+        "region": 0,
+        "prestige": 0,
     }
     mechanics = {
         "civilWarChecks": 0,
+        "civilWarEligibleChecks": 0,
         "civilWarTriggered": 0,
         "civilWarNoop": 0,
         "civilWarSkips": 0,
+        "civilWarSkipReasons": {},
         "civilWarCooldowns": 0,
+        "civilWarInert": False,
     }
     stress_values: list[int] = []
     high_risk = 0
@@ -136,6 +142,10 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
                 counts["metric"] += 1
             if "organic_history_event" in line:
                 counts["event"] += 1
+            if "organic_history_region" in line:
+                counts["region"] += 1
+            if "organic_history_prestige" in line:
+                counts["prestige"] += 1
             if "organic_history_stability" in line:
                 counts["stability"] += 1
                 stress_match = STRESS_RE.search(line)
@@ -151,14 +161,22 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
                     mechanic_type = mechanic_match.group("type")
                     if mechanic_type == "civil_war_check":
                         mechanics["civilWarChecks"] += 1
+                        mechanics["civilWarEligibleChecks"] += 1
                     elif mechanic_type == "civil_war_triggered":
                         mechanics["civilWarTriggered"] += 1
                     elif mechanic_type == "civil_war_noop":
                         mechanics["civilWarNoop"] += 1
                     elif mechanic_type == "civil_war_skip":
                         mechanics["civilWarSkips"] += 1
+                        reason_match = REASON_RE.search(line)
+                        reason = reason_match.group("reason") if reason_match else "unknown"
+                        skip_reasons = mechanics["civilWarSkipReasons"]
+                        skip_reasons[reason] = skip_reasons.get(reason, 0) + 1
                     elif mechanic_type == "civil_war_cooldown":
                         mechanics["civilWarCooldowns"] += 1
+    mechanics["civilWarInert"] = (counts["mechanic"] > 0
+                                  and mechanics["civilWarChecks"] == 0
+                                  and mechanics["civilWarTriggered"] == 0)
     mean_stress = (sum(stress_values) / len(stress_values)
                    if stress_values else 0.0)
     return {

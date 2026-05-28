@@ -82,6 +82,13 @@ Use the mechanics gate for the first disabled-by-default civil-war mechanic:
 tools/organic_history/mechanics_gate.sh
 ```
 
+Use the scenario gate after editing scenario loading, scenario region
+diagnostics, or the organic-history Lua script:
+
+```bash
+tools/organic_history/scenario_gate.sh
+```
+
 Use the full overnight runner for calibration, continuation check, mechanics
 gate, and long A/B comparison. It supports `--dry-run`, `--resume`, and
 `--output-dir`:
@@ -98,6 +105,29 @@ python3 tools/organic_history/overnight_status.py runs/organic_history_full_over
 
 Organic-history mechanics must remain off by default. Enable them only through
 explicit `lua cmd organic_history_mechanics_enabled = true` campaign commands.
+When a mechanic is safe but inert, tune through generated mechanics profiles and
+focused experiments rather than editing Lua defaults:
+
+```bash
+python3 tools/organic_history/mechanics_profile.py \
+  --campaign-dir runs/organic_history_full_overnight/03_calibration/campaign \
+  --thresholds-output runs/organic_history_profile_v2_probe/thresholds.json \
+  --profile-output runs/organic_history_profile_v2_probe/mechanics_v2_probe_profile.json \
+  --mode probe
+
+python3 tools/organic_history/run_experiment.py \
+  --preset mechanics_probe \
+  --profile runs/organic_history_profile_v2_probe/mechanics_v2_probe_profile.json \
+  --output-dir runs/organic_history_mechanics_v2_probe \
+  --clean
+```
+
+Use skip-reason and inertness fields in campaign summaries before relaxing
+thresholds.
+
+Scenario fixtures live under `data/organic_history/scenarios/`. They are loaded
+through `run_ai_game.py --load-scenario`, which passes `--ruleset organic_history`
+to the server so ruleset Lua diagnostics remain active.
 
 ## Coding Rules
 

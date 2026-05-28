@@ -20,13 +20,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Compute generated-map region diagnostics.")
     parser.add_argument("--run-dir", type=Path, default=None)
     parser.add_argument("--save", type=Path, default=None)
+    parser.add_argument("--regions", type=Path, default=None,
+                        help="Optional JSON region definitions with x/y boxes.")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
     save_path = args.save or find_final_save(args.run_dir)
     if save_path is None:
         raise SystemExit("No save specified and no final save found.")
-    metrics = region_metrics(save_path)
+    metrics = region_metrics(save_path, args.regions)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(metrics, indent=2, sort_keys=True) + "\n",
                            encoding="utf-8")
@@ -41,11 +43,15 @@ def find_final_save(run_dir: Path | None) -> Path | None:
     return saves[-1] if saves else None
 
 
-def region_metrics(save_path: Path) -> dict[str, Any]:
+def region_metrics(save_path: Path, regions_path: Path | None = None) -> dict[str, Any]:
     cities, map_width, map_height = parse_save_cities(save_path)
-    regions: dict[str, dict[str, Any]] = {}
+    region_defs = load_region_defs(regions_path)
+    regions: dict[str, dict[str, Any]] = {
+        region_id: {"name": definition.get("name", region_id), "totalCities": 0, "players": {}}
+        for region_id, definition in region_defs.items()
+    }
     for city in cities:
-        region = classify_region(city["x"], city["y"], map_width, map_height)
+        region = classify_region(city["x"], city["y"], map_width, map_height, region_defs)
         entry = regions.setdefault(region, {"totalCities": 0, "players": {}})
         entry["totalCities"] += 1
         player_id = str(city["playerId"])
@@ -56,23 +62,29 @@ def region_metrics(save_path: Path) -> dict[str, Any]:
         leader_share = count / entry["totalCities"] if entry["totalCities"] else 0
         entry["leader"] = int(leader) if leader is not None else None
         entry["leaderShare"] = round(leader_share, 3)
-        entry["classification"] = ("hegemon" if leader_share >= 0.67
-                                   else "contested")
+        if entry["totalCities"] == 0:
+            entry["classification"] = "empty"
+        else:
+            entry["classification"] = ("hegemon" if leader_share >= 0.67
+                                      else "contested")
 
-    total_regions = 9
+    total_regions = len(regions)
     hegemon_regions = sum(1 for entry in regions.values()
                           if entry["classification"] == "hegemon")
     contested_regions = sum(1 for entry in regions.values()
                             if entry["classification"] == "contested")
+    empty_regions = sum(1 for entry in regions.values()
+                        if entry["classification"] == "empty")
     return {
         "save": str(save_path),
+        "regionDefinitions": str(regions_path) if regions_path else "generated_grid_3x3",
         "map": {"width": map_width, "height": map_height},
         "cities": cities,
         "regions": regions,
         "summary": {
             "totalCities": len(cities),
-            "nonEmptyRegions": len(regions),
-            "emptyRegions": total_regions - len(regions),
+            "nonEmptyRegions": total_regions - empty_regions,
+            "emptyRegions": empty_regions,
             "hegemonRegions": hegemon_regions,
             "contestedRegions": contested_regions,
         },
@@ -128,10 +140,33 @@ def parse_csv_line(line: str) -> list[str]:
     return next(csv.reader([line]))
 
 
-def classify_region(x: int, y: int, width: int, height: int) -> str:
+def classify_region(
+    x: int,
+    y: int,
+    width: int,
+    height: int,
+    region_defs: dict[str, dict[str, Any]] | None = None,
+) -> str:
+    if region_defs:
+        for region_id, region in region_defs.items():
+            if (x >= to_int(region.get("x_min")) and x <= to_int(region.get("x_max"))
+                    and y >= to_int(region.get("y_min")) and y <= to_int(region.get("y_max"))):
+                return region_id
+        return "unknown"
     col = min(2, max(0, int((x / max(1, width)) * 3)))
     row = min(2, max(0, int((y / max(1, height)) * 3)))
     return f"r{row}c{col}"
+
+
+def load_region_defs(path: Path | None) -> dict[str, dict[str, Any]]:
+    if path is None:
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    regions = data.get("regions", {})
+    if not isinstance(regions, dict):
+        raise SystemExit(f"Invalid regions JSON: {path}")
+    return {str(key): value for key, value in regions.items()
+            if isinstance(value, dict)}
 
 
 def leader_for(players: dict[str, int]) -> tuple[str | None, int]:

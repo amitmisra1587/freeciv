@@ -1,0 +1,49 @@
+Organic-history scenario fixtures
+=================================
+
+These fixtures are intentionally small, generated-map-compatible scenario
+fixtures for automated testing. They are not hand-authored historical maps.
+
+Freeciv scenarios are savegames with a `[scenario]` section and
+`is_scenario=TRUE`. The organic-history fixtures use the upstream
+`data/scenarios/earth-small.sav` map as the first fixed-geography base because
+it is compact (80x50), ruleset-unlocked, map-only (`players=FALSE`), and has
+start positions for AI-only tests.
+
+Fixtures:
+
+- `earth_ancient_v0.sav`
+- `earth_medieval_v0.sav`
+- `earth_1450_v0.sav`
+
+For now these are infrastructure fixtures with distinct scenario metadata over
+the same small Earth base map. Later iterations can add hand-placed players,
+cities, technologies, and era-specific diplomacy once the scenario gate and
+regional diagnostics are stable.
+
+Historical regions are defined in:
+
+- `data/organic_history/scenario_regions.json` for Python tooling
+- `data/organic_history/scenario_regions.lua` for Lua-facing conventions
+
+The current region boxes are for the 80x50 earth-small coordinate space:
+Americas, Europe, Near East, Africa, Steppe, India, and China.
+
+Run a scenario directly:
+
+```sh
+python3 tools/organic_history/run_ai_game.py \
+  --ruleset-serv data/organic_history.serv \
+  --load-scenario data/organic_history/scenarios/earth_ancient_v0.sav \
+  --turns 20 \
+  --players 8 \
+  --output-dir runs/organic_history_scenario_load_test \
+  --clean-output-dir \
+  --timeout 240
+```
+
+Run the fast scenario gate:
+
+```sh
+tools/organic_history/scenario_gate.sh
+```
