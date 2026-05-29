@@ -624,6 +624,26 @@ Rome secessions=4
 
 Rome still rises, but now shows visible crisis/secession after reaching scale.
 
+## Multi-Civilization Tuning
+
+The Rome tuning pattern now applies to other underperformers: tune starts/traits
+first, then check whether the civ reaches meaningful scale and pressure.
+
+Phase 17 tuned:
+
+```text
+Persia/Cyrus:    final cities 7.0 -> 8.667; max cities 9.0 -> 12.0
+Song/Taizu:      final cities 4.333 -> 15.667; max cities 5.333 -> 16.667
+Steppe/Temujin:  final cities 5.0 -> 8.0; max cities 6.667 -> 9.0
+Portugal/Henry:  final cities 3.333 -> 9.0; max cities 5.0 -> 12.0
+Castile/Isabella final cities 6.333 -> 6.667; max cities 7.0 -> 9.0
+```
+
+The tuning also exposed an unsafe fallback secession edge case in 1450 Venice:
+capital/government-center cities must not be selected for fallback transfer.
+The selection guard now excludes primary capitals, capitals, and government
+centers.
+
 Implementation/probe sequence:
 
 ```bash

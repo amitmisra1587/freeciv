@@ -23,9 +23,13 @@
       "style": "European",
       "research": "Navigation",
       "techs": ["Navigation", "Trade"],
-      "gold": 100,
+      "gold": 125,
+      "traits": {"Expansionist": 30, "Trader": 25, "Builder": 10},
       "start": {"x": 34, "y": 19},
-      "city": {"name": "Toledo", "x": 35, "y": 18}
+      "city": {"name": "Toledo", "x": 35, "y": 18},
+      "extraCities": [
+        {"name": "Seville", "x": 35, "y": 22}
+      ]
     },
     {
       "id": "portugal",
@@ -34,9 +38,13 @@
       "style": "European",
       "research": "Seafaring",
       "techs": ["Seafaring", "Navigation"],
-      "gold": 95,
+      "gold": 125,
+      "traits": {"Expansionist": 35, "Trader": 30, "Builder": 10},
       "start": {"x": 33, "y": 20},
-      "city": {"name": "Lisbon", "x": 32, "y": 20}
+      "city": {"name": "Lisbon", "x": 32, "y": 20},
+      "extraCities": [
+        {"name": "Porto", "x": 30, "y": 17}
+      ]
     },
     {
       "id": "ottoman",

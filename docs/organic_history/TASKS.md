@@ -371,6 +371,35 @@ Decision:
 - Keep fallback secession command-gated.
 - Next tuning should improve city selection, successor naming/nation selection,
   and test generated/China/Persia scenarios before broader use.
+
+## Phase 17: Multi-Civilization Tuning
+
+- [x] Tune underperforming civ starts using traits, techs, gold, and extra cities:
+  Persia/Cyrus, Song/Taizu, Steppe/Temujin, Portugal/Henry, Castile/Isabella.
+- [x] Regenerate and validate ancient, medieval, and 1450 v1 fixtures.
+- [x] Add a secession guard to avoid transferring capital/government-center
+  cities after a 1450 crash exposed unsafe Venice fallback selection.
+- [x] Run tuned 3 x 200-turn campaigns for ancient, medieval, and 1450.
+
+Outcome improvements:
+
+- Persia/Cyrus: mean final cities 7.0 -> 8.667; max cities 9.0 -> 12.0;
+  7 checks, 3 secessions.
+- Song/Taizu: mean final cities 4.333 -> 15.667; max cities 5.333 -> 16.667;
+  7 checks, 4 secessions.
+- Steppe/Temujin: mean final cities 5.0 -> 8.0; max cities 6.667 -> 9.0;
+  3 checks, 2 secessions.
+- Portugal/Henry: mean final cities 3.333 -> 9.0; max cities 5.0 -> 12.0;
+  5 checks, 2 secessions.
+- Castile/Isabella: mean final cities 6.333 -> 6.667; max cities 7.0 -> 9.0;
+  2 checks, 1 secession.
+
+Decision:
+
+- Start/trait tuning is effective for under-expanding civs.
+- Castile improved only modestly; it may need Iberian/geography-specific tuning
+  later.
+- The fallback secession guard is required before broader use.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

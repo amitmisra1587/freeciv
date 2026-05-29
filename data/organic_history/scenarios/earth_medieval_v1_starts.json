@@ -65,10 +65,14 @@
       "nation": "Chinese",
       "style": "Asian",
       "research": "Invention",
-      "techs": ["Invention", "Gunpowder"],
-      "gold": 95,
+      "techs": ["Invention", "Gunpowder", "Trade"],
+      "gold": 115,
+      "traits": {"Builder": 35, "Expansionist": 20, "Trader": 15},
       "start": {"x": 59, "y": 18},
-      "city": {"name": "Kaifeng", "x": 59, "y": 18}
+      "city": {"name": "Kaifeng", "x": 59, "y": 18},
+      "extraCities": [
+        {"name": "Hangzhou", "x": 58, "y": 22}
+      ]
     },
     {
       "id": "steppe",
@@ -77,9 +81,13 @@
       "style": "Asian",
       "research": "Horseback Riding",
       "techs": ["Horseback Riding", "Warrior Code"],
-      "gold": 75,
+      "gold": 95,
+      "traits": {"Aggressive": 40, "Expansionist": 25},
       "start": {"x": 54, "y": 11},
-      "city": {"name": "Karakorum", "x": 54, "y": 11}
+      "city": {"name": "Karakorum", "x": 54, "y": 11},
+      "extraCities": [
+        {"name": "Sarai", "x": 58, "y": 10}
+      ]
     },
     {
       "id": "africa",

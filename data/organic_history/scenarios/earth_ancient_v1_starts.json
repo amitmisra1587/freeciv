@@ -117,10 +117,14 @@
       "nation": "Persian",
       "style": "Classical",
       "research": "Horseback Riding",
-      "techs": ["Horseback Riding", "Bronze Working"],
-      "gold": 70,
+      "techs": ["Horseback Riding", "Bronze Working", "Trade"],
+      "gold": 100,
+      "traits": {"Expansionist": 30, "Aggressive": 25, "Builder": 10},
       "start": {"x": 46, "y": 18},
-      "city": {"name": "Parsa", "x": 47, "y": 16}
+      "city": {"name": "Parsa", "x": 47, "y": 16},
+      "extraCities": [
+        {"name": "Ecbatana", "x": 51, "y": 17}
+      ]
     }
   ]
 }

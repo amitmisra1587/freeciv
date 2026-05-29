@@ -989,7 +989,9 @@ function organic_history_secession_candidate_city(player)
   local best_score = -1
 
   for city in player:cities_iterate() do
-    if not city:is_primary_capital() then
+    if not city:is_primary_capital()
+       and not city:is_capital()
+       and not city:is_gov_center() then
       local state = organic_history_city_pressure[organic_history_city_key(city)] or {}
       local unrest = state.unrest or 0
       local autonomy = state.autonomy or 0
