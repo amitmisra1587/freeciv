@@ -315,6 +315,33 @@ Next tuning priorities:
 - Add colonial/contact/disease/autonomy pressure for 1450 New World and
   maritime powers.
 - Constrain successor names/nations by parent region/civ.
+
+## Phase 15: Rome-First Historical Arc Tuning
+
+- [x] Diagnose Rome problem: Rome was surviving but not rising. Baseline
+  `earth_ancient_v1` outcome ended at 3, 3, and 2 cities with 0 dynastic checks.
+- [x] Add focused civilization threshold checks to
+  `civilization_outcomes.py`.
+- [x] Add scenario actor trait support in `create_scenario_fixture.py`.
+- [x] Tune Rome's ancient start:
+  - second city: Neapolis
+  - higher starting gold
+  - Trade tech
+  - Expansionist/Aggressive/Builder trait modifiers
+- [x] Run 3 x 200-turn Rome-focused campaign:
+  - Rome final cities: 16, 15, 13
+  - Rome max cities: 16, 15, 15
+  - Rome dynastic checks: 6 total
+  - Rome triggers: 0
+  - outcome check: passed
+
+Decision:
+
+- Start/trait tuning solved the immediate Rome problem. Rome now reaches
+  regional-power scale.
+- Do not add a Rome-specific new mechanic yet.
+- Next Rome work should tune crisis/collapse after rise, likely by improving
+  no-successor fallback and low-mandate/autonomy stress.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

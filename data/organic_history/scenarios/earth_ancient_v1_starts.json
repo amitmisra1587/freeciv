@@ -11,7 +11,8 @@
     "Coordinates are in the 80x50 earth-small native coordinate space.",
     "The start coordinates preserve the intended historical actor starts.",
     "City coordinates are the authored city tiles; Athens and Parsa are slightly offset from their nation start positions to satisfy the default citymindist on the compact map.",
-    "Diplomacy entries are metadata scaffolding only; Freeciv does not expose a safe scenario-authoring Lua API for arbitrary initial diplomatic states yet."
+    "Diplomacy entries are metadata scaffolding only; Freeciv does not expose a safe scenario-authoring Lua API for arbitrary initial diplomatic states yet.",
+    "Rome receives a stronger expansion-oriented start because baseline outcome studies showed it survived but stagnated at 2-3 cities and never reached collapse-capable scale."
   ],
   "diplomacy": [
     {
@@ -90,10 +91,14 @@
       "nation": "Roman",
       "style": "Classical",
       "research": "Warrior Code",
-      "techs": ["Warrior Code", "Bronze Working"],
-      "gold": 65,
+      "techs": ["Warrior Code", "Bronze Working", "Trade"],
+      "gold": 100,
+      "traits": {"Expansionist": 40, "Aggressive": 25, "Builder": 10},
       "start": {"x": 36, "y": 17},
-      "city": {"name": "Roma", "x": 36, "y": 17}
+      "city": {"name": "Roma", "x": 36, "y": 17},
+      "extraCities": [
+        {"name": "Neapolis", "x": 34, "y": 20}
+      ]
     },
     {
       "id": "greece",

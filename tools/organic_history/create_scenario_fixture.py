@@ -89,6 +89,7 @@ def create_v1_fixture(
     actors = plan.get("actors", [])
     if not actors:
         raise SystemExit(f"No actors found in {plan_path}")
+    expected_cities = expected_city_count(plan)
     fixture = str(plan["fixture"])
     metadata = plan.get("metadata", {})
     name = str(metadata.get("name", fixture))
@@ -133,7 +134,7 @@ def create_v1_fixture(
                          proc, args.authoring_timeout)
             send_commands(proc, [f"lua file {lua_path}"])
             wait_for_log(stdout_path,
-                         f'organic_history_authoring_summary fixture="{plan["fixture"]}" placed={len(actors)} expected={len(actors)}',
+                         f'organic_history_authoring_summary fixture="{plan["fixture"]}" placed={expected_cities} expected={expected_cities}',
                          proc, args.authoring_timeout)
             time.sleep(0.5)
             send_commands(proc, [f"scensave {saved_prefix}", "quit"])
@@ -176,9 +177,13 @@ def write_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
         city = actor["city"]
         start = actor["start"]
         techs = actor.get("techs", [])
+        traits = actor.get("traits", {})
+        trait_items = sorted(traits.items()) if isinstance(traits, dict) else []
+        extra_cities = actor.get("extraCities", [])
+        city_items = [city] + (extra_cities if isinstance(extra_cities, list) else [])
         lines.append(
             "  {id = %s, player = %s, nation = %s, city = %s, "
-            "x = %d, y = %d, start_x = %d, start_y = %d, gold = %d, techs = {%s}},"
+            "x = %d, y = %d, start_x = %d, start_y = %d, gold = %d, techs = {%s}, traits = {%s}, cities = {%s}},"
             % (
                 lua_string(actor["id"]),
                 lua_string(actor["leader"]),
@@ -187,6 +192,16 @@ def write_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
                 city["x"], city["y"], start["x"], start["y"],
                 int(actor.get("gold", 50)),
                 ", ".join(lua_string(tech) for tech in techs),
+                ", ".join(f"[{lua_string(trait)}] = {int(value)}"
+                          for trait, value in trait_items),
+                ", ".join(
+                    "{name = %s, x = %d, y = %d}" % (
+                        lua_string(city_item["name"]),
+                        city_item["x"],
+                        city_item["y"],
+                    )
+                    for city_item in city_items
+                ),
             )
         )
     lines.extend([
@@ -202,18 +217,22 @@ def write_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
         "  if nation == nil or nation:rule_name() ~= start.nation then",
         "    error(string.format('player %s has unexpected nation', start.player))",
         "  end",
-        "  local tile = find.tile(start.x, start.y)",
-        "  if tile == nil then",
-        "    error(string.format('missing tile %d,%d', start.x, start.y))",
+        "  local actor_cities = 0",
+        "  for _, city in ipairs(start.cities) do",
+        "    local tile = find.tile(city.x, city.y)",
+        "    if tile == nil then",
+        "      error(string.format('missing tile %d,%d', city.x, city.y))",
+        "    end",
+        "    if tile:city() ~= nil then",
+        "      error(string.format('tile %d,%d already has a city', city.x, city.y))",
+        "    end",
+        "    local ok = edit.city_create(player, tile, city.name, nil)",
+        "    if not ok then",
+        "      error(string.format('failed to create city %s at %d,%d', city.name, city.x, city.y))",
+        "    end",
+        "    placed = placed + 1",
+        "    actor_cities = actor_cities + 1",
         "  end",
-        "  if tile:city() ~= nil then",
-        "    error(string.format('tile %d,%d already has a city', start.x, start.y))",
-        "  end",
-        "  local ok = edit.city_create(player, tile, start.city, nil)",
-        "  if not ok then",
-        "    error(string.format('failed to create city %s at %d,%d', start.city, start.x, start.y))",
-        "  end",
-        "  placed = placed + 1",
         "  local gold_delta = start.gold - player:gold()",
         "  if gold_delta ~= 0 then",
         "    edit.change_gold(player, gold_delta)",
@@ -227,10 +246,21 @@ def write_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
         "    edit.give_tech(player, tech, 0, false, 'organic_history_scenario')",
         "    granted = granted + 1",
         "  end",
+        "  local trait_mods = 0",
+        "  for trait_name, trait_mod in pairs(start.traits) do",
+        "    if not edit.trait_mod(player, trait_name, trait_mod) then",
+        "      error(string.format('failed to set trait %s for %s', trait_name, start.player))",
+        "    end",
+        "    trait_mods = trait_mods + 1",
+        "  end",
         "  log.normal('organic_history_authoring_era fixture=%q id=%q player=%q gold=%d techs=%d',",
         f"             {fixture}, start.id, player.name, start.gold, granted)",
+        "  log.normal('organic_history_authoring_traits fixture=%q id=%q player=%q traits=%d',",
+        f"             {fixture}, start.id, player.name, trait_mods)",
         "  log.normal('organic_history_authoring_start fixture=%q id=%q player=%q nation=%q city=%q x=%d y=%d start_x=%d start_y=%d',",
         f"             {fixture}, start.id, player.name, nation:rule_name(), start.city, start.x, start.y, start.start_x, start.start_y)",
+        "  log.normal('organic_history_authoring_actor fixture=%q id=%q player=%q cities=%d',",
+        f"             {fixture}, start.id, player.name, actor_cities)",
         "end",
         "local killed_units = 0",
         "for _, start in ipairs(starts) do",
@@ -242,10 +272,18 @@ def write_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
         "end",
         "log.normal('organic_history_authoring_units_removed fixture=%q units=%d',",
         f"           {fixture}, killed_units)",
-        f"log.normal('organic_history_authoring_summary fixture=%q placed=%d expected=%d', {fixture}, placed, #starts)",
+        f"log.normal('organic_history_authoring_summary fixture=%q placed=%d expected=%d', {fixture}, placed, {expected_city_count(plan)})",
         "",
     ])
     lua_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def expected_city_count(plan: dict[str, object]) -> int:
+    total = 0
+    for actor in plan["actors"]:
+        extra = actor.get("extraCities", [])
+        total += 1 + (len(extra) if isinstance(extra, list) else 0)
+    return total
 
 
 def authoring_start_commands(plan: dict[str, object]) -> list[str]:

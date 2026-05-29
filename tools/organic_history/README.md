@@ -553,6 +553,44 @@ strong enough: collapse is rare, no-successor civil wars block fragmentation,
 some scenario starts are underpowered, and successor names/nations are not yet
 region-aware.
 
+## Rome-First Tuning
+
+Rome's initial problem was under-expansion, not collapse. Baseline
+`earth_ancient_v1` outcomes ended with Rome at 3, 3, and 2 cities and no
+dynastic checks.
+
+The tuned ancient scenario gives Rome a stronger start:
+
+- second city: Neapolis
+- higher starting gold
+- `Trade` in addition to military techs
+- Expansionist/Aggressive/Builder trait modifiers
+
+Check Rome against explicit thresholds:
+
+```bash
+python3 tools/organic_history/civilization_outcomes.py \
+  --campaign runs/organic_history_rome_tuning/ancient_v1_rome_tuned_200 \
+  --output runs/organic_history_rome_tuning/rome_tuned_outcomes.json \
+  --csv-output runs/organic_history_rome_tuning/rome_tuned_outcomes.csv \
+  --focus-civ Romulus \
+  --min-mean-final-cities 5 \
+  --min-any-max-cities 6 \
+  --min-total-checks 1
+```
+
+Current tuned result:
+
+```text
+final cities: 16, 15, 13
+max cities: 16, 15, 15
+dynastic checks: 6
+dynastic triggers: 0
+```
+
+Rome now reaches regional scale. The next Rome-specific work should tune
+crisis/collapse after rise, not add more expansion buffs.
+
 Implementation/probe sequence:
 
 ```bash

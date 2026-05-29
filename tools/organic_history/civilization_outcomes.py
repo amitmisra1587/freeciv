@@ -24,20 +24,26 @@ def main() -> int:
                         help="Campaign directory containing seed_*/run_summary.json.")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--csv-output", type=Path, required=True)
+    parser.add_argument("--focus-civ", default=None,
+                        help="Optional civilization/player name to check against thresholds.")
+    parser.add_argument("--min-mean-final-cities", type=float, default=None)
+    parser.add_argument("--min-any-max-cities", type=float, default=None)
+    parser.add_argument("--min-total-checks", type=int, default=None)
     args = parser.parse_args()
 
-    report = build_report(args.campaign)
+    report = build_report(args.campaign, args)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n",
                            encoding="utf-8")
     write_csv(args.csv_output, report)
     print(json.dumps(report["summary"], sort_keys=True))
-    return 0
+    focus = report.get("focusCheck")
+    return 1 if focus and not focus["passed"] else 0
 
 
-def build_report(campaign_dirs: list[Path]) -> dict[str, Any]:
+def build_report(campaign_dirs: list[Path], args: argparse.Namespace) -> dict[str, Any]:
     campaigns = [summarize_campaign(campaign_dir) for campaign_dir in campaign_dirs]
-    return {
+    report = {
         "campaigns": campaigns,
         "summary": {
             "campaigns": len(campaigns),
@@ -46,6 +52,9 @@ def build_report(campaign_dirs: list[Path]) -> dict[str, Any]:
             "safeCampaigns": sum(1 for campaign in campaigns if campaign["runsFailed"] == 0),
         },
     }
+    if args.focus_civ:
+        report["focusCheck"] = focus_check(report, args)
+    return report
 
 
 def summarize_campaign(campaign_dir: Path) -> dict[str, Any]:
@@ -236,6 +245,46 @@ def count_values(values: Iterable[str]) -> dict[str, int]:
     for value in values:
         counts[value] = counts.get(value, 0) + 1
     return dict(sorted(counts.items()))
+
+
+def focus_check(report: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
+    matches = [
+        civilization
+        for campaign in report["campaigns"]
+        for civilization in campaign["civilizations"]
+        if civilization["civilization"] == args.focus_civ
+    ]
+    failures = []
+    if not matches:
+        failures.append(f"civilization {args.focus_civ!r} not found")
+        return {
+            "civilization": args.focus_civ,
+            "passed": False,
+            "failures": failures,
+            "matches": [],
+        }
+
+    if args.min_mean_final_cities is not None:
+        if not any(match["meanFinalCities"] >= args.min_mean_final_cities
+                   for match in matches):
+            failures.append(f"meanFinalCities below {args.min_mean_final_cities}")
+    if args.min_any_max_cities is not None:
+        max_cities = max(record["maxCities"]
+                         for match in matches
+                         for record in match["records"])
+        if max_cities < args.min_any_max_cities:
+            failures.append(f"maxCities below {args.min_any_max_cities}")
+    if args.min_total_checks is not None:
+        total_checks = sum(match["dynasticChecks"] for match in matches)
+        if total_checks < args.min_total_checks:
+            failures.append(f"dynasticChecks below {args.min_total_checks}")
+
+    return {
+        "civilization": args.focus_civ,
+        "passed": not failures,
+        "failures": failures,
+        "matches": matches,
+    }
 
 
 def read_json(path: Path) -> dict[str, Any]:

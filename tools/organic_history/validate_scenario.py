@@ -127,25 +127,29 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
             else:
                 missing_techs.append(f"{actor['id']}:{tech}")
 
-        city_plan = actor["city"]
-        city = next((candidate for candidate in player.get("cities", [])
-                     if candidate.get("name") == city_plan["name"]), None)
-        if city is None:
-            missing_cities.append(actor["id"])
-            continue
-        city_matches += 1
-        if city.get("x") == city_plan["x"] and city.get("y") == city_plan["y"]:
-            coordinate_matches += 1
-        else:
-            misplaced_cities.append(actor["id"])
+        city_plans = [actor["city"]] + actor.get("extraCities", [])
+        for city_plan in city_plans:
+            city = next((candidate for candidate in player.get("cities", [])
+                         if candidate.get("name") == city_plan["name"]), None)
+            if city is None:
+                missing_cities.append(f"{actor['id']}:{city_plan['name']}")
+                continue
+            city_matches += 1
+            if city.get("x") == city_plan["x"] and city.get("y") == city_plan["y"]:
+                coordinate_matches += 1
+            else:
+                misplaced_cities.append(f"{actor['id']}:{city_plan['name']}")
 
     actor_count = len(plan.get("actors", []))
+    expected_city_count = sum(1 + len(actor.get("extraCities", []))
+                              for actor in plan.get("actors", []))
     success = (not missing_players and not missing_cities and not misplaced_cities
                and not gold_mismatches and not missing_techs and not research_mismatches)
     return {
         "startPlan": str(plan_path),
         "startPlanSuccess": success,
         "expectedActorCount": actor_count,
+        "expectedCityCount": expected_city_count,
         "expectedPlayerMatches": player_matches,
         "expectedCityMatches": city_matches,
         "expectedCityCoordinateMatches": coordinate_matches,
