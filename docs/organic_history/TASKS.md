@@ -342,6 +342,35 @@ Decision:
 - Do not add a Rome-specific new mechanic yet.
 - Next Rome work should tune crisis/collapse after rise, likely by improving
   no-successor fallback and low-mandate/autonomy stress.
+
+## Phase 16: Rome Crisis / Secession Fallback
+
+- [x] Add `organic_history_secession` diagnostics for civil-war noops and
+  fallback eligibility.
+- [x] Add region/lineage-aware successor naming helpers, starting with Roman
+  secession names.
+- [x] Add command-gated fallback secession:
+  - `organic_history_secession_fallback_enabled`
+  - `organic_history_secession_min_cities`
+  - `organic_history_secession_max_cities`
+- [x] Use Freeciv Lua edit APIs to create a successor and transfer one
+  non-capital candidate city when built-in `Player:civil_war()` noops.
+- [x] Extend analysis/outcome tooling for secession logs/triggers.
+- [x] Run Rome 3 x 200-turn A/B:
+  - safeToIterate: true
+  - candidate worse than baseline: false
+  - secession events: 9 total fallback triggers
+  - Rome final cities: 13, 11, 18
+  - Rome max cities: 13, 13, 18
+  - Rome secessions: 4
+
+Decision:
+
+- Fallback secession solves the visible-crisis problem for Rome without
+  preventing Rome's rise.
+- Keep fallback secession command-gated.
+- Next tuning should improve city selection, successor naming/nation selection,
+  and test generated/China/Persia scenarios before broader use.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

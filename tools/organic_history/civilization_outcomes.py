@@ -13,6 +13,7 @@ from typing import Any, Iterable
 
 DYNASTIC_RE = re.compile(r"\borganic_history_dynastic_probe\b.*\bplayer=(?P<player>-?\d+).*?\baction=\"?(?P<action>[A-Za-z0-9_]+)\"?")
 MECHANIC_RE = re.compile(r"\borganic_history_mechanic\b.*\btype=(?P<type>[A-Za-z0-9_]+).*?\bplayer=(?P<player>-?\d+)")
+SECESSION_RE = re.compile(r"\borganic_history_secession\b.*\btype=(?P<type>[A-Za-z0-9_]+).*?\bplayer=(?P<player>-?\d+)")
 CITY_PRESSURE_RE = re.compile(r"\borganic_history_city_pressure\b.*\bplayer=(?P<player>-?\d+).*?\bunrest=(?P<unrest>-?\d+(?:\.\d+)?).*?\bautonomy=(?P<autonomy>-?\d+(?:\.\d+)?)")
 MANDATE_RE = re.compile(r"\borganic_history_mandate\b.*\bplayer=(?P<player>-?\d+).*?\bmandate=(?P<mandate>-?\d+(?:\.\d+)?).*?\bstress_reduction=(?P<reduction>-?\d+)")
 
@@ -121,6 +122,7 @@ def run_player_records(
             "survived": final_cities > 0,
             "dynasticChecks": int(logs.get("dynasticActions", {}).get("check", 0)),
             "dynasticTriggers": int(logs.get("mechanics", {}).get("civil_war_triggered", 0)),
+            "secessionTriggers": int(logs.get("secession", {}).get("secession_triggered", 0)),
             "dynasticNoops": int(logs.get("mechanics", {}).get("civil_war_noop", 0)),
             "meanUnrest": mean(logs.get("unrest", [])),
             "meanAutonomy": mean(logs.get("autonomy", [])),
@@ -147,6 +149,12 @@ def parse_player_logs(run_dir: Path) -> dict[int, dict[str, Any]]:
                 mechanic_type = mechanic_match.group("type")
                 mechanics = entry.setdefault("mechanics", {})
                 mechanics[mechanic_type] = mechanics.get(mechanic_type, 0) + 1
+            secession_match = SECESSION_RE.search(line)
+            if secession_match:
+                entry = player_entry(metrics, secession_match.group("player"))
+                secession_type = secession_match.group("type")
+                secessions = entry.setdefault("secession", {})
+                secessions[secession_type] = secessions.get(secession_type, 0) + 1
             pressure_match = CITY_PRESSURE_RE.search(line)
             if pressure_match:
                 entry = player_entry(metrics, pressure_match.group("player"))
@@ -179,6 +187,7 @@ def summarize_civilization(civilization: str, records: list[dict[str, Any]]) -> 
         "meanFinalTechs": round(mean([record["finalTechs"] for record in records]), 3),
         "dynasticChecks": int(sum(record["dynasticChecks"] for record in records)),
         "dynasticTriggers": int(sum(record["dynasticTriggers"] for record in records)),
+        "secessionTriggers": int(sum(record["secessionTriggers"] for record in records)),
         "dynasticNoops": int(sum(record["dynasticNoops"] for record in records)),
         "meanUnrest": round(mean([record["meanUnrest"] for record in records]), 3),
         "meanAutonomy": round(mean([record["meanAutonomy"] for record in records]), 3),
@@ -213,7 +222,7 @@ def write_csv(path: Path, report: dict[str, Any]) -> None:
         "campaign", "scenario", "civilization", "runs", "survivalRate",
         "meanFinalCities", "meanCityDelta", "meanFinalCityShare",
         "meanFinalScore", "meanFinalTechs", "dynasticChecks",
-        "dynasticTriggers", "meanUnrest", "meanMandate",
+        "dynasticTriggers", "secessionTriggers", "meanUnrest", "meanMandate",
         "dominantClassification",
     ]
     with path.open("w", encoding="utf-8", newline="") as csv_file:
@@ -234,6 +243,7 @@ def write_csv(path: Path, report: dict[str, Any]) -> None:
                     "meanFinalTechs": civ["meanFinalTechs"],
                     "dynasticChecks": civ["dynasticChecks"],
                     "dynasticTriggers": civ["dynasticTriggers"],
+                    "secessionTriggers": civ["secessionTriggers"],
                     "meanUnrest": civ["meanUnrest"],
                     "meanMandate": civ["meanMandate"],
                     "dominantClassification": civ["dominantClassification"],

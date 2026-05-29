@@ -48,6 +48,7 @@ DYNASTIC_PROBE_FIELDS = [
 ]
 MANDATE_FIELDS = ["leader_share", "cohesion", "reform_pressure", "unrest", "mandate", "stress_reduction"]
 ACTION_RE = re.compile(r'\baction="?(?P<action>[A-Za-z0-9_]+)"?')
+SECESSION_RE = re.compile(r"\borganic_history_secession\b.*\btype=(?P<type>[A-Za-z0-9_]+)")
 
 
 def main() -> int:
@@ -130,6 +131,7 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
         "eventRisks": log_metrics["eventRisks"],
         "dynasticProbe": log_metrics["dynasticProbe"],
         "mandate": log_metrics["mandate"],
+        "secession": log_metrics["secession"],
         "mechanics": log_metrics["mechanics"],
         "finalPlayers": final_players,
         "perTurn": score_metrics.get("perTurn", []),
@@ -161,6 +163,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         "eventRisk": 0,
         "dynasticProbe": 0,
         "mandate": 0,
+        "secession": 0,
     }
     mechanics = {
         "civilWarChecks": 0,
@@ -180,6 +183,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
     dynastic_probe_values: dict[str, list[float]] = {field: [] for field in DYNASTIC_PROBE_FIELDS}
     mandate_values: dict[str, list[float]] = {field: [] for field in MANDATE_FIELDS}
     dynastic_actions: dict[str, int] = {}
+    secession_types: dict[str, int] = {}
     for log_path in sorted(run_dir.glob("server_*.log")):
         for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
             if "organic_history turn_begin" in line:
@@ -210,6 +214,11 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
             if "organic_history_mandate" in line:
                 counts["mandate"] += 1
                 collect_float_fields(line, MANDATE_FIELDS, mandate_values)
+            secession_match = SECESSION_RE.search(line)
+            if secession_match:
+                counts["secession"] += 1
+                secession_type = secession_match.group("type")
+                secession_types[secession_type] = secession_types.get(secession_type, 0) + 1
             if "organic_history_stability" in line:
                 counts["stability"] += 1
                 stress_match = STRESS_RE.search(line)
@@ -260,6 +269,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
             "actions": dict(sorted(dynastic_actions.items())),
         },
         "mandate": summarize_float_fields(mandate_values),
+        "secession": dict(sorted(secession_types.items())),
     }
 
 
@@ -290,6 +300,7 @@ def compact_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "eventRisks": summary.get("eventRisks"),
         "dynasticProbe": summary.get("dynasticProbe"),
         "mandate": summary.get("mandate"),
+        "secession": summary.get("secession"),
         "mechanics": summary.get("mechanics"),
     }
 

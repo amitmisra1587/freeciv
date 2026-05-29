@@ -61,6 +61,7 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
             "candidateMeanPressureStressModifier": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "pressure_modifier"),
             "candidateMeanMandateStressReduction": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "mandate_reduction"),
             "candidateMeanDynasticEffectiveStress": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "effective_stress"),
+            "candidateSecessionTriggered": num(cand.get("secession", {}).get("secession_triggered")),
         })
 
     baseline_failed = num(baseline_summary.get("runsFailed"))
@@ -160,6 +161,7 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
         "candidateCivilWarTopSkipReason": top_count_key(skip_reasons),
         "candidateDynasticProbeLogs": dynastic_logs,
         "candidateDynasticProbeActions": dynastic_actions,
+        "candidateSecessionEvents": count_map(candidate_mechanics.get("secessionEvents", {})),
         "candidateMeanDynasticBonus": num(candidate_mechanics.get("meanDynasticBonus")),
         "candidateMeanInstitutionStressModifier": num(candidate_mechanics.get("meanInstitutionStressModifier")),
         "candidateMeanPressureStressModifier": num(candidate_mechanics.get("meanPressureStressModifier")),

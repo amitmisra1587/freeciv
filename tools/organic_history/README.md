@@ -591,6 +591,39 @@ dynastic triggers: 0
 Rome now reaches regional scale. The next Rome-specific work should tune
 crisis/collapse after rise, not add more expansion buffs.
 
+## Secession Fallback
+
+Fallback secession makes built-in civil-war noops visible when explicitly
+enabled. It is command-gated and runs only after `Player:civil_war()` returns no
+successor.
+
+Commands:
+
+```text
+organic_history_secession_fallback_enabled = true
+organic_history_secession_min_cities = 10
+organic_history_secession_max_cities = 1
+```
+
+Guardrails:
+
+- max one fallback secession per turn
+- existing civil-war cooldown still applies
+- first version transfers one non-primary-capital candidate city
+- no default-on behavior
+
+Rome 3 x 200-turn A/B result:
+
+```text
+safeToIterate=true
+candidateWorseThanBaseline=false
+fallback secession triggers=9 total
+Rome final cities=13, 11, 18
+Rome secessions=4
+```
+
+Rome still rises, but now shows visible crisis/secession after reaching scale.
+
 Implementation/probe sequence:
 
 ```bash

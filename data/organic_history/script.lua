@@ -43,6 +43,12 @@ organic_history_pressure_modifiers_enabled =
     organic_history_pressure_modifiers_enabled or false
 organic_history_pressure_max_stress_modifier =
     organic_history_pressure_max_stress_modifier or 6
+organic_history_secession_fallback_enabled =
+    organic_history_secession_fallback_enabled or false
+organic_history_secession_min_cities =
+    organic_history_secession_min_cities or 10
+organic_history_secession_max_cities =
+    organic_history_secession_max_cities or 1
 organic_history_civil_war_last_turn = organic_history_civil_war_last_turn or {}
 organic_history_civil_war_success_this_turn = false
 organic_history_prestige = organic_history_prestige or {}
@@ -51,6 +57,7 @@ organic_history_institutions = organic_history_institutions or {}
 organic_history_event_risks = organic_history_event_risks or {}
 organic_history_region_status = organic_history_region_status or {}
 organic_history_mandates = organic_history_mandates or {}
+organic_history_secession_success_this_turn = false
 
 
 -- Place Ruins at the location of the destroyed city.
@@ -403,6 +410,7 @@ signal.connect("map_generated", "place_map_labels")
 -- Diagnostic only: prove organic-history ruleset Lua hooks fire.
 function organic_history_turn_begin(turn, year)
   organic_history_civil_war_success_this_turn = false
+  organic_history_secession_success_this_turn = false
   log.normal("organic_history turn_begin turn=%d year=%d", turn, year)
   organic_history_log_player_metrics(turn, year)
   organic_history_log_regional_hegemony(turn)
@@ -956,6 +964,108 @@ function organic_history_civil_war_log(kind, turn, player, stress, extra)
              organic_history_civil_war_stress_threshold, extra or "")
 end
 
+function organic_history_successor_name(player, turn)
+  local nation = organic_history_rule_name(player.nation)
+
+  if nation == "Roman" then
+    return "Roman Secession " .. turn
+  elseif nation == "Chinese" then
+    return "Regional Chinese Rebels " .. turn
+  elseif nation == "Persian" then
+    return "Persian Rebels " .. turn
+  end
+
+  return organic_history_player_name(player) .. " Secession " .. turn
+end
+
+function organic_history_secession_log(kind, turn, player, stress, extra)
+  log.normal('organic_history_secession type=%s turn=%d player=%d stress=%d threshold=%d %s',
+             kind, turn, organic_history_player_id(player), stress,
+             organic_history_civil_war_stress_threshold, extra or "")
+end
+
+function organic_history_secession_candidate_city(player)
+  local best_city = nil
+  local best_score = -1
+
+  for city in player:cities_iterate() do
+    if not city:is_primary_capital() then
+      local state = organic_history_city_pressure[organic_history_city_key(city)] or {}
+      local unrest = state.unrest or 0
+      local autonomy = state.autonomy or 0
+      local migration = state.migration_pressure or 0
+      local score = unrest + autonomy + migration
+
+      if score > best_score then
+        best_score = score
+        best_city = city
+      end
+    end
+  end
+
+  return best_city, best_score
+end
+
+function organic_history_try_secession_fallback(turn, player, base_stress,
+                                                dynastic, stress, cities)
+  if not organic_history_secession_fallback_enabled then
+    organic_history_secession_log("secession_candidate", turn, player, stress,
+                                  'eligible=false reason="disabled"')
+    return nil
+  elseif organic_history_secession_success_this_turn then
+    organic_history_secession_log("secession_candidate", turn, player, stress,
+                                  'eligible=false reason="turn_success_limit"')
+    return nil
+  elseif cities < organic_history_secession_min_cities then
+    organic_history_secession_log("secession_candidate", turn, player, stress,
+                                  'eligible=false reason="small_state" cities='
+                                  .. cities)
+    return nil
+  end
+
+  local city, city_score = organic_history_secession_candidate_city(player)
+  if city == nil then
+    organic_history_secession_log("secession_candidate", turn, player, stress,
+                                  'eligible=false reason="no_candidate_city" cities='
+                                  .. cities)
+    return nil
+  end
+
+  organic_history_secession_log("secession_candidate", turn, player, stress,
+                                'eligible=true city=' .. string.format("%q", city.name)
+                                .. " city_score=" .. string.format("%.3f", city_score)
+                                .. " base_stress=" .. base_stress
+                                .. " dynastic_bonus=" .. dynastic.bonus)
+
+  local successor_name = organic_history_successor_name(player, turn)
+  local successor = edit.create_player(successor_name, player.nation, "classic")
+  if successor == nil then
+    organic_history_secession_log("secession_noop", turn, player, stress,
+                                  'reason="create_player_failed" successor='
+                                  .. string.format("%q", successor_name))
+    return nil
+  end
+
+  local ok = edit.transfer_city(city, successor)
+  if not ok then
+    organic_history_secession_log("secession_noop", turn, player, stress,
+                                  'reason="transfer_failed" city='
+                                  .. string.format("%q", city.name)
+                                  .. ' successor='
+                                  .. organic_history_player_id(successor))
+    return nil
+  end
+
+  organic_history_secession_success_this_turn = true
+  organic_history_civil_war_success_this_turn = true
+  organic_history_secession_log("secession_triggered", turn, player, stress,
+                                'successor=' .. organic_history_player_id(successor)
+                                .. " successor_name=" .. string.format("%q", successor_name)
+                                .. " city=" .. string.format("%q", city.name)
+                                .. " transferred=1")
+  return successor
+end
+
 function organic_history_dynastic_probe_context(player, base_stress)
   local player_id = organic_history_player_id(player)
   local risks = organic_history_event_risks[player_id] or {}
@@ -1116,6 +1226,15 @@ function organic_history_check_civil_wars(turn)
         organic_history_civil_war_log("civil_war_noop", turn, player, stress,
                                       'result="no_successor" base_stress=' .. base_stress
                                       .. " dynastic_bonus=" .. dynastic.bonus)
+        successor = organic_history_try_secession_fallback(turn, player,
+                                                           base_stress,
+                                                           dynastic, stress,
+                                                           cities)
+        if successor ~= nil then
+          organic_history_dynastic_probe_log(turn, player, base_stress,
+                                             dynastic, "fallback_triggered",
+                                             "secession")
+        end
       else
         organic_history_civil_war_success_this_turn = true
         organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,

@@ -276,6 +276,8 @@ def build_campaign_summary(
                                                 for summary in succeeded)),
             "organicMandateLogs": int(sum(num(summary.get("logCounts", {}).get("mandate"))
                                           for summary in succeeded)),
+            "organicSecessionLogs": int(sum(num(summary.get("logCounts", {}).get("secession"))
+                                            for summary in succeeded)),
             "meanCityUnrest": round(mean_metric(succeeded, "cityPressure", "unrest"), 3),
             "meanCityAutonomy": round(mean_metric(succeeded, "cityPressure", "autonomy"), 3),
             "meanMigrationPressure": round(mean_metric(succeeded, "cityPressure", "migration_pressure"), 3),
@@ -291,6 +293,10 @@ def build_campaign_summary(
             "meanMandate": round(mean_metric(succeeded, "mandate", "mandate"), 3),
             "dynasticProbeActions": merge_count_maps(
                 summary.get("dynasticProbe", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "secessionEvents": merge_count_maps(
+                summary.get("secession", {})
                 for summary in succeeded
             ),
             "civilWarChecks": int(sum(num(summary.get("mechanics", {}).get("civilWarChecks"))
@@ -335,6 +341,7 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
         "eventRiskLogs",
         "dynasticProbeLogs",
         "mandateLogs",
+        "secessionLogs",
         "meanCityUnrest",
         "meanCityAutonomy",
         "meanMigrationPressure",
@@ -392,6 +399,7 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
                 "eventRiskLogs": log_counts.get("eventRisk"),
                 "dynasticProbeLogs": log_counts.get("dynasticProbe"),
                 "mandateLogs": log_counts.get("mandate"),
+                "secessionLogs": log_counts.get("secession"),
                 "meanCityUnrest": metric_mean(city_pressure, "unrest"),
                 "meanCityAutonomy": metric_mean(city_pressure, "autonomy"),
                 "meanMigrationPressure": metric_mean(city_pressure, "migration_pressure"),
