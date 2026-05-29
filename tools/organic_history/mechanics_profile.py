@@ -16,8 +16,8 @@ def main() -> int:
     parser.add_argument("--campaign-dir", type=Path, required=True)
     parser.add_argument("--thresholds-output", type=Path, required=True)
     parser.add_argument("--profile-output", type=Path, required=True)
-    parser.add_argument("--mode", choices=["safe", "probe", "dynastic"], default="safe",
-                        help="Profile style: safe keeps conservative defaults; probe lowers thresholds; dynastic adds command-gated succession-risk gameplay.")
+    parser.add_argument("--mode", choices=["safe", "probe", "dynastic", "mandate"], default="safe",
+                        help="Profile style: safe keeps defaults; probe lowers thresholds; dynastic adds succession-risk gameplay; mandate adds regional stability.")
     args = parser.parse_args()
 
     thresholds = calibrate(args.campaign_dir)
@@ -43,12 +43,17 @@ def build_profile(thresholds: dict[str, Any], thresholds_path: Path, mode: str) 
         f"lua cmd organic_history_civil_war_probability = {int(recommended.get('civilWarProbability', 8))}",
         f"lua cmd organic_history_civil_war_cooldown = {int(recommended.get('civilWarCooldown', 40))}",
     ]
-    if mode == "dynastic":
+    if mode in ("dynastic", "mandate"):
         commands.extend([
             "lua cmd organic_history_dynastic_stress_enabled = true",
             f"lua cmd organic_history_dynastic_stress_max_bonus = {int(recommended.get('dynasticStressMaxBonus', 10))}",
             f"lua cmd organic_history_institution_stress_modifiers_enabled = {str(bool(recommended.get('institutionStressModifiersEnabled', False))).lower()}",
             f"lua cmd organic_history_institution_stress_max_modifier = {int(recommended.get('institutionStressMaxModifier', 4))}",
+        ])
+    if mode == "mandate":
+        commands.extend([
+            "lua cmd organic_history_mandate_enabled = true",
+            f"lua cmd organic_history_mandate_max_stress_reduction = {int(recommended.get('mandateMaxStressReduction', 4))}",
         ])
     return {
         "name": profile_name(mode),
@@ -85,13 +90,15 @@ def profile_recommendations(
     recommended["civilWarMinCities"] = max(8, min(current_min_cities, city_probe))
     recommended["civilWarProbability"] = min(6, int(source_recommended.get("civilWarProbability", 8)))
     recommended["civilWarCooldown"] = max(40, int(source_recommended.get("civilWarCooldown", 40)))
-    if mode == "dynastic":
+    if mode in ("dynastic", "mandate"):
         recommended["civilWarStressThreshold"] = min(45, recommended["civilWarStressThreshold"])
         recommended["civilWarMinCities"] = min(8, recommended["civilWarMinCities"])
         recommended["civilWarProbability"] = min(6, recommended["civilWarProbability"])
         recommended["dynasticStressMaxBonus"] = 10
         recommended["institutionStressModifiersEnabled"] = False
         recommended["institutionStressMaxModifier"] = 4
+    if mode == "mandate":
+        recommended["mandateMaxStressReduction"] = 4
     return recommended
 
 
@@ -113,6 +120,15 @@ def profile_rationale(
             f"source recommended {source_recommended}",
             f"dynastic recommended {recommended}",
         ]
+    if mode == "mandate":
+        return [
+            "mandate mode is command-gated and keeps mechanics disabled by default",
+            "regional mandate reduces dynastic effective stress for high-cohesion regional hegemons",
+            "mandate does not change city ownership, diplomacy, production, or terrain",
+            "civil-war probability remains capped and cooldown remains active",
+            f"source recommended {source_recommended}",
+            f"mandate recommended {recommended}",
+        ]
     return [
         "probe mode is command-gated and keeps mechanics disabled by default",
         "stress threshold uses at most the calibrated p90 stress value to produce eligibility checks sooner than p95",
@@ -128,6 +144,8 @@ def profile_name(mode: str) -> str:
         return "mechanics_v1"
     if mode == "dynastic":
         return "dynastic_stress_v1"
+    if mode == "mandate":
+        return "mandate_stability_v1"
     return "mechanics_v2_probe"
 
 

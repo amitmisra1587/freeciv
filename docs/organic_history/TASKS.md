@@ -239,6 +239,32 @@ tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_o
 - [x] Default-on readiness verdict: **not ready**. Mechanics must remain
   command-gated until continuation/save-load is fixed or safely worked around
   and longer A/B runs remain safe.
+
+## Phase 10: Gameplay Readiness
+
+- [x] Add `tools/organic_history/gameplay_readiness.py`.
+- [x] Generate readiness report from profile-driven 160-turn dynastic A/B:
+  `runs/organic_history_phase10_readiness/gameplay_readiness.json`.
+- [x] Command-gated readiness verdict: **ready for further iteration**.
+- [x] Default-on readiness verdict: **not ready** because continuation/save-load
+  is still unsuccessful.
+- [x] Implement Phase 11 mandate/reunification pressure diagnostics and bounded
+  command-gated stability modifier.
+
+## Phase 11: Mandate / Reunification Stability
+
+- [x] Add `organic_history_mandate` diagnostics from regional hegemony, prestige,
+  institution cohesion/reform pressure, and city pressure.
+- [x] Add `mechanics_profile.py --mode mandate` with
+  `organic_history_mandate_enabled` and bounded
+  `organic_history_mandate_max_stress_reduction`.
+- [x] Apply mandate as a command-gated stress reduction only; no direct city
+  ownership, diplomacy, production, or terrain effects.
+- [x] Run 80-turn A/B:
+  generated-map comparison is `safeToIterate: true`,
+  `active_safe_no_triggers`, 4 checks, 0 triggers, mean mandate reduction 0.049;
+  `earth_ancient_v1` comparison is `safeToIterate: true`,
+  `inert_stable_control`, 0 checks/triggers, mean mandate reduction 0.196.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

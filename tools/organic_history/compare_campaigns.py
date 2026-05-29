@@ -58,6 +58,7 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
             "candidateDynasticProbeLogs": num(cand.get("logCounts", {}).get("dynasticProbe")),
             "candidateMeanDynasticBonus": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "bonus"),
             "candidateMeanInstitutionStressModifier": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "institution_modifier"),
+            "candidateMeanMandateStressReduction": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "mandate_reduction"),
             "candidateMeanDynasticEffectiveStress": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "effective_stress"),
         })
 
@@ -160,6 +161,7 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
         "candidateDynasticProbeActions": dynastic_actions,
         "candidateMeanDynasticBonus": num(candidate_mechanics.get("meanDynasticBonus")),
         "candidateMeanInstitutionStressModifier": num(candidate_mechanics.get("meanInstitutionStressModifier")),
+        "candidateMeanMandateStressReduction": num(candidate_mechanics.get("meanMandateStressReduction")),
         "candidateMeanDynasticEffectiveStress": num(candidate_mechanics.get("meanDynasticEffectiveStress")),
         "candidateDynasticStressActive": dynastic_active,
         "dynasticStressVerdict": dynastic_verdict,

@@ -436,6 +436,58 @@ Default-on readiness: not ready. Keep all mechanics command-gated until
 continuation/save-load is fixed or safely worked around and longer A/B runs stay
 safe.
 
+Summarize gameplay readiness across comparison artifacts:
+
+```bash
+python3 tools/organic_history/gameplay_readiness.py \
+  --comparison runs/organic_history_phase9_dynastic_160_calibration/generated_comparison.json \
+  --comparison runs/organic_history_phase9_dynastic_160_calibration/ancient_v1_comparison.json \
+  --continuation runs/organic_history_full_overnight/05_continuation/check/continuation_summary.json \
+  --output runs/organic_history_phase10_readiness/gameplay_readiness.json
+```
+
+Current readiness verdict:
+
+```text
+commandGatedReady=true
+defaultOnReady=false
+defaultOnBlocker=continuation/save-load is not successful
+```
+
+## Mandate / Reunification Stability
+
+Mandate pressure is the first positive stability counterweight to dynastic
+civil-war pressure. It logs `organic_history_mandate` every turn and can reduce
+dynastic effective stress for regional hegemons when explicitly enabled.
+
+Generate the mandate profile:
+
+```bash
+python3 tools/organic_history/mechanics_profile.py \
+  --campaign-dir runs/organic_history_phase8_generated_120 \
+  --thresholds-output runs/organic_history_phase11_mandate_profile/thresholds.json \
+  --profile-output runs/organic_history_phase11_mandate_profile/mandate_stability_v1_profile.json \
+  --mode mandate
+```
+
+Commands introduced by the profile:
+
+```text
+organic_history_mandate_enabled = true
+organic_history_mandate_max_stress_reduction = 4
+```
+
+Phase 11 80-turn A/B:
+
+```text
+generated-map:    safeToIterate=true, verdict=active_safe_no_triggers, checks=4, triggers=0, meanMandateReduction=0.049
+earth_ancient_v1: safeToIterate=true, verdict=inert_stable_control, checks=0, triggers=0, meanMandateReduction=0.196
+```
+
+Mandate does not change ownership, diplomacy, production, terrain, or ruleset
+balance. It only modifies effective stress through a command-gated bounded
+reduction.
+
 Implementation/probe sequence:
 
 ```bash

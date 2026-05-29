@@ -37,10 +37,13 @@ DYNASTIC_PROBE_FIELDS = [
     "succession_risk",
     "cohesion",
     "reform_pressure",
+    "mandate",
     "bonus",
     "institution_modifier",
+    "mandate_reduction",
     "effective_stress",
 ]
+MANDATE_FIELDS = ["leader_share", "cohesion", "reform_pressure", "unrest", "mandate", "stress_reduction"]
 ACTION_RE = re.compile(r'\baction="?(?P<action>[A-Za-z0-9_]+)"?')
 
 
@@ -123,6 +126,7 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
         "institutions": log_metrics["institutions"],
         "eventRisks": log_metrics["eventRisks"],
         "dynasticProbe": log_metrics["dynasticProbe"],
+        "mandate": log_metrics["mandate"],
         "mechanics": log_metrics["mechanics"],
         "finalPlayers": final_players,
         "perTurn": score_metrics.get("perTurn", []),
@@ -153,6 +157,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         "institution": 0,
         "eventRisk": 0,
         "dynasticProbe": 0,
+        "mandate": 0,
     }
     mechanics = {
         "civilWarChecks": 0,
@@ -170,6 +175,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
     institution_values: dict[str, list[float]] = {field: [] for field in INSTITUTION_FIELDS}
     event_risk_values: dict[str, list[float]] = {field: [] for field in EVENT_RISK_FIELDS}
     dynastic_probe_values: dict[str, list[float]] = {field: [] for field in DYNASTIC_PROBE_FIELDS}
+    mandate_values: dict[str, list[float]] = {field: [] for field in MANDATE_FIELDS}
     dynastic_actions: dict[str, int] = {}
     for log_path in sorted(run_dir.glob("server_*.log")):
         for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
@@ -198,6 +204,9 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
                 action_match = ACTION_RE.search(line)
                 action = action_match.group("action") if action_match else "unknown"
                 dynastic_actions[action] = dynastic_actions.get(action, 0) + 1
+            if "organic_history_mandate" in line:
+                counts["mandate"] += 1
+                collect_float_fields(line, MANDATE_FIELDS, mandate_values)
             if "organic_history_stability" in line:
                 counts["stability"] += 1
                 stress_match = STRESS_RE.search(line)
@@ -247,6 +256,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
             "fields": summarize_float_fields(dynastic_probe_values),
             "actions": dict(sorted(dynastic_actions.items())),
         },
+        "mandate": summarize_float_fields(mandate_values),
     }
 
 
@@ -276,6 +286,7 @@ def compact_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "institutions": summary.get("institutions"),
         "eventRisks": summary.get("eventRisks"),
         "dynasticProbe": summary.get("dynasticProbe"),
+        "mandate": summary.get("mandate"),
         "mechanics": summary.get("mechanics"),
     }
 

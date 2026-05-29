@@ -274,6 +274,8 @@ def build_campaign_summary(
                                            for summary in succeeded)),
             "organicDynasticProbeLogs": int(sum(num(summary.get("logCounts", {}).get("dynasticProbe"))
                                                 for summary in succeeded)),
+            "organicMandateLogs": int(sum(num(summary.get("logCounts", {}).get("mandate"))
+                                          for summary in succeeded)),
             "meanCityUnrest": round(mean_metric(succeeded, "cityPressure", "unrest"), 3),
             "meanCityAutonomy": round(mean_metric(succeeded, "cityPressure", "autonomy"), 3),
             "meanMigrationPressure": round(mean_metric(succeeded, "cityPressure", "migration_pressure"), 3),
@@ -283,7 +285,9 @@ def build_campaign_summary(
             "meanFiscalRisk": round(mean_metric(succeeded, "eventRisks", "fiscal"), 3),
             "meanDynasticBonus": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "bonus"), 3),
             "meanInstitutionStressModifier": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "institution_modifier"), 3),
+            "meanMandateStressReduction": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "mandate_reduction"), 3),
             "meanDynasticEffectiveStress": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "effective_stress"), 3),
+            "meanMandate": round(mean_metric(succeeded, "mandate", "mandate"), 3),
             "dynasticProbeActions": merge_count_maps(
                 summary.get("dynasticProbe", {}).get("actions", {})
                 for summary in succeeded
@@ -329,6 +333,7 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
         "institutionLogs",
         "eventRiskLogs",
         "dynasticProbeLogs",
+        "mandateLogs",
         "meanCityUnrest",
         "meanCityAutonomy",
         "meanMigrationPressure",
@@ -338,7 +343,9 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
         "meanFiscalRisk",
         "meanDynasticBonus",
         "meanInstitutionStressModifier",
+        "meanMandateStressReduction",
         "meanDynasticEffectiveStress",
+        "meanMandate",
         "civilWarChecks",
         "civilWarEligibleChecks",
         "civilWarTriggered",
@@ -382,6 +389,7 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
                 "institutionLogs": log_counts.get("institution"),
                 "eventRiskLogs": log_counts.get("eventRisk"),
                 "dynasticProbeLogs": log_counts.get("dynasticProbe"),
+                "mandateLogs": log_counts.get("mandate"),
                 "meanCityUnrest": metric_mean(city_pressure, "unrest"),
                 "meanCityAutonomy": metric_mean(city_pressure, "autonomy"),
                 "meanMigrationPressure": metric_mean(city_pressure, "migration_pressure"),
@@ -391,7 +399,9 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
                 "meanFiscalRisk": metric_mean(event_risks, "fiscal"),
                 "meanDynasticBonus": metric_mean(dynastic_fields, "bonus"),
                 "meanInstitutionStressModifier": metric_mean(dynastic_fields, "institution_modifier"),
+                "meanMandateStressReduction": metric_mean(dynastic_fields, "mandate_reduction"),
                 "meanDynasticEffectiveStress": metric_mean(dynastic_fields, "effective_stress"),
+                "meanMandate": metric_mean(summary.get("mandate", {}), "mandate"),
                 "civilWarChecks": mechanics.get("civilWarChecks"),
                 "civilWarEligibleChecks": mechanics.get("civilWarEligibleChecks"),
                 "civilWarTriggered": mechanics.get("civilWarTriggered"),
