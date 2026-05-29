@@ -525,6 +525,34 @@ Authored starts plans now exist for:
 
 Phase 13 60-turn calibration succeeded for all three era fixtures.
 
+## Civilization Outcome Studies
+
+Run per-civilization outcome analysis after long campaigns:
+
+```bash
+python3 tools/organic_history/civilization_outcomes.py \
+  --campaign runs/organic_history_outcome_study/generated_200 \
+  --campaign runs/organic_history_outcome_study/ancient_v1_200 \
+  --campaign runs/organic_history_outcome_study/medieval_v1_200 \
+  --campaign runs/organic_history_outcome_study/1450_v1_200 \
+  --output runs/organic_history_outcome_study/civilization_outcomes.json \
+  --csv-output runs/organic_history_outcome_study/civilization_outcomes.csv
+```
+
+Phase 14 long-run study summary:
+
+```text
+generated-map: 3/3 runs, 41 checks, 3 triggers, no eliminations
+ancient_v1:    3/3 runs, 20 checks, 0 triggers, no eliminations
+medieval_v1:   3/3 runs, 18 checks, 0 triggers, no eliminations
+1450_v1:       3/3 runs, 36 checks, 3 triggers, no eliminations
+```
+
+The mechanics are measurable and safe, but deep historical arcs are not yet
+strong enough: collapse is rare, no-successor civil wars block fragmentation,
+some scenario starts are underpowered, and successor names/nations are not yet
+region-aware.
+
 Implementation/probe sequence:
 
 ```bash

@@ -283,6 +283,38 @@ tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_o
 - [x] Validate medieval and 1450 starts plans.
 - [x] Run 60-turn multi-era calibration:
   ancient 2/2, medieval 2/2, and 1450 2/2 successful.
+
+## Phase 14: Long-Run Civilization Outcome Study
+
+- [x] Add `tools/organic_history/civilization_outcomes.py`.
+- [x] Run 200-turn outcome campaigns with pressure gameplay profile:
+  generated-map 3/3, ancient v1 3/3, medieval v1 3/3, 1450 v1 3/3.
+- [x] Generate:
+  `runs/organic_history_outcome_study/civilization_outcomes.json`,
+  `civilization_outcomes.csv`, and `outcome_study_report.json`.
+- [x] Dispatch per-scenario analysis agents for generated, ancient, medieval,
+  and 1450 outcomes.
+
+Headline findings:
+
+- No full eliminations across 12 long-run simulations.
+- Generated-map outcomes are active and multipolar: 41 checks, 3 triggers.
+- Ancient v1: China/Egypt/Sumer/India strongest; Rome/Persia weak; 20 checks,
+  0 triggers.
+- Medieval v1: Abbasid/Chola/Byzantium strong; Song/Steppe weak; 18 checks,
+  0 triggers.
+- 1450 v1: Inca/Aztec/Venice strongest, Iberians weak; 36 checks, 3 triggers.
+
+Next tuning priorities:
+
+- Add lineage/region-aware successor handling or fallback rebel states.
+- Fix authored-scenario region/core-region assignment.
+- Make mandate cyclic: high mandate stabilizes, low mandate/autonomy adds
+  stress.
+- Boost or script starts for Rome/Persia, Song/Steppe, Portugal/Castile.
+- Add colonial/contact/disease/autonomy pressure for 1450 New World and
+  maritime powers.
+- Constrain successor names/nations by parent region/civ.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and
