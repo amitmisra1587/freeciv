@@ -282,6 +282,7 @@ def build_campaign_summary(
             "meanSuccessionRisk": round(mean_metric(succeeded, "eventRisks", "succession"), 3),
             "meanFiscalRisk": round(mean_metric(succeeded, "eventRisks", "fiscal"), 3),
             "meanDynasticBonus": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "bonus"), 3),
+            "meanInstitutionStressModifier": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "institution_modifier"), 3),
             "meanDynasticEffectiveStress": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "effective_stress"), 3),
             "dynasticProbeActions": merge_count_maps(
                 summary.get("dynasticProbe", {}).get("actions", {})
@@ -336,6 +337,7 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
         "meanSuccessionRisk",
         "meanFiscalRisk",
         "meanDynasticBonus",
+        "meanInstitutionStressModifier",
         "meanDynasticEffectiveStress",
         "civilWarChecks",
         "civilWarEligibleChecks",
@@ -388,6 +390,7 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
                 "meanSuccessionRisk": metric_mean(event_risks, "succession"),
                 "meanFiscalRisk": metric_mean(event_risks, "fiscal"),
                 "meanDynasticBonus": metric_mean(dynastic_fields, "bonus"),
+                "meanInstitutionStressModifier": metric_mean(dynastic_fields, "institution_modifier"),
                 "meanDynasticEffectiveStress": metric_mean(dynastic_fields, "effective_stress"),
                 "civilWarChecks": mechanics.get("civilWarChecks"),
                 "civilWarEligibleChecks": mechanics.get("civilWarEligibleChecks"),

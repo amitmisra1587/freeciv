@@ -407,6 +407,35 @@ earth_ancient_v1: safeToIterate=true, checks=0, triggers=0, meanDynasticBonus=0.
 The generated-map probe shows the path can become active under pressure. The
 authored ancient scenario remains stable, which is the expected control result.
 
+Generate the reusable command-gated dynastic gameplay profile:
+
+```bash
+python3 tools/organic_history/mechanics_profile.py \
+  --campaign-dir runs/organic_history_phase8_generated_120 \
+  --thresholds-output runs/organic_history_phase9_dynastic_profile/thresholds.json \
+  --profile-output runs/organic_history_phase9_dynastic_profile/dynastic_stress_v1_profile.json \
+  --mode dynastic
+```
+
+The profile emits commands for civil war plus dynastic stress. Institution
+stress modifiers are available but disabled in the base profile:
+
+```text
+organic_history_institution_stress_modifiers_enabled = false
+organic_history_institution_stress_max_modifier = 4
+```
+
+Phase 9 160-turn profile results:
+
+```text
+generated-map:    safeToIterate=true, verdict=active_safe_triggering, checks=22, triggers=2
+earth_ancient_v1: safeToIterate=true, verdict=active_safe_triggering, checks=7,  triggers=1
+```
+
+Default-on readiness: not ready. Keep all mechanics command-gated until
+continuation/save-load is fixed or safely worked around and longer A/B runs stay
+safe.
+
 Implementation/probe sequence:
 
 ```bash

@@ -32,6 +32,10 @@ organic_history_dynastic_stress_enabled =
     organic_history_dynastic_stress_enabled or false
 organic_history_dynastic_stress_max_bonus =
     organic_history_dynastic_stress_max_bonus or 10
+organic_history_institution_stress_modifiers_enabled =
+    organic_history_institution_stress_modifiers_enabled or false
+organic_history_institution_stress_max_modifier =
+    organic_history_institution_stress_max_modifier or 4
 organic_history_civil_war_last_turn = organic_history_civil_war_last_turn or {}
 organic_history_civil_war_success_this_turn = false
 organic_history_prestige = organic_history_prestige or {}
@@ -900,12 +904,20 @@ function organic_history_dynastic_probe_context(player, base_stress)
   local cohesion = institution.cohesion or 0
   local reform_pressure = institution.reform_pressure or 0
   local max_bonus = organic_history_dynastic_stress_max_bonus or 0
+  local institution_max = organic_history_institution_stress_max_modifier or 0
   local bonus = 0
+  local institution_modifier = 0
 
   if organic_history_mechanics_enabled
      and organic_history_civil_war_enabled
      and organic_history_dynastic_stress_enabled then
     bonus = math.floor(organic_history_clamp(succession, 0, 1) * max_bonus)
+    if organic_history_institution_stress_modifiers_enabled then
+      institution_modifier = math.floor(organic_history_clamp(reform_pressure
+                                                              - cohesion,
+                                                              -1, 1)
+                                        * institution_max)
+    end
   end
 
   return {
@@ -913,8 +925,11 @@ function organic_history_dynastic_probe_context(player, base_stress)
     cohesion = cohesion,
     reform_pressure = reform_pressure,
     bonus = bonus,
-    effective_stress = organic_history_clamp(base_stress + bonus, 0, 100),
-    max_bonus = max_bonus
+    institution_modifier = institution_modifier,
+    effective_stress = organic_history_clamp(base_stress + bonus
+                                             + institution_modifier, 0, 100),
+    max_bonus = max_bonus,
+    institution_max = institution_max
   }
 end
 
@@ -926,10 +941,12 @@ function organic_history_dynastic_probe_log(turn, player, base_stress, context,
     return
   end
 
-  log.normal('organic_history_dynastic_probe turn=%d player=%d action=%q reason=%q base_stress=%d succession_risk=%.3f cohesion=%.3f reform_pressure=%.3f bonus=%d max_bonus=%d effective_stress=%d threshold=%d',
+  log.normal('organic_history_dynastic_probe turn=%d player=%d action=%q reason=%q base_stress=%d succession_risk=%.3f cohesion=%.3f reform_pressure=%.3f bonus=%d institution_modifier=%d max_bonus=%d institution_max=%d effective_stress=%d threshold=%d',
              turn, organic_history_player_id(player), action, reason,
              base_stress, context.succession, context.cohesion,
-             context.reform_pressure, context.bonus, context.max_bonus,
+             context.reform_pressure, context.bonus,
+             context.institution_modifier, context.max_bonus,
+             context.institution_max,
              context.effective_stress, organic_history_civil_war_stress_threshold)
 end
 

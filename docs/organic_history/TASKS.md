@@ -220,6 +220,25 @@ tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_o
   generated-map comparison is `safeToIterate: true` with 10 checks, 0 triggers,
   and mean dynastic bonus 0.359; `earth_ancient_v1` comparison is
   `safeToIterate: true` with 0 checks/triggers and mean dynastic bonus 0.003.
+
+## Phase 9: Command-Gated Gameplay Profiles
+
+- [x] Add `mechanics_profile.py --mode dynastic` to generate a reusable
+  `dynastic_stress_v1` command-gated gameplay profile.
+- [x] Add explicit dynastic stress verdicts:
+  `active_safe_triggering`, `active_safe_no_triggers`,
+  `inert_stable_control`, `unsafe`, `needs_tuning`, and `not_run`.
+- [x] Run profile-driven 160-turn A/B:
+  generated-map comparison is `safeToIterate: true`,
+  `active_safe_triggering`, 22 checks, 2 triggers, trigger rate 0.091;
+  `earth_ancient_v1` comparison is `safeToIterate: true`,
+  `active_safe_triggering`, 7 checks, 1 trigger, trigger rate 0.143.
+- [x] Add bounded institution stress modifiers behind
+  `organic_history_institution_stress_modifiers_enabled`; default dynastic
+  profile keeps them disabled.
+- [x] Default-on readiness verdict: **not ready**. Mechanics must remain
+  command-gated until continuation/save-load is fixed or safely worked around
+  and longer A/B runs remain safe.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

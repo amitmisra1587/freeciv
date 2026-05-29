@@ -57,6 +57,7 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
             "candidateMechanicLogs": num(cand.get("logCounts", {}).get("mechanic")),
             "candidateDynasticProbeLogs": num(cand.get("logCounts", {}).get("dynasticProbe")),
             "candidateMeanDynasticBonus": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "bonus"),
+            "candidateMeanInstitutionStressModifier": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "institution_modifier"),
             "candidateMeanDynasticEffectiveStress": metric_mean(cand.get("dynasticProbe", {}).get("fields", {}), "effective_stress"),
         })
 
@@ -86,6 +87,8 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
     skip_reasons = count_map(candidate_mechanics.get("civilWarSkipReasons", {}))
     dynastic_actions = count_map(candidate_mechanics.get("dynasticProbeActions", {}))
     inert = mechanic_logs > 0 and checks == 0 and civil_war_triggered == 0
+    dynastic_logs = num(candidate_mechanics.get("organicDynasticProbeLogs"))
+    dynastic_active = dynastic_logs > 0 and checks > 0
     worse = (failure_delta > 0
              or candidate_final_min <= 0
              or domination_delta > 0
@@ -103,6 +106,17 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
         reasons.append("no civil-war triggers yet")
     if inert:
         reasons.append("mechanic inert: no civil-war eligibility checks")
+    dynastic_verdict = dynastic_stress_verdict(
+        safe=safe,
+        runaway=runaway,
+        failure_delta=failure_delta,
+        dynastic_logs=dynastic_logs,
+        checks=checks,
+        triggered=civil_war_triggered,
+        trigger_rate=trigger_rate,
+    )
+    if dynastic_verdict["verdict"] != "not_run":
+        reasons.append(f"dynastic stress verdict: {dynastic_verdict['verdict']}")
 
     return {
         "baseline": str(baseline_dir),
@@ -142,10 +156,13 @@ def compare_campaigns(baseline_dir: Path, candidate_dir: Path) -> dict[str, Any]
         "candidateCivilWarEligibleChecks": eligible_checks,
         "candidateCivilWarSkipReasons": skip_reasons,
         "candidateCivilWarTopSkipReason": top_count_key(skip_reasons),
-        "candidateDynasticProbeLogs": num(candidate_mechanics.get("organicDynasticProbeLogs")),
+        "candidateDynasticProbeLogs": dynastic_logs,
         "candidateDynasticProbeActions": dynastic_actions,
         "candidateMeanDynasticBonus": num(candidate_mechanics.get("meanDynasticBonus")),
+        "candidateMeanInstitutionStressModifier": num(candidate_mechanics.get("meanInstitutionStressModifier")),
         "candidateMeanDynasticEffectiveStress": num(candidate_mechanics.get("meanDynasticEffectiveStress")),
+        "candidateDynasticStressActive": dynastic_active,
+        "dynasticStressVerdict": dynastic_verdict,
         "civilWarTriggered": civil_war_triggered,
     }
 
@@ -206,6 +223,44 @@ def top_count_key(value: Any) -> str | None:
     if not counts:
         return None
     return max(counts.items(), key=lambda item: item[1])[0]
+
+
+def dynastic_stress_verdict(
+    safe: bool,
+    runaway: bool,
+    failure_delta: float,
+    dynastic_logs: float,
+    checks: float,
+    triggered: float,
+    trigger_rate: float,
+) -> dict[str, Any]:
+    if dynastic_logs <= 0:
+        verdict = "not_run"
+        reason = "no dynastic probe logs"
+    elif runaway or failure_delta > 0 or not safe:
+        verdict = "unsafe"
+        reason = "regression, failure, or runaway warning"
+    elif checks <= 0:
+        verdict = "inert_stable_control"
+        reason = "dynastic probe logged but produced no eligibility checks"
+    elif triggered <= 0:
+        verdict = "active_safe_no_triggers"
+        reason = "dynastic probe produced bounded checks without triggers"
+    elif trigger_rate <= 0.5:
+        verdict = "active_safe_triggering"
+        reason = "dynastic probe produced bounded checks and triggers"
+    else:
+        verdict = "needs_tuning"
+        reason = "trigger rate is high for a bounded probe"
+
+    return {
+        "verdict": verdict,
+        "reason": reason,
+        "dynasticProbeLogs": dynastic_logs,
+        "checks": checks,
+        "triggered": triggered,
+        "triggerRate": round(trigger_rate, 3),
+    }
 
 
 if __name__ == "__main__":

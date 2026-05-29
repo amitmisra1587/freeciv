@@ -16,8 +16,8 @@ def main() -> int:
     parser.add_argument("--campaign-dir", type=Path, required=True)
     parser.add_argument("--thresholds-output", type=Path, required=True)
     parser.add_argument("--profile-output", type=Path, required=True)
-    parser.add_argument("--mode", choices=["safe", "probe"], default="safe",
-                        help="Profile style: safe keeps conservative defaults; probe lowers bounded eligibility thresholds.")
+    parser.add_argument("--mode", choices=["safe", "probe", "dynastic"], default="safe",
+                        help="Profile style: safe keeps conservative defaults; probe lowers thresholds; dynastic adds command-gated succession-risk gameplay.")
     args = parser.parse_args()
 
     thresholds = calibrate(args.campaign_dir)
@@ -43,8 +43,15 @@ def build_profile(thresholds: dict[str, Any], thresholds_path: Path, mode: str) 
         f"lua cmd organic_history_civil_war_probability = {int(recommended.get('civilWarProbability', 8))}",
         f"lua cmd organic_history_civil_war_cooldown = {int(recommended.get('civilWarCooldown', 40))}",
     ]
+    if mode == "dynastic":
+        commands.extend([
+            "lua cmd organic_history_dynastic_stress_enabled = true",
+            f"lua cmd organic_history_dynastic_stress_max_bonus = {int(recommended.get('dynasticStressMaxBonus', 10))}",
+            f"lua cmd organic_history_institution_stress_modifiers_enabled = {str(bool(recommended.get('institutionStressModifiersEnabled', False))).lower()}",
+            f"lua cmd organic_history_institution_stress_max_modifier = {int(recommended.get('institutionStressMaxModifier', 4))}",
+        ])
     return {
-        "name": "mechanics_v1" if mode == "safe" else "mechanics_v2_probe",
+        "name": profile_name(mode),
         "mode": mode,
         "sourceThresholds": str(thresholds_path),
         "sourceRecommended": source_recommended,
@@ -78,6 +85,13 @@ def profile_recommendations(
     recommended["civilWarMinCities"] = max(8, min(current_min_cities, city_probe))
     recommended["civilWarProbability"] = min(6, int(source_recommended.get("civilWarProbability", 8)))
     recommended["civilWarCooldown"] = max(40, int(source_recommended.get("civilWarCooldown", 40)))
+    if mode == "dynastic":
+        recommended["civilWarStressThreshold"] = min(45, recommended["civilWarStressThreshold"])
+        recommended["civilWarMinCities"] = min(8, recommended["civilWarMinCities"])
+        recommended["civilWarProbability"] = min(6, recommended["civilWarProbability"])
+        recommended["dynasticStressMaxBonus"] = 10
+        recommended["institutionStressModifiersEnabled"] = False
+        recommended["institutionStressMaxModifier"] = 4
     return recommended
 
 
@@ -89,6 +103,16 @@ def profile_rationale(
 ) -> list[str]:
     if mode == "safe":
         return ["safe mode preserves calibration recommendations"]
+    if mode == "dynastic":
+        return [
+            "dynastic mode is command-gated and keeps mechanics disabled by default",
+            "succession-risk bonus feeds only existing civil-war eligibility",
+            "stress threshold and minimum cities are bounded to keep short probes active",
+            "probability is capped at 6 and cooldown is at least 40 to reduce runaway civil-war risk",
+            "institution stress modifiers remain disabled in this base dynastic profile",
+            f"source recommended {source_recommended}",
+            f"dynastic recommended {recommended}",
+        ]
     return [
         "probe mode is command-gated and keeps mechanics disabled by default",
         "stress threshold uses at most the calibrated p90 stress value to produce eligibility checks sooner than p95",
@@ -97,6 +121,14 @@ def profile_rationale(
         f"v1 recommended {source_recommended}",
         f"probe recommended {recommended}",
     ]
+
+
+def profile_name(mode: str) -> str:
+    if mode == "safe":
+        return "mechanics_v1"
+    if mode == "dynastic":
+        return "dynastic_stress_v1"
+    return "mechanics_v2_probe"
 
 
 def num(value: Any) -> float:

@@ -38,6 +38,7 @@ DYNASTIC_PROBE_FIELDS = [
     "cohesion",
     "reform_pressure",
     "bonus",
+    "institution_modifier",
     "effective_stress",
 ]
 ACTION_RE = re.compile(r'\baction="?(?P<action>[A-Za-z0-9_]+)"?')
