@@ -265,6 +265,24 @@ tools/organic_history/full_overnight.sh --output-dir runs/organic_history_full_o
   `active_safe_no_triggers`, 4 checks, 0 triggers, mean mandate reduction 0.049;
   `earth_ancient_v1` comparison is `safeToIterate: true`,
   `inert_stable_control`, 0 checks/triggers, mean mandate reduction 0.196.
+
+## Phase 12: Fiscal / Frontier Pressure
+
+- [x] Add command-gated fiscal/frontier pressure modifiers to effective stress.
+- [x] Add `mechanics_profile.py --mode pressure`.
+- [x] Run 80-turn A/B:
+  generated-map comparison is `safeToIterate: true`,
+  `active_safe_no_triggers`, 4 checks, 0 triggers, mean pressure modifier 0.797;
+  `earth_ancient_v1` comparison is `safeToIterate: true`,
+  `inert_stable_control`, 0 checks/triggers, mean pressure modifier 0.330.
+
+## Phase 13: Multi-Era Scenario Fixtures
+
+- [x] Add `earth_medieval_v1_starts.json` and generate `earth_medieval_v1.sav`.
+- [x] Add `earth_1450_v1_starts.json` and generate `earth_1450_v1.sav`.
+- [x] Validate medieval and 1450 starts plans.
+- [x] Run 60-turn multi-era calibration:
+  ancient 2/2, medieval 2/2, and 1450 2/2 successful.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

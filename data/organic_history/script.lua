@@ -39,6 +39,10 @@ organic_history_institution_stress_max_modifier =
 organic_history_mandate_enabled = organic_history_mandate_enabled or false
 organic_history_mandate_max_stress_reduction =
     organic_history_mandate_max_stress_reduction or 4
+organic_history_pressure_modifiers_enabled =
+    organic_history_pressure_modifiers_enabled or false
+organic_history_pressure_max_stress_modifier =
+    organic_history_pressure_max_stress_modifier or 6
 organic_history_civil_war_last_turn = organic_history_civil_war_last_turn or {}
 organic_history_civil_war_success_this_turn = false
 organic_history_prestige = organic_history_prestige or {}
@@ -958,12 +962,16 @@ function organic_history_dynastic_probe_context(player, base_stress)
   local institution = organic_history_institutions[player_id] or {}
   local mandate = organic_history_mandates[player_id] or {}
   local succession = risks.succession or 0
+  local fiscal = risks.fiscal or 0
+  local frontier = risks.frontier or 0
   local cohesion = institution.cohesion or 0
   local reform_pressure = institution.reform_pressure or 0
   local max_bonus = organic_history_dynastic_stress_max_bonus or 0
   local institution_max = organic_history_institution_stress_max_modifier or 0
+  local pressure_max = organic_history_pressure_max_stress_modifier or 0
   local bonus = 0
   local institution_modifier = 0
+  local pressure_modifier = 0
   local mandate_reduction = mandate.stress_reduction or 0
 
   if organic_history_mechanics_enabled
@@ -979,21 +987,32 @@ function organic_history_dynastic_probe_context(player, base_stress)
     if not organic_history_mandate_enabled then
       mandate_reduction = 0
     end
+    if organic_history_pressure_modifiers_enabled then
+      pressure_modifier = math.floor(organic_history_clamp((fiscal * 0.55)
+                                                           + (frontier * 0.45),
+                                                           0, 1)
+                                     * pressure_max + 0.5)
+    end
   end
 
   return {
     succession = succession,
+    fiscal = fiscal,
+    frontier = frontier,
     cohesion = cohesion,
     reform_pressure = reform_pressure,
     bonus = bonus,
     institution_modifier = institution_modifier,
+    pressure_modifier = pressure_modifier,
     mandate_reduction = mandate_reduction,
     mandate = mandate.mandate or 0,
     effective_stress = organic_history_clamp(base_stress + bonus
                                              + institution_modifier
+                                             + pressure_modifier
                                              - mandate_reduction, 0, 100),
     max_bonus = max_bonus,
-    institution_max = institution_max
+    institution_max = institution_max,
+    pressure_max = pressure_max
   }
 end
 
@@ -1005,12 +1024,14 @@ function organic_history_dynastic_probe_log(turn, player, base_stress, context,
     return
   end
 
-  log.normal('organic_history_dynastic_probe turn=%d player=%d action=%q reason=%q base_stress=%d succession_risk=%.3f cohesion=%.3f reform_pressure=%.3f mandate=%.3f bonus=%d institution_modifier=%d mandate_reduction=%d max_bonus=%d institution_max=%d effective_stress=%d threshold=%d',
+  log.normal('organic_history_dynastic_probe turn=%d player=%d action=%q reason=%q base_stress=%d succession_risk=%.3f fiscal_risk=%.3f frontier_risk=%.3f cohesion=%.3f reform_pressure=%.3f mandate=%.3f bonus=%d institution_modifier=%d pressure_modifier=%d mandate_reduction=%d max_bonus=%d institution_max=%d pressure_max=%d effective_stress=%d threshold=%d',
              turn, organic_history_player_id(player), action, reason,
-             base_stress, context.succession, context.cohesion,
+             base_stress, context.succession, context.fiscal,
+             context.frontier, context.cohesion,
              context.reform_pressure, context.mandate, context.bonus,
-             context.institution_modifier, context.mandate_reduction,
-             context.max_bonus, context.institution_max,
+             context.institution_modifier, context.pressure_modifier,
+             context.mandate_reduction, context.max_bonus,
+             context.institution_max, context.pressure_max,
              context.effective_stress, organic_history_civil_war_stress_threshold)
 end
 

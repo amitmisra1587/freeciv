@@ -35,11 +35,14 @@ EVENT_RISK_FIELDS = ["succession", "fiscal", "plague", "trade_disruption", "clim
 DYNASTIC_PROBE_FIELDS = [
     "base_stress",
     "succession_risk",
+    "fiscal_risk",
+    "frontier_risk",
     "cohesion",
     "reform_pressure",
     "mandate",
     "bonus",
     "institution_modifier",
+    "pressure_modifier",
     "mandate_reduction",
     "effective_stress",
 ]

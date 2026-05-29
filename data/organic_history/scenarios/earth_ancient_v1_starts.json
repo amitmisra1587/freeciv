@@ -1,5 +1,9 @@
 {
   "fixture": "earth_ancient_v1",
+  "metadata": {
+    "name": "Organic History Earth Ancient v1",
+    "description": "Script-assisted ancient organic-history Earth fixture with fixed historical AI actors and starting cities; see earth_ancient_v1_starts.json."
+  },
   "baseScenario": "data/scenarios/earth-small.sav",
   "ruleset": "organic_history",
   "generationMode": "freeciv-server lua edit APIs plus scensave",

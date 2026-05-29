@@ -1,0 +1,96 @@
+{
+  "fixture": "earth_medieval_v1",
+  "metadata": {
+    "name": "Organic History Earth Medieval v1",
+    "description": "Script-assisted medieval organic-history Earth fixture with fixed regional AI actors and starting cities."
+  },
+  "notes": [
+    "Coordinates are in the 80x50 earth-small native coordinate space.",
+    "Diplomacy entries are metadata scaffolding only until safe initial diplomacy authoring exists."
+  ],
+  "diplomacy": [
+    {"a": "franks", "b": "byzantium", "stance": "christian_rivals"},
+    {"a": "abbasid", "b": "byzantium", "stance": "frontier_rivalry"},
+    {"a": "song", "b": "steppe", "stance": "border_pressure"},
+    {"a": "chola", "b": "abbasid", "stance": "trade_peers"}
+  ],
+  "actors": [
+    {
+      "id": "franks",
+      "leader": "Charlemagne",
+      "nation": "French",
+      "style": "European",
+      "research": "Monarchy",
+      "techs": ["Monarchy", "Feudalism"],
+      "gold": 90,
+      "start": {"x": 36, "y": 14},
+      "city": {"name": "Aachen", "x": 36, "y": 14}
+    },
+    {
+      "id": "byzantium",
+      "leader": "Basil II",
+      "nation": "Byzantine",
+      "style": "Classical",
+      "research": "Construction",
+      "techs": ["Construction", "Currency"],
+      "gold": 95,
+      "start": {"x": 41, "y": 17},
+      "city": {"name": "Constantinople", "x": 41, "y": 17}
+    },
+    {
+      "id": "abbasid",
+      "leader": "Harun al-Rashid",
+      "nation": "Arab",
+      "style": "Babylonian",
+      "research": "University",
+      "techs": ["Philosophy", "Mathematics"],
+      "gold": 100,
+      "start": {"x": 44, "y": 20},
+      "city": {"name": "Baghdad", "x": 44, "y": 20}
+    },
+    {
+      "id": "chola",
+      "leader": "Rajaraja Chola",
+      "nation": "Indian",
+      "style": "Classical",
+      "research": "Seafaring",
+      "techs": ["Seafaring", "Trade"],
+      "gold": 85,
+      "start": {"x": 50, "y": 24},
+      "city": {"name": "Thanjavur", "x": 50, "y": 24}
+    },
+    {
+      "id": "song",
+      "leader": "Taizu",
+      "nation": "Chinese",
+      "style": "Asian",
+      "research": "Invention",
+      "techs": ["Invention", "Gunpowder"],
+      "gold": 95,
+      "start": {"x": 59, "y": 18},
+      "city": {"name": "Kaifeng", "x": 59, "y": 18}
+    },
+    {
+      "id": "steppe",
+      "leader": "Temujin",
+      "nation": "Mongol",
+      "style": "Asian",
+      "research": "Horseback Riding",
+      "techs": ["Horseback Riding", "Warrior Code"],
+      "gold": 75,
+      "start": {"x": 54, "y": 11},
+      "city": {"name": "Karakorum", "x": 54, "y": 11}
+    },
+    {
+      "id": "africa",
+      "leader": "Sundiata",
+      "nation": "Egyptian",
+      "style": "Classical",
+      "research": "Trade",
+      "techs": ["Trade", "Currency"],
+      "gold": 100,
+      "start": {"x": 35, "y": 29},
+      "city": {"name": "Niani", "x": 35, "y": 29}
+    }
+  ]
+}

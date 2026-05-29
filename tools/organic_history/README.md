@@ -488,6 +488,43 @@ Mandate does not change ownership, diplomacy, production, terrain, or ruleset
 balance. It only modifies effective stress through a command-gated bounded
 reduction.
 
+## Fiscal / Frontier Pressure
+
+Pressure mode adds fiscal and frontier pressure as bounded command-gated
+effective-stress modifiers while keeping mandate stability enabled as a
+counterweight:
+
+```bash
+python3 tools/organic_history/mechanics_profile.py \
+  --campaign-dir runs/organic_history_phase8_generated_120 \
+  --thresholds-output runs/organic_history_phase12_pressure_profile/thresholds.json \
+  --profile-output runs/organic_history_phase12_pressure_profile/pressure_events_v1_profile.json \
+  --mode pressure
+```
+
+Phase 12 80-turn A/B:
+
+```text
+generated-map:    safeToIterate=true, verdict=active_safe_no_triggers, checks=4, triggers=0, meanPressureModifier=0.797
+earth_ancient_v1: safeToIterate=true, verdict=inert_stable_control, checks=0, triggers=0, meanPressureModifier=0.330
+```
+
+## Multi-Era Scenarios
+
+Generate all authored v1 scenarios:
+
+```bash
+python3 tools/organic_history/create_scenario_fixture.py --include-v1 --all-v1-plans
+```
+
+Authored starts plans now exist for:
+
+- `earth_ancient_v1`
+- `earth_medieval_v1`
+- `earth_1450_v1`
+
+Phase 13 60-turn calibration succeeded for all three era fixtures.
+
 Implementation/probe sequence:
 
 ```bash

@@ -1,0 +1,108 @@
+{
+  "fixture": "earth_1450_v1",
+  "metadata": {
+    "name": "Organic History Earth 1450 v1",
+    "description": "Script-assisted 1450 organic-history Earth fixture with fixed regional AI actors and maritime pressure scaffolding."
+  },
+  "notes": [
+    "Coordinates are in the 80x50 earth-small native coordinate space.",
+    "Maritime and colonization entries are metadata scaffolding; no colonial mechanics are enabled by default.",
+    "Kyoto is represented by a compact-map northeast Asia proxy tile because the small Earth Japan island tiles cannot host a city with default spacing/terrain constraints."
+  ],
+  "diplomacy": [
+    {"a": "castile", "b": "portugal", "stance": "maritime_rivals"},
+    {"a": "ottoman", "b": "venice", "stance": "trade_frontier"},
+    {"a": "ming", "b": "japan", "stance": "regional_peers"},
+    {"a": "aztec", "b": "inca", "stance": "distant_new_world"}
+  ],
+  "actors": [
+    {
+      "id": "castile",
+      "leader": "Isabella",
+      "nation": "Spanish",
+      "style": "European",
+      "research": "Navigation",
+      "techs": ["Navigation", "Trade"],
+      "gold": 100,
+      "start": {"x": 34, "y": 19},
+      "city": {"name": "Toledo", "x": 35, "y": 18}
+    },
+    {
+      "id": "portugal",
+      "leader": "Henry",
+      "nation": "Portuguese",
+      "style": "European",
+      "research": "Seafaring",
+      "techs": ["Seafaring", "Navigation"],
+      "gold": 95,
+      "start": {"x": 33, "y": 20},
+      "city": {"name": "Lisbon", "x": 32, "y": 20}
+    },
+    {
+      "id": "ottoman",
+      "leader": "Mehmed II",
+      "nation": "Persian",
+      "style": "Babylonian",
+      "research": "Gunpowder",
+      "techs": ["Gunpowder", "Monarchy"],
+      "gold": 110,
+      "start": {"x": 42, "y": 18},
+      "city": {"name": "Istanbul", "x": 42, "y": 18}
+    },
+    {
+      "id": "venice",
+      "leader": "Francesco Foscari",
+      "nation": "Italian",
+      "style": "European",
+      "research": "Banking",
+      "techs": ["Banking", "Trade"],
+      "gold": 120,
+      "start": {"x": 38, "y": 17},
+      "city": {"name": "Venice", "x": 38, "y": 17}
+    },
+    {
+      "id": "ming",
+      "leader": "Xuande",
+      "nation": "Chinese",
+      "style": "Asian",
+      "research": "Invention",
+      "techs": ["Invention", "Gunpowder"],
+      "gold": 115,
+      "start": {"x": 59, "y": 18},
+      "city": {"name": "Beijing", "x": 59, "y": 18}
+    },
+    {
+      "id": "japan",
+      "leader": "Ashikaga Yoshimasa",
+      "nation": "Japanese",
+      "style": "Asian",
+      "research": "Feudalism",
+      "techs": ["Feudalism", "Seafaring"],
+      "gold": 80,
+      "start": {"x": 64, "y": 20},
+      "city": {"name": "Kyoto", "x": 67, "y": 14}
+    },
+    {
+      "id": "aztec",
+      "leader": "Moctezuma I",
+      "nation": "Aztec",
+      "style": "Tropical",
+      "research": "Construction",
+      "techs": ["Construction", "Warrior Code"],
+      "gold": 75,
+      "start": {"x": 14, "y": 24},
+      "city": {"name": "Tenochtitlan", "x": 15, "y": 23}
+    },
+    {
+      "id": "inca",
+      "leader": "Pachacuti",
+      "nation": "Inca",
+      "style": "Tropical",
+      "research": "Masonry",
+      "techs": ["Masonry", "Pottery"],
+      "gold": 75,
+      "start": {"x": 18, "y": 34},
+      "city": {"name": "Cusco", "x": 18, "y": 34}
+    }
+  ]
+}

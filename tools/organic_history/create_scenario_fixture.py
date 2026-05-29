@@ -18,6 +18,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SCENARIO_DIR = ROOT / "data" / "organic_history" / "scenarios"
 ANCIENT_V1_PLAN = DEFAULT_SCENARIO_DIR / "earth_ancient_v1_starts.json"
+V1_PLAN_FILES = [
+    DEFAULT_SCENARIO_DIR / "earth_ancient_v1_starts.json",
+    DEFAULT_SCENARIO_DIR / "earth_medieval_v1_starts.json",
+    DEFAULT_SCENARIO_DIR / "earth_1450_v1_starts.json",
+]
 
 FIXTURES = {
     "earth_ancient_v0": {
@@ -34,23 +39,15 @@ FIXTURES = {
     },
 }
 
-ANCIENT_V1 = {
-    "name": "Organic History Earth Ancient v1",
-    "description": (
-        "Script-assisted ancient organic-history Earth fixture with fixed "
-        "historical AI actors and starting cities; see "
-        "earth_ancient_v1_starts.json."
-    ),
-}
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description="Create organic-history scenario fixtures.")
     parser.add_argument("--source", type=Path, default=ROOT / "data" / "scenarios" / "earth-small.sav")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_SCENARIO_DIR)
     parser.add_argument("--include-v1", action="store_true",
-                        help="Generate earth_ancient_v1.sav with server/Lua authoring.")
+                        help="Generate all available earth_*_v1.sav fixtures with server/Lua authoring.")
     parser.add_argument("--v1-plan", type=Path, default=ANCIENT_V1_PLAN)
+    parser.add_argument("--all-v1-plans", action="store_true",
+                        help="Generate all known v1 plans instead of only --v1-plan.")
     parser.add_argument("--build-dir", type=Path, default=ROOT / "build-organic")
     parser.add_argument("--server", type=Path, default=None,
                         help="Explicit freeciv server binary path for v1 authoring.")
@@ -69,7 +66,9 @@ def main() -> int:
         output_path.write_text(fixture_text, encoding="utf-8")
         print(output_path)
     if args.include_v1:
-        create_earth_ancient_v1(source_text, output_dir, args)
+        plan_paths = V1_PLAN_FILES if args.all_v1_plans else [args.v1_plan]
+        for plan_path in plan_paths:
+            create_v1_fixture(source_text, output_dir, args, plan_path)
     return 0
 
 
@@ -79,26 +78,35 @@ def rewrite_metadata(source_text: str, name: str, description: str) -> str:
     return replace_field(text, "authors", '"The Freeciv Project; organic-history fixture generated from earth-small.sav"')
 
 
-def create_earth_ancient_v1(source_text: str, output_dir: Path,
-                            args: argparse.Namespace) -> None:
-    plan_path = args.v1_plan if args.v1_plan.is_absolute() else ROOT / args.v1_plan
+def create_v1_fixture(
+    source_text: str,
+    output_dir: Path,
+    args: argparse.Namespace,
+    plan_path: Path,
+) -> None:
+    plan_path = plan_path if plan_path.is_absolute() else ROOT / plan_path
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     actors = plan.get("actors", [])
     if not actors:
         raise SystemExit(f"No actors found in {plan_path}")
+    fixture = str(plan["fixture"])
+    metadata = plan.get("metadata", {})
+    name = str(metadata.get("name", fixture))
+    description = str(metadata.get("description", f"Script-assisted fixture {fixture}; see {plan_path.name}."))
 
-    authoring_dir = args.authoring_dir if args.authoring_dir.is_absolute() else ROOT / args.authoring_dir
+    base_authoring_dir = args.authoring_dir if args.authoring_dir.is_absolute() else ROOT / args.authoring_dir
+    authoring_dir = base_authoring_dir if fixture == "earth_ancient_v1" else base_authoring_dir.parent / fixture
     clean_authoring_dir(authoring_dir)
     authoring_dir.mkdir(parents=True, exist_ok=True)
 
-    base_path = authoring_dir / "earth_ancient_v1_base.sav"
-    base_text = rewrite_metadata(source_text, ANCIENT_V1["name"], ANCIENT_V1["description"])
+    base_path = authoring_dir / f"{fixture}_base.sav"
+    base_text = rewrite_metadata(source_text, name, description)
     base_text = replace_field(base_text, "startpos_nations", "TRUE")
     base_text = replace_setting_row(base_text, "mapseed", "1")
     base_path.write_text(base_text, encoding="utf-8")
 
-    lua_path = authoring_dir / "earth_ancient_v1_author.lua"
-    write_ancient_v1_lua(plan, lua_path)
+    lua_path = authoring_dir / f"{fixture}_author.lua"
+    write_v1_lua(plan, lua_path)
 
     server = find_server(args.server, args.build_dir)
     if server is None:
@@ -106,7 +114,7 @@ def create_earth_ancient_v1(source_text: str, output_dir: Path,
 
     stdout_path = authoring_dir / "server_stdout.log"
     stderr_path = authoring_dir / "server_stderr.log"
-    saved_prefix = authoring_dir / "earth_ancient_v1_scensave"
+    saved_prefix = authoring_dir / f"{fixture}_scensave"
     command = [
         str(server),
         "--exit-on-end",
@@ -142,22 +150,23 @@ def create_earth_ancient_v1(source_text: str, output_dir: Path,
         raise SystemExit(f"ERROR: v1 authoring did not create {generated}; see {stdout_path}")
 
     scenario_text = read_save_text(generated)
-    scenario_text = rewrite_metadata(scenario_text, ANCIENT_V1["name"], ANCIENT_V1["description"])
+    scenario_text = rewrite_metadata(scenario_text, name, description)
     scenario_text = replace_field(scenario_text, "startpos_nations", "TRUE")
     scenario_text = replace_field(scenario_text, "id", '""')
     scenario_text = replace_field(scenario_text, "serverid", '""')
     scenario_text = replace_field(scenario_text, "last_turn_change_time", "0")
+    scenario_text = replace_section_field(scenario_text, "game", "phase_seconds", "0")
     scenario_text = replace_section_field(scenario_text, "map", "random_seed", "1")
     scenario_text = strip_script_vars(scenario_text)
     scenario_text = normalize_startpos_nations(scenario_text)
     scenario_text = normalize_shuffled_players(scenario_text, len(actors))
     scenario_text = normalize_research(scenario_text, plan)
-    output_path = output_dir / "earth_ancient_v1.sav"
+    output_path = output_dir / f"{fixture}.sav"
     output_path.write_text(scenario_text, encoding="utf-8")
     print(output_path)
 
 
-def write_ancient_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
+def write_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
     actors = plan["actors"]
     fixture = lua_string(plan["fixture"])
     lines = [
