@@ -96,6 +96,8 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, default=ROOT / "runs" / "organic_history_campaign")
     parser.add_argument("--clean", action="store_true")
     parser.add_argument("--rerun-failed", action="store_true")
+    parser.add_argument("--profile", type=Path, default=None,
+                        help="Optional mechanics profile JSON passed through to each run.")
     parser.add_argument("--extra-command", action="append", default=[], help="Additional command passed through to each run.")
     parser.add_argument("--label", default=None, help="Optional campaign variant label.")
     args = parser.parse_args()
@@ -125,6 +127,7 @@ def main() -> int:
         "timeout": args.timeout,
         "preset": args.preset,
         "label": args.label,
+        "profile": str(args.profile) if args.profile else None,
         "extraCommands": args.extra_command,
     }
     write_json(output_dir / "campaign_manifest.json", manifest)
@@ -215,6 +218,8 @@ def run_seed(args: argparse.Namespace, seed: int, run_dir: Path) -> subprocess.C
     ]
     if args.scenario:
         command.extend(["--load-scenario", str(args.scenario)])
+    if args.profile:
+        command.extend(["--profile", str(args.profile)])
     for extra_command in args.extra_command:
         command.extend(["--extra-command", extra_command])
     return subprocess.run(command, cwd=ROOT, text=True)

@@ -148,6 +148,15 @@ tools/organic_history/historical_continuation_gate.sh
 This gate checks fresh and resumed ancient, balanced medieval, and 1450 scenario
 runs in plain and successor modes, plus a resumed Roman lineage secession.
 
+For the packaged historical successor candidate, use:
+
+```bash
+tools/organic_history/historical_candidate_gate.sh
+```
+
+Campaigns can select the same profile with
+`--profile tools/organic_history/profiles/historical_successor_candidate.json`.
+
 Use skip-reason and inertness fields in campaign summaries before relaxing
 thresholds.
 

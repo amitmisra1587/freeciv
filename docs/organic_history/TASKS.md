@@ -538,6 +538,33 @@ Decision:
 - The successor profile can now be evaluated as a near-default historical
   scenario candidate.
 - Generated maps remain out of scope for this phase.
+
+## Phase 21: Historical Near-Default Candidate Packaging
+
+- [x] Commit the verified Phase 18-20 baseline:
+  `d74012fdb8 Prepare historical successor readiness`.
+- [x] Add packaged historical candidate profile:
+  `tools/organic_history/profiles/historical_successor_candidate.json`.
+- [x] Teach `run_ai_game.py` and `run_campaign.py` to accept `--profile`.
+- [x] Update `historical_continuation_gate.sh` to consume the packaged profile.
+- [x] Add `tools/organic_history/historical_candidate_gate.sh`.
+- [x] Run packaged candidate gate: passed.
+- [x] Run 3 x 120-turn packaged historical candidate validations:
+  - ancient v1: 3/3 succeeded, mean final cities `50.333`, secessions `4`
+  - balanced medieval v1: 3/3 succeeded, mean final cities `53.667`,
+    secessions `6`
+  - 1450 v1: 3/3 succeeded, mean final cities `81.333`, secessions `2`
+- [x] Regenerate historical readiness report with Phase 19/20 long A/B evidence
+  and the Phase 21 packaged continuation gate.
+
+Decision:
+
+- The successor profile is now available as a stable, repo-tracked historical
+  candidate profile.
+- It remains explicitly selected with `--profile`; it is not globally default-on.
+- Historical scenarios can now use the candidate profile through repeatable gates
+  and campaign commands.
+- Generated maps remain out of scope.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

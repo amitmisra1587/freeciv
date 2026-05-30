@@ -12,26 +12,7 @@ import sys
 
 ROOT = Path.cwd()
 RUN_ROOT = ROOT / "runs" / "organic_history_historical_continuation_gate"
-
-SUCCESSOR_COMMANDS = [
-    "lua cmd organic_history_mechanics_enabled = true",
-    "lua cmd organic_history_civil_war_enabled = true",
-    "lua cmd organic_history_civil_war_stress_threshold = 45",
-    "lua cmd organic_history_civil_war_min_cities = 8",
-    "lua cmd organic_history_civil_war_probability = 6",
-    "lua cmd organic_history_civil_war_cooldown = 40",
-    "lua cmd organic_history_dynastic_stress_enabled = true",
-    "lua cmd organic_history_dynastic_stress_max_bonus = 10",
-    "lua cmd organic_history_institution_stress_modifiers_enabled = false",
-    "lua cmd organic_history_institution_stress_max_modifier = 4",
-    "lua cmd organic_history_mandate_enabled = true",
-    "lua cmd organic_history_mandate_max_stress_reduction = 4",
-    "lua cmd organic_history_pressure_modifiers_enabled = true",
-    "lua cmd organic_history_pressure_max_stress_modifier = 6",
-    "lua cmd organic_history_secession_fallback_enabled = true",
-    "lua cmd organic_history_secession_min_cities = 10",
-    "lua cmd organic_history_secession_max_cities = 1",
-]
+PROFILE = "tools/organic_history/profiles/historical_successor_candidate.json"
 
 SCENARIOS = [
     ("ancient", "data/organic_history/scenarios/earth_ancient_v1.sav", 7),
@@ -48,8 +29,8 @@ def main() -> int:
     results = []
 
     for scenario_name, scenario_path, players in SCENARIOS:
-        for mode, commands in (("plain", []), ("successor", SUCCESSOR_COMMANDS)):
-            result = run_pair(scenario_name, scenario_path, players, mode, commands)
+        for mode, profile in (("plain", None), ("successor", PROFILE)):
+            result = run_pair(scenario_name, scenario_path, players, mode, profile)
             results.append(result)
             if not result["success"]:
                 failures.append(result)
@@ -75,7 +56,7 @@ def run_pair(
     scenario_path: str,
     players: int,
     mode: str,
-    commands: list[str],
+    profile: str | None,
 ) -> dict[str, object]:
     source_dir = RUN_ROOT / f"{scenario_name}_{mode}_source"
     continued_dir = RUN_ROOT / f"{scenario_name}_{mode}_continued"
@@ -98,7 +79,7 @@ def run_pair(
         "--timeout",
         "180",
     ]
-    add_commands(source_cmd, commands)
+    add_profile(source_cmd, profile)
     source_run = subprocess.run(source_cmd, cwd=ROOT, text=True)
     source_meta = read_json(source_dir / "run_metadata.json")
 
@@ -120,7 +101,7 @@ def run_pair(
         "--timeout",
         "180",
     ]
-    add_commands(continued_cmd, commands)
+    add_profile(continued_cmd, profile)
     continued_run = subprocess.run(continued_cmd, cwd=ROOT, text=True)
     continued_meta = read_json(continued_dir / "run_metadata.json")
 
@@ -151,7 +132,7 @@ def run_pair(
 def run_resumed_lineage_check() -> dict[str, object]:
     source_save = RUN_ROOT / "ancient_successor_source" / "freeciv-T0011-Y-3500-final.sav.gz"
     output_dir = RUN_ROOT / "ancient_resume_rome_lineage"
-    lineage_commands = SUCCESSOR_COMMANDS + [
+    lineage_commands = [
         "lua cmd organic_history_secession_min_cities = 2",
         ("lua cmd local p = find.player('Romulus'); "
          "organic_history_try_secession_fallback(11, p, 80, {bonus = 0}, 80, p:num_cities())"),
@@ -174,6 +155,7 @@ def run_resumed_lineage_check() -> dict[str, object]:
         "--timeout",
         "180",
     ]
+    add_profile(command, PROFILE)
     add_commands(command, lineage_commands)
     completed = subprocess.run(command, cwd=ROOT, text=True)
     metadata = read_json(output_dir / "run_metadata.json")
@@ -210,6 +192,11 @@ def run_resumed_lineage_check() -> dict[str, object]:
 def add_commands(command: list[str], extra_commands: list[str]) -> None:
     for extra_command in extra_commands:
         command.extend(["--extra-command", extra_command])
+
+
+def add_profile(command: list[str], profile: str | None) -> None:
+    if profile is not None:
+        command.extend(["--profile", profile])
 
 
 def read_json(path: Path) -> dict[str, object]:

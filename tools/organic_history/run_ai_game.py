@@ -29,6 +29,8 @@ def main() -> int:
     parser.add_argument("--saveturns", type=int, default=1, help="Save every N turns.")
     parser.add_argument("--scorefile", type=Path, default=None, help="Scorelog path; defaults to <output-dir>/score.log.")
     parser.add_argument("--skill", default="hard", help="Server AI skill command, for example hard or normal.")
+    parser.add_argument("--profile", type=Path, default=None,
+                        help="Optional mechanics profile JSON with luaCommands to apply before --extra-command values.")
     parser.add_argument("--extra-command", action="append", default=[], help="Additional server command before start; repeatable.")
     parser.add_argument("--clean-output-dir", action="store_true", help="Remove an existing run output directory before running.")
     parser.add_argument("--timeout", type=int, default=90)
@@ -54,9 +56,10 @@ def main() -> int:
 
     start_game = args.load_save is None
     resume_game = args.load_save is not None
+    profile_commands = load_profile_commands(args.profile)
     commands = baseline_commands(args.turns, args.players, args.seed,
                                  args.saveturns, scorefile.name, args.skill,
-                                 args.extra_command,
+                                 profile_commands + args.extra_command,
                                  start_game=start_game,
                                  resume_game=resume_game)
     ruleset_path = None
@@ -115,6 +118,7 @@ def main() -> int:
             "loadSave": str(load_save) if load_save else None,
             "loadSaveTurn": load_save_turn,
             "loadScenario": str(load_scenario) if load_scenario else None,
+            "profile": str(args.profile) if args.profile else None,
             "stdoutPath": str(output_dir / "server_stdout.log"),
             "stderrPath": str(output_dir / "server_stderr.log"),
             "returncode": None,
@@ -143,6 +147,7 @@ def main() -> int:
         "loadSave": str(load_save) if load_save else None,
         "loadSaveTurn": load_save_turn,
         "loadScenario": str(load_scenario) if load_scenario else None,
+        "profile": str(args.profile) if args.profile else None,
         "stdoutPath": str(output_dir / "server_stdout.log"),
         "stderrPath": str(output_dir / "server_stderr.log"),
         "returncode": completed.returncode,
@@ -249,6 +254,18 @@ def ruleset_from_serv(path: Path) -> str | None:
         if len(parts) == 2 and parts[0] == "rulesetdir":
             return parts[1]
     return None
+
+
+def load_profile_commands(path: Path | None) -> list[str]:
+    if path is None:
+        return []
+
+    resolved = path if path.is_absolute() else ROOT / path
+    profile = json.loads(resolved.read_text(encoding="utf-8"))
+    commands = profile.get("luaCommands", [])
+    if not isinstance(commands, list) or not all(isinstance(command, str) for command in commands):
+        raise SystemExit(f"ERROR: profile {resolved} must contain a luaCommands string list.")
+    return commands
 
 
 def find_server(build_dir: Path) -> Path | None:

@@ -711,6 +711,38 @@ balanced medieval, and 1450 scenarios. The readiness report says the successor
 profile is ready to evaluate for default-on historical-scenario gameplay, while
 generated-map lineage remains intentionally out of scope.
 
+Packaged historical near-default candidate:
+
+```bash
+tools/organic_history/historical_candidate_gate.sh
+```
+
+The packaged profile lives at
+`tools/organic_history/profiles/historical_successor_candidate.json`. It is still
+explicitly selected, not globally default-on. Use it with campaign tools:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --profile tools/organic_history/profiles/historical_successor_candidate.json \
+  --scenario data/organic_history/scenarios/earth_ancient_v1.sav \
+  --seeds 1-3 \
+  --turns 120 \
+  --players 7 \
+  --output-dir runs/organic_history_phase21_historical_candidate/ancient \
+  --clean
+```
+
+Phase 21 packaged-profile validation:
+
+```text
+ancient v1:  3/3 succeeded, mean final cities 50.333, secessions=4
+medieval v1: 3/3 succeeded, mean final cities 53.667, secessions=6
+1450 v1:     3/3 succeeded, mean final cities 81.333, secessions=2
+```
+
+Generated maps remain out of scope for this candidate profile.
+
 ## Multi-Civilization Tuning
 
 The Rome tuning pattern now applies to other underperformers: tune starts/traits
