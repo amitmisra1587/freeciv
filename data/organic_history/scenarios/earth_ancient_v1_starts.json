@@ -46,58 +46,73 @@
       "leader": "Narmer",
       "nation": "Egyptian",
       "style": "Classical",
+      "coreRegion": "africa",
+      "successorNation": "Egyptian",
+      "successorNames": ["Nile Delta Secession", "Upper Egyptian Secession"],
       "research": "Masonry",
       "techs": ["Masonry", "Pottery"],
       "gold": 80,
       "start": {"x": 38, "y": 21},
-      "city": {"name": "Memphis", "x": 38, "y": 21}
+      "city": {"name": "Memphis", "x": 38, "y": 21, "region": "africa", "core": true}
     },
     {
       "id": "sumer",
       "leader": "Gilgamesh",
       "nation": "Sumerian",
       "style": "Babylonian",
+      "coreRegion": "near_east",
+      "successorNation": "Sumerian",
+      "successorNames": ["Sumerian City Secession", "Mesopotamian Secession"],
       "research": "Pottery",
       "techs": ["Pottery", "Writing"],
       "gold": 75,
       "start": {"x": 44, "y": 19},
-      "city": {"name": "Uruk", "x": 44, "y": 19}
+      "city": {"name": "Uruk", "x": 44, "y": 19, "region": "near_east", "core": true}
     },
     {
       "id": "india",
       "leader": "Chandragupta",
       "nation": "Indian",
       "style": "Classical",
+      "coreRegion": "india",
+      "successorNation": "Indian",
+      "successorNames": ["Magadhan Secession", "Indian Regional Secession"],
       "research": "Alphabet",
       "techs": ["Alphabet", "Pottery"],
       "gold": 70,
       "start": {"x": 50, "y": 21},
-      "city": {"name": "Pataliputra", "x": 50, "y": 21}
+      "city": {"name": "Pataliputra", "x": 50, "y": 21, "region": "india", "core": true}
     },
     {
       "id": "china",
       "leader": "Qin Shi Huang",
       "nation": "Chinese",
       "style": "Asian",
+      "coreRegion": "china",
+      "successorNation": "Chinese",
+      "successorNames": ["Chinese Regional Secession", "Yellow River Secession"],
       "research": "Bronze Working",
       "techs": ["Bronze Working", "Pottery"],
       "gold": 70,
       "start": {"x": 59, "y": 17},
-      "city": {"name": "Chang'an", "x": 59, "y": 17}
+      "city": {"name": "Chang'an", "x": 59, "y": 17, "region": "china", "core": true}
     },
     {
       "id": "rome",
       "leader": "Romulus",
       "nation": "Roman",
       "style": "Classical",
+      "coreRegion": "europe",
+      "successorNation": "Roman",
+      "successorNames": ["Western Roman Secession", "Italian Roman Secession", "Roman Frontier Secession"],
       "research": "Warrior Code",
       "techs": ["Warrior Code", "Bronze Working", "Trade"],
       "gold": 100,
       "traits": {"Expansionist": 40, "Aggressive": 25, "Builder": 10},
       "start": {"x": 36, "y": 17},
-      "city": {"name": "Roma", "x": 36, "y": 17},
+      "city": {"name": "Roma", "x": 36, "y": 17, "region": "europe", "core": true},
       "extraCities": [
-        {"name": "Neapolis", "x": 34, "y": 20}
+        {"name": "Neapolis", "x": 34, "y": 20, "region": "europe", "core": true}
       ]
     },
     {
@@ -105,25 +120,31 @@
       "leader": "Pericles",
       "nation": "Greek",
       "style": "Classical",
+      "coreRegion": "europe",
+      "successorNation": "Greek",
+      "successorNames": ["Hellenic League Secession", "Greek City Secession"],
       "research": "Alphabet",
       "techs": ["Alphabet", "Writing"],
       "gold": 75,
       "start": {"x": 38, "y": 18},
-      "city": {"name": "Athens", "x": 40, "y": 16}
+      "city": {"name": "Athens", "x": 40, "y": 16, "region": "europe", "core": true}
     },
     {
       "id": "persia",
       "leader": "Cyrus",
       "nation": "Persian",
       "style": "Classical",
+      "coreRegion": "near_east",
+      "successorNation": "Persian",
+      "successorNames": ["Persian Satrapy Secession", "Iranian Plateau Secession"],
       "research": "Horseback Riding",
       "techs": ["Horseback Riding", "Bronze Working", "Trade"],
       "gold": 100,
       "traits": {"Expansionist": 30, "Aggressive": 25, "Builder": 10},
       "start": {"x": 46, "y": 18},
-      "city": {"name": "Parsa", "x": 47, "y": 16},
+      "city": {"name": "Parsa", "x": 47, "y": 16, "region": "near_east", "core": true},
       "extraCities": [
-        {"name": "Ecbatana", "x": 51, "y": 17}
+        {"name": "Ecbatana", "x": 51, "y": 17, "region": "near_east", "core": true}
       ]
     }
   ]

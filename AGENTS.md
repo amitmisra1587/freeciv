@@ -136,22 +136,37 @@ python3 tools/organic_history/run_experiment.py \
   --clean
 ```
 
+Use `run_experiment.py --scenario ... --label ...` for authored scenario A/B
+runs so both arms load the same fixture and produce distinct labels.
+
+For historical scenario save/load readiness, run:
+
+```bash
+tools/organic_history/historical_continuation_gate.sh
+```
+
+This gate checks fresh and resumed ancient, balanced medieval, and 1450 scenario
+runs in plain and successor modes, plus a resumed Roman lineage secession.
+
 Use skip-reason and inertness fields in campaign summaries before relaxing
 thresholds.
 
 Scenario fixtures live under `data/organic_history/scenarios/`. They are loaded
 through `run_ai_game.py --load-scenario`, which passes `--ruleset organic_history`
 to the server so ruleset Lua diagnostics remain active.
-Regenerate the map-only v0 fixtures plus the authored ancient v1 fixture with:
+Regenerate the map-only v0 fixtures plus all authored v1 fixtures with:
 
 ```bash
-python3 tools/organic_history/create_scenario_fixture.py --include-v1
+python3 tools/organic_history/create_scenario_fixture.py --include-v1 --all-v1-plans
 ```
 
-`earth_ancient_v1.sav` is generated with Freeciv server/Lua edit APIs and
-`scensave`; its expected fixed actors/cities are in
-`data/organic_history/scenarios/earth_ancient_v1_starts.json` and are checked by
-`tools/organic_history/validate_scenario.py --starts-plan ...`.
+The authored v1 scenarios are generated with Freeciv server/Lua edit APIs and
+`scensave`; their expected fixed actors/cities plus core-region/successor
+metadata are in `data/organic_history/scenarios/earth_*_v1_starts.json` and are
+checked by `tools/organic_history/validate_scenario.py --starts-plan ...`.
+Lua applies authored metadata only when exact authored city/tile matches identify
+an authored fixture; generated maps must not inherit authored actor metadata from
+matching names.
 
 ## Coding Rules
 

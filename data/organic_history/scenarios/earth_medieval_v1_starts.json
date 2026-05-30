@@ -20,58 +20,77 @@
       "leader": "Charlemagne",
       "nation": "French",
       "style": "European",
+      "coreRegion": "europe",
+      "successorNation": "French",
+      "successorNames": ["Frankish March Secession", "West Frankish Secession"],
       "research": "Monarchy",
       "techs": ["Monarchy", "Feudalism"],
       "gold": 90,
       "start": {"x": 36, "y": 14},
-      "city": {"name": "Aachen", "x": 36, "y": 14}
+      "city": {"name": "Aachen", "x": 36, "y": 14, "region": "europe", "core": true}
     },
     {
       "id": "byzantium",
       "leader": "Basil II",
       "nation": "Byzantine",
       "style": "Classical",
+      "coreRegion": "near_east",
+      "successorNation": "Byzantine",
+      "successorNames": ["Anatolian Roman Secession", "Byzantine Frontier Secession"],
       "research": "Construction",
       "techs": ["Construction", "Currency"],
       "gold": 95,
       "start": {"x": 41, "y": 17},
-      "city": {"name": "Constantinople", "x": 41, "y": 17}
+      "city": {"name": "Constantinople", "x": 41, "y": 17, "region": "near_east", "core": true}
     },
     {
       "id": "abbasid",
       "leader": "Harun al-Rashid",
       "nation": "Arab",
       "style": "Babylonian",
+      "coreRegion": "near_east",
+      "successorNation": "Arab",
+      "successorNames": ["Abbasid Provincial Secession", "Mesopotamian Emirate"],
       "research": "University",
       "techs": ["Philosophy", "Mathematics"],
       "gold": 100,
       "start": {"x": 44, "y": 20},
-      "city": {"name": "Baghdad", "x": 44, "y": 20}
+      "city": {"name": "Baghdad", "x": 44, "y": 20, "region": "near_east", "core": true}
     },
     {
       "id": "chola",
       "leader": "Rajaraja Chola",
       "nation": "Indian",
       "style": "Classical",
+      "coreRegion": "india",
+      "successorNation": "Indian",
+      "successorNames": ["Tamil Country Secession", "Indian Ocean Polity"],
       "research": "Seafaring",
       "techs": ["Seafaring", "Trade"],
-      "gold": 85,
+      "gold": 105,
+      "traits": {"Trader": 35, "Expansionist": 25, "Builder": 15},
       "start": {"x": 50, "y": 24},
-      "city": {"name": "Thanjavur", "x": 50, "y": 24}
+      "city": {"name": "Thanjavur", "x": 50, "y": 24, "region": "india", "core": true},
+      "extraCities": [
+        {"name": "Kanchipuram", "x": 55, "y": 27, "region": "india", "core": true}
+      ]
     },
     {
       "id": "song",
       "leader": "Taizu",
       "nation": "Chinese",
       "style": "Asian",
+      "coreRegion": "china",
+      "successorNation": "Chinese",
+      "successorNames": ["Southern Song Secession", "Chinese Provincial Secession"],
       "research": "Invention",
       "techs": ["Invention", "Gunpowder", "Trade"],
       "gold": 115,
       "traits": {"Builder": 35, "Expansionist": 20, "Trader": 15},
       "start": {"x": 59, "y": 18},
-      "city": {"name": "Kaifeng", "x": 59, "y": 18},
+      "city": {"name": "Kaifeng", "x": 59, "y": 18, "region": "china", "core": true},
       "extraCities": [
-        {"name": "Hangzhou", "x": 58, "y": 22}
+        {"name": "Hangzhou", "x": 58, "y": 22, "region": "china", "core": true}
       ]
     },
     {
@@ -79,14 +98,18 @@
       "leader": "Temujin",
       "nation": "Mongol",
       "style": "Asian",
+      "coreRegion": "steppe",
+      "successorNation": "Mongol",
+      "successorNames": ["Steppe Ulus Secession", "Mongol Horde Secession"],
       "research": "Horseback Riding",
       "techs": ["Horseback Riding", "Warrior Code"],
-      "gold": 95,
-      "traits": {"Aggressive": 40, "Expansionist": 25},
+      "gold": 115,
+      "traits": {"Aggressive": 45, "Expansionist": 35},
       "start": {"x": 54, "y": 11},
-      "city": {"name": "Karakorum", "x": 54, "y": 11},
+      "city": {"name": "Karakorum", "x": 54, "y": 11, "region": "steppe", "core": true},
       "extraCities": [
-        {"name": "Sarai", "x": 58, "y": 10}
+        {"name": "Sarai", "x": 58, "y": 10, "region": "steppe", "core": true},
+        {"name": "Beshbalik", "x": 62, "y": 12, "region": "steppe", "core": true}
       ]
     },
     {
@@ -94,11 +117,14 @@
       "leader": "Sundiata",
       "nation": "Egyptian",
       "style": "Classical",
+      "coreRegion": "africa",
+      "successorNation": "Egyptian",
+      "successorNames": ["Sahelian Secession", "African Regional Secession"],
       "research": "Trade",
       "techs": ["Trade", "Currency"],
       "gold": 100,
       "start": {"x": 35, "y": 29},
-      "city": {"name": "Niani", "x": 35, "y": 29}
+      "city": {"name": "Niani", "x": 35, "y": 29, "region": "africa", "core": true}
     }
   ]
 }

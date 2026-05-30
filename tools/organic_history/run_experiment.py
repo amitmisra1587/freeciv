@@ -23,10 +23,14 @@ def main() -> int:
     parser.add_argument("--players", type=int, default=8)
     parser.add_argument("--saveturns", type=int, default=20)
     parser.add_argument("--timeout", type=int, default=600)
+    parser.add_argument("--scenario", type=Path, default=None,
+                        help="Optional scenario savegame to load for both A/B arms.")
     parser.add_argument("--preset", choices=["mechanics_probe", "mechanics_ab_long"], default=None)
     parser.add_argument("--thresholds", type=Path, default=None)
     parser.add_argument("--profile", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, default=ROOT / "runs" / "organic_history_mechanics_ab")
+    parser.add_argument("--label", default=None,
+                        help="Experiment label stored in the manifest and arm labels.")
     parser.add_argument("--clean", action="store_true")
     args = parser.parse_args()
 
@@ -59,6 +63,8 @@ def main() -> int:
         "players": args.players,
         "saveturns": args.saveturns,
         "timeout": args.timeout,
+        "scenario": str(args.scenario) if args.scenario else None,
+        "label": args.label,
         "thresholds": str(args.thresholds) if args.thresholds else None,
         "profile": str(args.profile) if args.profile else None,
         "mechanicCommands": mechanic_commands,
@@ -67,8 +73,13 @@ def main() -> int:
 
     baseline_dir = output_dir / "baseline"
     candidate_label = str(profile.get("name") or "mechanics_v1")
+    if args.label:
+        baseline_label = f"{args.label}_baseline"
+        candidate_label = f"{args.label}_{candidate_label}"
+    else:
+        baseline_label = "baseline"
     candidate_dir = output_dir / candidate_label
-    baseline_result = run_campaign(args, baseline_dir, "baseline", [])
+    baseline_result = run_campaign(args, baseline_dir, baseline_label, [])
     candidate_result = run_campaign(args, candidate_dir, candidate_label, mechanic_commands)
     compare_result = subprocess.run([
         sys.executable,
@@ -123,6 +134,8 @@ def run_campaign(
         "--clean",
         "--label", label,
     ]
+    if args.scenario:
+        command.extend(["--scenario", str(args.scenario)])
     for extra_command in extra_commands:
         command.extend(["--extra-command", extra_command])
     return subprocess.run(command, cwd=ROOT, text=True)

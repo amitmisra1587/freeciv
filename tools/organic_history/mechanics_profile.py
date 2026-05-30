@@ -16,8 +16,14 @@ def main() -> int:
     parser.add_argument("--campaign-dir", type=Path, required=True)
     parser.add_argument("--thresholds-output", type=Path, required=True)
     parser.add_argument("--profile-output", type=Path, required=True)
-    parser.add_argument("--mode", choices=["safe", "probe", "dynastic", "mandate", "pressure"], default="safe",
-                        help="Profile style: safe keeps defaults; probe lowers thresholds; dynastic adds succession-risk gameplay; mandate adds regional stability; pressure adds fiscal/frontier modifiers.")
+    parser.add_argument(
+        "--mode",
+        choices=["safe", "probe", "dynastic", "mandate", "pressure", "successor"],
+        default="safe",
+        help=("Profile style: safe keeps defaults; probe lowers thresholds; dynastic adds "
+              "succession-risk gameplay; mandate adds regional stability; pressure adds "
+              "fiscal/frontier modifiers; successor adds fallback secession."),
+    )
     args = parser.parse_args()
 
     thresholds = calibrate(args.campaign_dir)
@@ -43,22 +49,28 @@ def build_profile(thresholds: dict[str, Any], thresholds_path: Path, mode: str) 
         f"lua cmd organic_history_civil_war_probability = {int(recommended.get('civilWarProbability', 8))}",
         f"lua cmd organic_history_civil_war_cooldown = {int(recommended.get('civilWarCooldown', 40))}",
     ]
-    if mode in ("dynastic", "mandate", "pressure"):
+    if mode in ("dynastic", "mandate", "pressure", "successor"):
         commands.extend([
             "lua cmd organic_history_dynastic_stress_enabled = true",
             f"lua cmd organic_history_dynastic_stress_max_bonus = {int(recommended.get('dynasticStressMaxBonus', 10))}",
             f"lua cmd organic_history_institution_stress_modifiers_enabled = {str(bool(recommended.get('institutionStressModifiersEnabled', False))).lower()}",
             f"lua cmd organic_history_institution_stress_max_modifier = {int(recommended.get('institutionStressMaxModifier', 4))}",
         ])
-    if mode in ("mandate", "pressure"):
+    if mode in ("mandate", "pressure", "successor"):
         commands.extend([
             "lua cmd organic_history_mandate_enabled = true",
             f"lua cmd organic_history_mandate_max_stress_reduction = {int(recommended.get('mandateMaxStressReduction', 4))}",
         ])
-    if mode == "pressure":
+    if mode in ("pressure", "successor"):
         commands.extend([
             "lua cmd organic_history_pressure_modifiers_enabled = true",
             f"lua cmd organic_history_pressure_max_stress_modifier = {int(recommended.get('pressureMaxStressModifier', 6))}",
+        ])
+    if mode == "successor":
+        commands.extend([
+            "lua cmd organic_history_secession_fallback_enabled = true",
+            f"lua cmd organic_history_secession_min_cities = {int(recommended.get('secessionMinCities', 10))}",
+            f"lua cmd organic_history_secession_max_cities = {int(recommended.get('secessionMaxCities', 1))}",
         ])
     return {
         "name": profile_name(mode),
@@ -95,17 +107,20 @@ def profile_recommendations(
     recommended["civilWarMinCities"] = max(8, min(current_min_cities, city_probe))
     recommended["civilWarProbability"] = min(6, int(source_recommended.get("civilWarProbability", 8)))
     recommended["civilWarCooldown"] = max(40, int(source_recommended.get("civilWarCooldown", 40)))
-    if mode in ("dynastic", "mandate", "pressure"):
+    if mode in ("dynastic", "mandate", "pressure", "successor"):
         recommended["civilWarStressThreshold"] = min(45, recommended["civilWarStressThreshold"])
         recommended["civilWarMinCities"] = min(8, recommended["civilWarMinCities"])
         recommended["civilWarProbability"] = min(6, recommended["civilWarProbability"])
         recommended["dynasticStressMaxBonus"] = 10
         recommended["institutionStressModifiersEnabled"] = False
         recommended["institutionStressMaxModifier"] = 4
-    if mode in ("mandate", "pressure"):
+    if mode in ("mandate", "pressure", "successor"):
         recommended["mandateMaxStressReduction"] = 4
-    if mode == "pressure":
+    if mode in ("pressure", "successor"):
         recommended["pressureMaxStressModifier"] = 6
+    if mode == "successor":
+        recommended["secessionMinCities"] = 10
+        recommended["secessionMaxCities"] = 1
     return recommended
 
 
@@ -145,6 +160,15 @@ def profile_rationale(
             f"source recommended {source_recommended}",
             f"pressure recommended {recommended}",
         ]
+    if mode == "successor":
+        return [
+            "successor mode is command-gated and keeps mechanics disabled by default",
+            "fallback secession runs only after built-in civil war returns no successor",
+            "authored actor/core-region metadata guides successor names and peripheral city selection",
+            "fallback transfer remains capped at one non-capital/government-center city",
+            f"source recommended {source_recommended}",
+            f"successor recommended {recommended}",
+        ]
     return [
         "probe mode is command-gated and keeps mechanics disabled by default",
         "stress threshold uses at most the calibrated p90 stress value to produce eligibility checks sooner than p95",
@@ -164,6 +188,8 @@ def profile_name(mode: str) -> str:
         return "mandate_stability_v1"
     if mode == "pressure":
         return "pressure_events_v1"
+    if mode == "successor":
+        return "successor_secession_v1"
     return "mechanics_v2_probe"
 
 

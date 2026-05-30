@@ -16,6 +16,20 @@ MECHANIC_RE = re.compile(r"\borganic_history_mechanic\b.*\btype=(?P<type>[A-Za-z
 SECESSION_RE = re.compile(r"\borganic_history_secession\b.*\btype=(?P<type>[A-Za-z0-9_]+).*?\bplayer=(?P<player>-?\d+)")
 CITY_PRESSURE_RE = re.compile(r"\borganic_history_city_pressure\b.*\bplayer=(?P<player>-?\d+).*?\bunrest=(?P<unrest>-?\d+(?:\.\d+)?).*?\bautonomy=(?P<autonomy>-?\d+(?:\.\d+)?)")
 MANDATE_RE = re.compile(r"\borganic_history_mandate\b.*\bplayer=(?P<player>-?\d+).*?\bmandate=(?P<mandate>-?\d+(?:\.\d+)?).*?\bstress_reduction=(?P<reduction>-?\d+)")
+SECESSION_DETAIL_FIELDS = [
+    "turn",
+    "player",
+    "successor",
+    "successor_name",
+    "successor_nation",
+    "parent_actor",
+    "core_region",
+    "city",
+    "city_region",
+    "city_core",
+    "peripheral",
+    "transferred",
+]
 
 
 def main() -> int:
@@ -128,6 +142,13 @@ def run_player_records(
             "meanAutonomy": mean(logs.get("autonomy", [])),
             "meanMandate": mean(logs.get("mandate", [])),
             "meanMandateReduction": mean(logs.get("mandateReduction", [])),
+            "secessionEvents": logs.get("secessionEvents", []),
+            "successorNames": unique_values(
+                event.get("successor_name") for event in logs.get("secessionEvents", [])
+            ),
+            "transferredCities": unique_values(
+                event.get("city") for event in logs.get("secessionEvents", [])
+            ),
         }
         record["classification"] = classify_record(record)
         yield record
@@ -155,6 +176,9 @@ def parse_player_logs(run_dir: Path) -> dict[int, dict[str, Any]]:
                 secession_type = secession_match.group("type")
                 secessions = entry.setdefault("secession", {})
                 secessions[secession_type] = secessions.get(secession_type, 0) + 1
+                if secession_type == "secession_triggered":
+                    entry.setdefault("secessionEvents", []).append(
+                        parse_line_fields(line, SECESSION_DETAIL_FIELDS))
             pressure_match = CITY_PRESSURE_RE.search(line)
             if pressure_match:
                 entry = player_entry(metrics, pressure_match.group("player"))
@@ -175,6 +199,9 @@ def player_entry(metrics: dict[int, dict[str, Any]], player_text: str) -> dict[s
 
 def summarize_civilization(civilization: str, records: list[dict[str, Any]]) -> dict[str, Any]:
     classifications = count_values(record["classification"] for record in records)
+    secession_events = [
+        event for record in records for event in record.get("secessionEvents", [])
+    ]
     summary = {
         "civilization": civilization,
         "runs": len(records),
@@ -194,6 +221,13 @@ def summarize_civilization(civilization: str, records: list[dict[str, Any]]) -> 
         "meanMandate": round(mean([record["meanMandate"] for record in records]), 3),
         "meanMandateReduction": round(mean([record["meanMandateReduction"] for record in records]), 3),
         "classifications": classifications,
+        "successorNames": unique_values(
+            event.get("successor_name") for event in secession_events
+        ),
+        "transferredCities": unique_values(
+            event.get("city") for event in secession_events
+        ),
+        "secessionLineages": secession_events,
     }
     summary["dominantClassification"] = max(
         classifications.items(), key=lambda item: item[1]
@@ -223,7 +257,7 @@ def write_csv(path: Path, report: dict[str, Any]) -> None:
         "meanFinalCities", "meanCityDelta", "meanFinalCityShare",
         "meanFinalScore", "meanFinalTechs", "dynasticChecks",
         "dynasticTriggers", "secessionTriggers", "meanUnrest", "meanMandate",
-        "dominantClassification",
+        "successorNames", "transferredCities", "dominantClassification",
     ]
     with path.open("w", encoding="utf-8", newline="") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fields)
@@ -246,6 +280,8 @@ def write_csv(path: Path, report: dict[str, Any]) -> None:
                     "secessionTriggers": civ["secessionTriggers"],
                     "meanUnrest": civ["meanUnrest"],
                     "meanMandate": civ["meanMandate"],
+                    "successorNames": ";".join(civ["successorNames"]),
+                    "transferredCities": ";".join(civ["transferredCities"]),
                     "dominantClassification": civ["dominantClassification"],
                 })
 
@@ -255,6 +291,10 @@ def count_values(values: Iterable[str]) -> dict[str, int]:
     for value in values:
         counts[value] = counts.get(value, 0) + 1
     return dict(sorted(counts.items()))
+
+
+def unique_values(values: Iterable[Any]) -> list[str]:
+    return sorted({str(value) for value in values if value not in (None, "")})
 
 
 def focus_check(report: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
@@ -316,6 +356,29 @@ def share(value: float, total: float) -> float:
 def mean(values: Iterable[float]) -> float:
     values = list(values)
     return sum(values) / len(values) if values else 0.0
+
+
+def parse_line_fields(line: str, fields: list[str]) -> dict[str, Any]:
+    return {
+        field: parse_scalar(match.group(1))
+        for field in fields
+        if (match := re.search(rf'\b{re.escape(field)}=("(?:[^"\\]|\\.)*"|\S+)', line))
+    }
+
+
+def parse_scalar(text: str) -> Any:
+    if len(text) >= 2 and text[0] == '"' and text[-1] == '"':
+        return text[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+    if text in ("true", "false"):
+        return text == "true"
+    try:
+        return int(text)
+    except ValueError:
+        try:
+            value = float(text)
+        except ValueError:
+            return text
+        return int(value) if value.is_integer() else value
 
 
 if __name__ == "__main__":

@@ -400,6 +400,144 @@ Decision:
 - Castile improved only modestly; it may need Iberian/geography-specific tuning
   later.
 - The fallback secession guard is required before broader use.
+
+## Phase 18: Successor and Core-Region Quality
+
+- [x] Add authored core-region and successor metadata to all v1 starts plans:
+  `coreRegion`, per-city `region`/`core`, `successorNation`, and
+  `successorNames`.
+- [x] Add East Asia to scenario region metadata for Japan-facing 1450 outcomes.
+- [x] Teach Lua to prefer authored city metadata over coordinate boxes when
+  assigning city pressure and regional hegemony regions.
+- [x] Teach Lua to use authored actor core regions for institution/mandate
+  calculations when the player is a known scenario actor.
+- [x] Improve fallback secession city scoring:
+  - keep capital/government-center exclusions
+  - prefer peripheral/non-core cities
+  - penalize authored core cities without making fallback impossible
+- [x] Improve fallback successor identity:
+  - parent actor lineage
+  - successor nation fallback
+  - parent/region-aware successor names
+- [x] Extend validation to check v1 metadata shape and region IDs.
+- [x] Extend run and civilization outcome summaries with secession lineage
+  details: successor name/nation, parent actor, core region, transferred city,
+  city region, core/peripheral flags.
+- [x] Add `mechanics_profile.py --mode successor` for the command-gated
+  pressure+mandate+fallback-secession profile.
+
+Decision:
+
+- Successor/secession quality should now be evaluated with lineage details, not
+  just event counts.
+- The mechanics remain command-gated; metadata improves diagnostics and fallback
+  behavior without making secession default-on.
+
+## Phase 19: Long-Run Successor Profile Study
+
+- [x] Generate a fresh `successor_secession_v1` profile from current generated-map
+  calibration output.
+- [x] Add `run_experiment.py --scenario` and `--label` so authored scenario A/B
+  runs can use the same wrapper as generated-map experiments.
+- [x] Run 3 x 200-turn matched A/B campaigns for:
+  - generated fixed maps
+  - `earth_ancient_v1`
+  - `earth_medieval_v1`
+  - `earth_1450_v1`
+- [x] Harden authored scenario metadata:
+  - activate only when authored fixtures are detected by exact city/tile matches
+  - require exact authored city coordinates before applying city metadata
+  - avoid generated maps inheriting authored actor identities from matching names
+- [x] Tune medieval regressions exposed by the long-run study:
+  - Steppe/Temujin: add `Beshbalik`, more gold, stronger expansionist/aggressive traits
+  - Chola/Rajaraja: add `Kanchipuram`, more gold, trader/expansion/builder traits
+- [x] Regenerate and validate the balanced medieval fixture.
+- [x] Re-run the balanced medieval A/B and outcome report.
+
+Final Phase 19 A/B results:
+
+- Generated fixed: `safeToIterate=true`, `active_safe_triggering`, mean final
+  cities `84.0 -> 77.333`, mean max city share `0.259 -> 0.257`, fallback
+  secessions `28`, no failures.
+- Ancient v1: `safeToIterate=true`, `active_safe_triggering`, mean final cities
+  `76.333 -> 70.0`, mean max city share `0.234 -> 0.209`, fallback secessions
+  `12`, no failures.
+- Balanced medieval v1: `safeToIterate=true`, `active_safe_triggering`, mean
+  final cities `68.667 -> 74.667`, mean max city share `0.341 -> 0.202`,
+  fallback secessions `15`, no failures.
+- 1450 v1: `safeToIterate=true`, `active_safe_triggering`, mean final cities
+  `91.667 -> 92.667`, mean max city share `0.216 -> 0.187`, fallback
+  secessions `29`, no failures.
+
+Focus outcomes after tuning:
+
+- Rome/Romulus: `15.667 -> 10.333` final cities with 3 Roman secessions; still
+  an expansionist survivor.
+- Persia/Cyrus: `14.0 -> 10.0` final cities with 3 Persian secessions; still an
+  expansionist survivor.
+- Steppe/Temujin: `16.333 -> 10.333` final cities with 4 Mongol secessions; now
+  remains an expansionist survivor.
+- Chola/Rajaraja: `7.333 -> 7.0` final cities with 3 Indian secessions; no
+  longer collapses, but remains a watch item.
+- Castile/Isabella: `4.0 -> 8.333` final cities with 3 Iberian secessions.
+- Ming/Xuande, Ottoman proxy/Mehmed II, and Venice proxy/Francesco Foscari all
+  stay expansionist survivors while producing lineage-aware secessions.
+
+Decision:
+
+- The successor profile is safe and active across generated, ancient, medieval,
+  and 1450 long-run studies.
+- Keep it command-gated. It is a candidate gameplay profile, not default-on
+  behavior.
+- Next finish-line work should address default-on blockers: continuation/save-load
+  robustness, generated-map parent/core metadata, and richer trade/tech/social
+  pressure systems.
+
+## Phase 20: Historical Scenario Continuation Readiness
+
+- [x] Defer generated-map lineage work per user direction; focus on historical
+  scenarios first.
+- [x] Reproduce the continuation blocker:
+  - fresh historical scenario runs succeeded
+  - `--load-save` continuations timed out because loaded games never resumed the
+    turn loop
+- [x] Fix `run_ai_game.py --load-save`:
+  - automatically appends `start` for loaded games
+  - skips rereading the ruleset `.serv` after a game has already started
+  - records `loadSaveTurn`, `continuedTurnCount`, `continuationAdvanced`, and
+    scenario metadata status
+- [x] Add resumed scenario metadata status logging in Lua.
+- [x] Add `tools/organic_history/historical_continuation_gate.sh`.
+- [x] Gate coverage:
+  - `earth_ancient_v1` plain and successor continuation
+  - balanced `earth_medieval_v1` plain and successor continuation
+  - `earth_1450_v1` plain and successor continuation
+  - resumed Roman lineage fallback check
+- [x] Verify authored metadata and successor lineage after resume:
+  - `scenarioMetadataActive=true`
+  - organic-history hooks and metrics resume
+  - successor-mode dynastic probes resume
+  - resumed Roman fallback produces `parent_actor="rome"`,
+    `successor_nation="Roman"`, and transfers non-capital Neapolis
+- [x] Update `gameplay_readiness.py` to understand historical continuation gate
+  summaries.
+
+Phase 20 readiness result:
+
+- Historical continuation gate: passed.
+- Historical readiness report:
+  - `commandGatedReady=true`
+  - `defaultOnReady=true` for the supplied historical scenario evidence
+  - no blockers
+  - recommendation: candidate is ready to evaluate for default-on gameplay
+
+Decision:
+
+- The historical-scenario save/load blocker is fixed for the tested short
+  ancient, balanced medieval, and 1450 continuations.
+- The successor profile can now be evaluated as a near-default historical
+  scenario candidate.
+- Generated maps remain out of scope for this phase.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

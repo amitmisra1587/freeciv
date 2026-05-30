@@ -99,6 +99,8 @@ def summarize_continuation(path: Path | None) -> dict[str, Any]:
             "blocker": "no continuation summary supplied",
         }
     data = read_json(path)
+    if "results" in data:
+        return summarize_historical_continuation(path, data)
     continued = data.get("continued", {})
     return {
         "path": str(path),
@@ -108,6 +110,40 @@ def summarize_continuation(path: Path | None) -> dict[str, Any]:
         "loadSource": data.get("loadSource"),
         "notes": data.get("notes", []),
         "blocker": None if data.get("success") else "continuation/save-load failed",
+    }
+
+
+def summarize_historical_continuation(path: Path, data: dict[str, Any]) -> dict[str, Any]:
+    results = data.get("results", [])
+    failed = [
+        result for result in results
+        if isinstance(result, dict) and not result.get("success")
+    ]
+    scenarios = sorted({
+        str(result.get("scenario"))
+        for result in results
+        if isinstance(result, dict) and result.get("scenario")
+    })
+    modes = sorted({
+        str(result.get("mode"))
+        for result in results
+        if isinstance(result, dict) and result.get("mode")
+    })
+    resumed_lineage = next(
+        (result for result in results
+         if isinstance(result, dict) and result.get("mode") == "resumed_lineage"),
+        {},
+    )
+    return {
+        "path": str(path),
+        "success": bool(data.get("success")) and not failed,
+        "kind": "historical_scenarios",
+        "scenarioCount": len([scenario for scenario in scenarios if scenario != "None"]),
+        "modes": modes,
+        "failedResults": len(failed),
+        "resumedLineageSuccess": bool(resumed_lineage.get("success")),
+        "resumedLineageChecks": resumed_lineage.get("checks", {}),
+        "blocker": None if data.get("success") and not failed else "historical continuation gate failed",
     }
 
 

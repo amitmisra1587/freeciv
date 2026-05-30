@@ -412,6 +412,7 @@ function organic_history_turn_begin(turn, year)
   organic_history_civil_war_success_this_turn = false
   organic_history_secession_success_this_turn = false
   log.normal("organic_history turn_begin turn=%d year=%d", turn, year)
+  organic_history_log_scenario_metadata_status(turn)
   organic_history_log_player_metrics(turn, year)
   organic_history_log_regional_hegemony(turn)
   organic_history_check_civil_wars(turn)
@@ -510,18 +511,81 @@ function organic_history_update_prestige(player, cities, culture, wars)
 end
 
 organic_history_scenario_region_order = {
-  "americas", "europe", "near_east", "africa", "steppe", "india", "china"
+  "americas", "europe", "near_east", "africa", "steppe", "india", "china",
+  "east_asia"
 }
 
 organic_history_scenario_regions = {
   africa = {name = "Africa", x_min = 38, x_max = 55, y_min = 27, y_max = 49},
   americas = {name = "Americas", x_min = 0, x_max = 29, y_min = 8, y_max = 43},
   china = {name = "China", x_min = 63, x_max = 74, y_min = 16, y_max = 30},
+  east_asia = {name = "East Asia", x_min = 63, x_max = 74, y_min = 10, y_max = 18},
   europe = {name = "Europe", x_min = 36, x_max = 50, y_min = 10, y_max = 25},
   india = {name = "India", x_min = 55, x_max = 64, y_min = 23, y_max = 34},
   near_east = {name = "Near East", x_min = 47, x_max = 58, y_min = 22, y_max = 33},
   steppe = {name = "Steppe", x_min = 48, x_max = 69, y_min = 6, y_max = 18}
 }
+
+organic_history_scenario_actor_metadata = {
+  abbasid = {leader = "Harun al-Rashid", nation = "Arab", core_region = "near_east", successor_nation = "Arab", successor_names = {"Abbasid Provincial Secession", "Mesopotamian Emirate"}, core_cities = {["Baghdad"] = true}},
+  africa = {leader = "Sundiata", nation = "Egyptian", core_region = "africa", successor_nation = "Egyptian", successor_names = {"Sahelian Secession", "African Regional Secession"}, core_cities = {["Niani"] = true}},
+  aztec = {leader = "Moctezuma I", nation = "Aztec", core_region = "americas", successor_nation = "Aztec", successor_names = {"Central Mexican Secession", "Aztec Tributary Secession"}, core_cities = {["Tenochtitlan"] = true}},
+  byzantium = {leader = "Basil II", nation = "Byzantine", core_region = "near_east", successor_nation = "Byzantine", successor_names = {"Anatolian Roman Secession", "Byzantine Frontier Secession"}, core_cities = {["Constantinople"] = true}},
+  castile = {leader = "Isabella", nation = "Spanish", core_region = "europe", successor_nation = "Spanish", successor_names = {"Castilian Crown Secession", "Iberian Frontier Secession"}, core_cities = {["Toledo"] = true, ["Seville"] = true}},
+  china = {leader = "Qin Shi Huang", nation = "Chinese", core_region = "china", successor_nation = "Chinese", successor_names = {"Chinese Regional Secession", "Yellow River Secession"}, core_cities = {["Chang'an"] = true}},
+  chola = {leader = "Rajaraja Chola", nation = "Indian", core_region = "india", successor_nation = "Indian", successor_names = {"Tamil Country Secession", "Indian Ocean Polity"}, core_cities = {["Thanjavur"] = true, ["Kanchipuram"] = true}},
+  egypt = {leader = "Narmer", nation = "Egyptian", core_region = "africa", successor_nation = "Egyptian", successor_names = {"Nile Delta Secession", "Upper Egyptian Secession"}, core_cities = {["Memphis"] = true}},
+  franks = {leader = "Charlemagne", nation = "French", core_region = "europe", successor_nation = "French", successor_names = {"Frankish March Secession", "West Frankish Secession"}, core_cities = {["Aachen"] = true}},
+  greece = {leader = "Pericles", nation = "Greek", core_region = "europe", successor_nation = "Greek", successor_names = {"Hellenic League Secession", "Greek City Secession"}, core_cities = {["Athens"] = true}},
+  inca = {leader = "Pachacuti", nation = "Inca", core_region = "americas", successor_nation = "Inca", successor_names = {"Andean Secession", "Inca Provincial Secession"}, core_cities = {["Cusco"] = true}},
+  india = {leader = "Chandragupta", nation = "Indian", core_region = "india", successor_nation = "Indian", successor_names = {"Magadhan Secession", "Indian Regional Secession"}, core_cities = {["Pataliputra"] = true}},
+  japan = {leader = "Ashikaga Yoshimasa", nation = "Japanese", core_region = "east_asia", successor_nation = "Japanese", successor_names = {"Japanese Daimyo Secession", "Eastern Island Secession"}, core_cities = {["Kyoto"] = true}},
+  ming = {leader = "Xuande", nation = "Chinese", core_region = "china", successor_nation = "Chinese", successor_names = {"Ming Provincial Secession", "Northern Chinese Secession"}, core_cities = {["Beijing"] = true}},
+  ottoman = {leader = "Mehmed II", nation = "Persian", core_region = "near_east", successor_nation = "Persian", successor_names = {"Anatolian Beylik Secession", "Ottoman Frontier Secession"}, core_cities = {["Istanbul"] = true}},
+  persia = {leader = "Cyrus", nation = "Persian", core_region = "near_east", successor_nation = "Persian", successor_names = {"Persian Satrapy Secession", "Iranian Plateau Secession"}, core_cities = {["Parsa"] = true, ["Ecbatana"] = true}},
+  portugal = {leader = "Henry", nation = "Portuguese", core_region = "europe", successor_nation = "Portuguese", successor_names = {"Portuguese Atlantic Secession", "Iberian Port Secession"}, core_cities = {["Lisbon"] = true, ["Porto"] = true}},
+  rome = {leader = "Romulus", nation = "Roman", core_region = "europe", successor_nation = "Roman", successor_names = {"Western Roman Secession", "Italian Roman Secession", "Roman Frontier Secession"}, core_cities = {["Roma"] = true, ["Neapolis"] = true}},
+  song = {leader = "Taizu", nation = "Chinese", core_region = "china", successor_nation = "Chinese", successor_names = {"Southern Song Secession", "Chinese Provincial Secession"}, core_cities = {["Kaifeng"] = true, ["Hangzhou"] = true}},
+  steppe = {leader = "Temujin", nation = "Mongol", core_region = "steppe", successor_nation = "Mongol", successor_names = {"Steppe Ulus Secession", "Mongol Horde Secession"}, core_cities = {["Karakorum"] = true, ["Sarai"] = true}},
+  sumer = {leader = "Gilgamesh", nation = "Sumerian", core_region = "near_east", successor_nation = "Sumerian", successor_names = {"Sumerian City Secession", "Mesopotamian Secession"}, core_cities = {["Uruk"] = true}},
+  venice = {leader = "Francesco Foscari", nation = "Italian", core_region = "europe", successor_nation = "Italian", successor_names = {"Venetian Terraferma Secession", "Adriatic League Secession"}, core_cities = {["Venice"] = true}}
+}
+
+organic_history_scenario_city_metadata = {
+  ["Aachen"] = {actor = "franks", region = "europe", core = true, x = 36, y = 14},
+  ["Athens"] = {actor = "greece", region = "europe", core = true, x = 40, y = 16},
+  ["Baghdad"] = {actor = "abbasid", region = "near_east", core = true, x = 44, y = 20},
+  ["Beijing"] = {actor = "ming", region = "china", core = true, x = 59, y = 18},
+  ["Beshbalik"] = {actor = "steppe", region = "steppe", core = true, x = 62, y = 12},
+  ["Chang'an"] = {actor = "china", region = "china", core = true, x = 59, y = 17},
+  ["Constantinople"] = {actor = "byzantium", region = "near_east", core = true, x = 41, y = 17},
+  ["Cusco"] = {actor = "inca", region = "americas", core = true, x = 18, y = 34},
+  ["Ecbatana"] = {actor = "persia", region = "near_east", core = true, x = 51, y = 17},
+  ["Hangzhou"] = {actor = "song", region = "china", core = true, x = 58, y = 22},
+  ["Istanbul"] = {actor = "ottoman", region = "near_east", core = true, x = 42, y = 18},
+  ["Kaifeng"] = {actor = "song", region = "china", core = true, x = 59, y = 18},
+  ["Kanchipuram"] = {actor = "chola", region = "india", core = true, x = 55, y = 27},
+  ["Karakorum"] = {actor = "steppe", region = "steppe", core = true, x = 54, y = 11},
+  ["Kyoto"] = {actor = "japan", region = "east_asia", core = true, x = 67, y = 14},
+  ["Lisbon"] = {actor = "portugal", region = "europe", core = true, x = 32, y = 20},
+  ["Memphis"] = {actor = "egypt", region = "africa", core = true, x = 38, y = 21},
+  ["Neapolis"] = {actor = "rome", region = "europe", core = true, x = 34, y = 20},
+  ["Niani"] = {actor = "africa", region = "africa", core = true, x = 35, y = 29},
+  ["Parsa"] = {actor = "persia", region = "near_east", core = true, x = 47, y = 16},
+  ["Pataliputra"] = {actor = "india", region = "india", core = true, x = 50, y = 21},
+  ["Porto"] = {actor = "portugal", region = "europe", core = true, x = 30, y = 17},
+  ["Roma"] = {actor = "rome", region = "europe", core = true, x = 36, y = 17},
+  ["Sarai"] = {actor = "steppe", region = "steppe", core = true, x = 58, y = 10},
+  ["Seville"] = {actor = "castile", region = "europe", core = true, x = 35, y = 22},
+  ["Tenochtitlan"] = {actor = "aztec", region = "americas", core = true, x = 15, y = 23},
+  ["Thanjavur"] = {actor = "chola", region = "india", core = true, x = 50, y = 24},
+  ["Toledo"] = {actor = "castile", region = "europe", core = true, x = 35, y = 18},
+  ["Uruk"] = {actor = "sumer", region = "near_east", core = true, x = 44, y = 19},
+  ["Venice"] = {actor = "venice", region = "europe", core = true, x = 38, y = 17}
+}
+
+organic_history_scenario_metadata_active_cache = nil
+organic_history_scenario_metadata_match_cache = nil
 
 function organic_history_region_for_tile(tile)
   if tile == nil then
@@ -537,6 +601,112 @@ function organic_history_region_for_tile(tile)
   end
 
   return "unknown", "Unknown"
+end
+
+function organic_history_region_name(region_id)
+  local region = organic_history_scenario_regions[region_id]
+
+  if region ~= nil then
+    return region.name
+  end
+
+  return "Unknown"
+end
+
+function organic_history_city_metadata_for(city)
+  if city == nil then
+    return nil
+  end
+
+  if not organic_history_scenario_metadata_active() then
+    return nil
+  end
+
+  local metadata = organic_history_scenario_city_metadata[city.name]
+
+  if organic_history_city_matches_authored_tile(city, metadata) then
+    return metadata
+  end
+
+  return nil
+end
+
+function organic_history_region_for_city(city)
+  local metadata = organic_history_city_metadata_for(city)
+
+  if metadata ~= nil and metadata.region ~= nil then
+    return metadata.region, organic_history_region_name(metadata.region)
+  end
+
+  return organic_history_region_for_tile(city.tile)
+end
+
+function organic_history_actor_metadata_for(player)
+  if not organic_history_scenario_metadata_active() then
+    return nil, nil
+  end
+
+  local player_name = organic_history_player_name(player)
+  local nation = organic_history_rule_name(player and player.nation)
+
+  for actor_id, metadata in pairs(organic_history_scenario_actor_metadata) do
+    if metadata.leader == player_name and metadata.nation == nation then
+      return metadata, actor_id
+    end
+  end
+
+  for actor_id, metadata in pairs(organic_history_scenario_actor_metadata) do
+    if metadata.leader == player_name then
+      return metadata, actor_id
+    end
+  end
+
+  return nil, nil
+end
+
+function organic_history_city_matches_authored_tile(city, metadata)
+  return city ~= nil and metadata ~= nil and city.tile ~= nil
+         and metadata.x ~= nil and metadata.y ~= nil
+         and city.tile.x == metadata.x and city.tile.y == metadata.y
+end
+
+function organic_history_scenario_metadata_active()
+  if organic_history_scenario_metadata_active_cache ~= nil then
+    return organic_history_scenario_metadata_active_cache
+  end
+
+  local matches = 0
+
+  for player in players_iterate() do
+    for city in player:cities_iterate() do
+      local metadata = organic_history_scenario_city_metadata[city.name]
+
+      if organic_history_city_matches_authored_tile(city, metadata) then
+        matches = matches + 1
+      end
+    end
+  end
+
+  organic_history_scenario_metadata_active_cache = matches >= 3
+  organic_history_scenario_metadata_match_cache = matches
+  log.normal('organic_history_scenario_metadata active=%s matches=%d',
+             tostring(organic_history_scenario_metadata_active_cache), matches)
+
+  return organic_history_scenario_metadata_active_cache
+end
+
+function organic_history_log_scenario_metadata_status(turn)
+  local active = organic_history_scenario_metadata_active()
+  local matches = organic_history_scenario_metadata_match_cache or -1
+
+  log.normal('organic_history_scenario_metadata_status turn=%d active=%s matches=%d',
+             turn, tostring(active), matches)
+end
+
+function organic_history_city_authored_core(city, actor_id)
+  local metadata = organic_history_city_metadata_for(city)
+
+  return metadata ~= nil and metadata.actor == actor_id and metadata.core
 end
 
 function organic_history_city_key(city)
@@ -562,6 +732,8 @@ function organic_history_region_archetype(region_id)
     return "defensive", "defensive_kingdom"
   elseif region_id == "americas" then
     return "regional", "regional_polity"
+  elseif region_id == "east_asia" then
+    return "maritime", "regional_polity"
   end
 
   return "regional", "regional_polity"
@@ -585,7 +757,7 @@ function organic_history_update_city_pressure(city, player, turn, stress, wars,
                                               player_gold, player_city_count)
   local key = organic_history_city_key(city)
   local state = organic_history_city_pressure[key]
-  local region_id, region_name = organic_history_region_for_tile(city.tile)
+  local region_id, region_name = organic_history_region_for_city(city)
   local climate_base, migration_base = organic_history_city_pressure_baseline(region_id)
   local owner_id = organic_history_player_id(player)
   local size = city.size or 1
@@ -730,11 +902,21 @@ function organic_history_dominant_region(summary)
   return dominant
 end
 
+function organic_history_player_core_region(player, pressure_summary)
+  local metadata = organic_history_actor_metadata_for(player)
+
+  if metadata ~= nil and metadata.core_region ~= nil then
+    return metadata.core_region
+  end
+
+  return organic_history_dominant_region(pressure_summary)
+end
+
 function organic_history_update_institution(player, turn, cities, stress,
                                             wars, pressure_summary)
   local player_id = organic_history_player_id(player)
   local institution = organic_history_institutions[player_id]
-  local core_region = organic_history_dominant_region(pressure_summary)
+  local core_region = organic_history_player_core_region(player, pressure_summary)
   local archetype, default_form = organic_history_region_archetype(core_region)
 
   if cities >= 14 and default_form ~= "nomadic_confederation" then
@@ -816,7 +998,7 @@ function organic_history_log_regional_hegemony(turn)
 
   for player in players_iterate() do
     for city in player:cities_iterate() do
-      local region_id = organic_history_region_for_tile(city.tile)
+      local region_id = organic_history_region_for_city(city)
       local region = regions[region_id]
 
       if region ~= nil then
@@ -964,8 +1146,23 @@ function organic_history_civil_war_log(kind, turn, player, stress, extra)
              organic_history_civil_war_stress_threshold, extra or "")
 end
 
-function organic_history_successor_name(player, turn)
+function organic_history_successor_name(player, turn, city)
   local nation = organic_history_rule_name(player.nation)
+  local metadata = organic_history_actor_metadata_for(player)
+
+  if metadata ~= nil
+     and metadata.successor_names ~= nil
+     and #metadata.successor_names > 0 then
+    local city_id = 0
+
+    if city ~= nil and city.id ~= nil then
+      city_id = city.id
+    end
+
+    local index = ((turn + organic_history_player_id(player) + city_id)
+                   % #metadata.successor_names) + 1
+    return metadata.successor_names[index] .. " " .. turn
+  end
 
   if nation == "Roman" then
     return "Roman Secession " .. turn
@@ -978,6 +1175,23 @@ function organic_history_successor_name(player, turn)
   return organic_history_player_name(player) .. " Secession " .. turn
 end
 
+function organic_history_successor_nation(player)
+  local metadata = organic_history_actor_metadata_for(player)
+
+  if metadata ~= nil
+     and metadata.successor_nation ~= nil
+     and find ~= nil
+     and find.nation_type ~= nil then
+    local nation = find.nation_type(metadata.successor_nation)
+
+    if nation ~= nil then
+      return nation, organic_history_rule_name(nation)
+    end
+  end
+
+  return player.nation, organic_history_rule_name(player.nation)
+end
+
 function organic_history_secession_log(kind, turn, player, stress, extra)
   log.normal('organic_history_secession type=%s turn=%d player=%d stress=%d threshold=%d %s',
              kind, turn, organic_history_player_id(player), stress,
@@ -987,6 +1201,15 @@ end
 function organic_history_secession_candidate_city(player)
   local best_city = nil
   local best_score = -1
+  local best_region = "unknown"
+  local best_core = false
+  local best_peripheral = false
+  local metadata, actor_id = organic_history_actor_metadata_for(player)
+  local core_region = nil
+
+  if metadata ~= nil then
+    core_region = metadata.core_region
+  end
 
   for city in player:cities_iterate() do
     if not city:is_primary_capital()
@@ -996,16 +1219,31 @@ function organic_history_secession_candidate_city(player)
       local unrest = state.unrest or 0
       local autonomy = state.autonomy or 0
       local migration = state.migration_pressure or 0
+      local city_region = organic_history_region_for_city(city)
+      local authored_core = organic_history_city_authored_core(city, actor_id)
+      local peripheral = core_region ~= nil and city_region ~= core_region
       local score = unrest + autonomy + migration
+
+      if peripheral then
+        score = score + 0.75
+      end
+      if authored_core then
+        score = score - 0.35
+      else
+        score = score + 0.15
+      end
 
       if score > best_score then
         best_score = score
         best_city = city
+        best_region = city_region
+        best_core = authored_core
+        best_peripheral = peripheral
       end
     end
   end
 
-  return best_city, best_score
+  return best_city, best_score, best_region, best_core, best_peripheral
 end
 
 function organic_history_try_secession_fallback(turn, player, base_stress,
@@ -1025,7 +1263,15 @@ function organic_history_try_secession_fallback(turn, player, base_stress,
     return nil
   end
 
-  local city, city_score = organic_history_secession_candidate_city(player)
+  local metadata, actor_id = organic_history_actor_metadata_for(player)
+  local core_region = "unknown"
+
+  if metadata ~= nil and metadata.core_region ~= nil then
+    core_region = metadata.core_region
+  end
+
+  local city, city_score, city_region, city_core, peripheral =
+      organic_history_secession_candidate_city(player)
   if city == nil then
     organic_history_secession_log("secession_candidate", turn, player, stress,
                                   'eligible=false reason="no_candidate_city" cities='
@@ -1035,16 +1281,25 @@ function organic_history_try_secession_fallback(turn, player, base_stress,
 
   organic_history_secession_log("secession_candidate", turn, player, stress,
                                 'eligible=true city=' .. string.format("%q", city.name)
+                                .. " city_region=" .. string.format("%q", city_region)
+                                .. " core_region=" .. string.format("%q", core_region)
+                                .. " parent_actor=" .. string.format("%q", actor_id or "unknown")
+                                .. " city_core=" .. tostring(city_core)
+                                .. " peripheral=" .. tostring(peripheral)
                                 .. " city_score=" .. string.format("%.3f", city_score)
                                 .. " base_stress=" .. base_stress
                                 .. " dynastic_bonus=" .. dynastic.bonus)
 
-  local successor_name = organic_history_successor_name(player, turn)
-  local successor = edit.create_player(successor_name, player.nation, "classic")
+  local successor_name = organic_history_successor_name(player, turn, city)
+  local successor_nation, successor_nation_name =
+      organic_history_successor_nation(player)
+  local successor = edit.create_player(successor_name, successor_nation, "classic")
   if successor == nil then
     organic_history_secession_log("secession_noop", turn, player, stress,
                                   'reason="create_player_failed" successor='
-                                  .. string.format("%q", successor_name))
+                                  .. string.format("%q", successor_name)
+                                  .. " successor_nation="
+                                  .. string.format("%q", successor_nation_name))
     return nil
   end
 
@@ -1054,16 +1309,22 @@ function organic_history_try_secession_fallback(turn, player, base_stress,
                                   'reason="transfer_failed" city='
                                   .. string.format("%q", city.name)
                                   .. ' successor='
-                                  .. organic_history_player_id(successor))
+                                  .. string.format("%d", organic_history_player_id(successor)))
     return nil
   end
 
   organic_history_secession_success_this_turn = true
   organic_history_civil_war_success_this_turn = true
   organic_history_secession_log("secession_triggered", turn, player, stress,
-                                'successor=' .. organic_history_player_id(successor)
+                                'successor=' .. string.format("%d", organic_history_player_id(successor))
                                 .. " successor_name=" .. string.format("%q", successor_name)
+                                .. " successor_nation=" .. string.format("%q", successor_nation_name)
+                                .. " parent_actor=" .. string.format("%q", actor_id or "unknown")
+                                .. " core_region=" .. string.format("%q", core_region)
                                 .. " city=" .. string.format("%q", city.name)
+                                .. " city_region=" .. string.format("%q", city_region)
+                                .. " city_core=" .. tostring(city_core)
+                                .. " peripheral=" .. tostring(peripheral)
                                 .. " transferred=1")
   return successor
 end

@@ -53,10 +53,12 @@ def main() -> int:
         return 2
 
     start_game = args.load_save is None
+    resume_game = args.load_save is not None
     commands = baseline_commands(args.turns, args.players, args.seed,
                                  args.saveturns, scorefile.name, args.skill,
                                  args.extra_command,
-                                 start_game=start_game)
+                                 start_game=start_game,
+                                 resume_game=resume_game)
     ruleset_path = None
     scenario_ruleset = None
     if args.ruleset_serv:
@@ -66,7 +68,7 @@ def main() -> int:
             if scenario_ruleset is None:
                 print(f"ERROR: --load-scenario requires a simple rulesetdir in {ruleset_path}", file=sys.stderr)
                 return 2
-        else:
+        elif not args.load_save:
             commands.insert(0, f"read {ruleset_path}")
 
     command_file = output_dir / "server_commands.serv"
@@ -78,6 +80,7 @@ def main() -> int:
         command.extend(["--ruleset", scenario_ruleset])
     load_save = None
     load_scenario = None
+    load_save_turn = None
     load_path = args.load_save or args.load_scenario
     if load_path:
         resolved_load_path = load_path if load_path.is_absolute() else ROOT / load_path
@@ -85,6 +88,7 @@ def main() -> int:
             load_scenario = resolved_load_path
         else:
             load_save = resolved_load_path
+            load_save_turn = save_turn_from_path(load_save)
         command.extend(["-f", str(resolved_load_path)])
     command.extend(["-r", str(command_file)])
     run_env = server_environment()
@@ -109,6 +113,7 @@ def main() -> int:
             "scenarioRuleset": scenario_ruleset,
             "scorelogPath": str(scorefile),
             "loadSave": str(load_save) if load_save else None,
+            "loadSaveTurn": load_save_turn,
             "loadScenario": str(load_scenario) if load_scenario else None,
             "stdoutPath": str(output_dir / "server_stdout.log"),
             "stderrPath": str(output_dir / "server_stderr.log"),
@@ -136,6 +141,7 @@ def main() -> int:
         "scenarioRuleset": scenario_ruleset,
         "scorelogPath": str(scorefile),
         "loadSave": str(load_save) if load_save else None,
+        "loadSaveTurn": load_save_turn,
         "loadScenario": str(load_scenario) if load_scenario else None,
         "stdoutPath": str(output_dir / "server_stdout.log"),
         "stderrPath": str(output_dir / "server_stderr.log"),
@@ -175,10 +181,28 @@ def main() -> int:
     metadata["organicEventRiskLogCount"] = combined_log.count("organic_history_event_risk")
     metadata["organicDynasticProbeLogCount"] = combined_log.count("organic_history_dynastic_probe")
     metadata["finalTurnSeen"] = final_turn_seen(save_files)
-    metadata["success"] = (completed.returncode == 0
-                           and not metadata["logFailureFragments"]
-                           and metadata["saveCount"] > 0
-                           and metadata["scorelogExists"])
+    metadata["scenarioMetadataLogCount"] = combined_log.count("organic_history_scenario_metadata")
+    metadata["scenarioMetadataActive"] = (
+        "organic_history_scenario_metadata active=true" in combined_log
+        or "organic_history_scenario_metadata_status" in combined_log
+        and "active=true" in combined_log
+    )
+    if load_save_turn is not None and metadata["finalTurnSeen"] is not None:
+        metadata["continuedTurnCount"] = metadata["finalTurnSeen"] - load_save_turn
+        metadata["continuationAdvanced"] = metadata["continuedTurnCount"] > 0
+    else:
+        metadata["continuedTurnCount"] = None
+        metadata["continuationAdvanced"] = None
+    success = (completed.returncode == 0
+               and not metadata["logFailureFragments"]
+               and metadata["saveCount"] > 0
+               and metadata["scorelogExists"])
+    if load_save is not None:
+        success = (success
+                   and bool(metadata["continuationAdvanced"])
+                   and metadata["hookLogCount"] > 0
+                   and metadata["organicMetricLogCount"] > 0)
+    metadata["success"] = success
     write_metadata(output_dir, metadata)
     print(json.dumps(metadata, sort_keys=True))
     return 0 if metadata["success"] else 1
@@ -246,7 +270,8 @@ def write_metadata(output_dir: Path, metadata: dict[str, object]) -> None:
 
 def baseline_commands(turns: int, players: int, seed: int, saveturns: int,
                       scorefile_name: str, skill: str,
-                      extra_commands: list[str], start_game: bool = True) -> list[str]:
+                      extra_commands: list[str], start_game: bool = True,
+                      resume_game: bool = False) -> list[str]:
     commands = [
         "cmdlevel hack",
         "set timeout 1",
@@ -269,6 +294,8 @@ def baseline_commands(turns: int, players: int, seed: int, saveturns: int,
         commands.append(skill)
     if start_game:
         commands.append("start")
+    elif resume_game and "start" not in extra_commands:
+        commands.append("start")
     return commands
 
 
@@ -284,6 +311,16 @@ def final_turn_seen(save_files: list[Path]) -> int | None:
             continue
         max_turn = turn if max_turn is None else max(max_turn, turn)
     return max_turn
+
+
+def save_turn_from_path(save_file: Path) -> int | None:
+    if not save_file.name.startswith("freeciv-T"):
+        return None
+    turn_text = save_file.name.removeprefix("freeciv-T").split("-", 1)[0]
+    try:
+        return int(turn_text)
+    except ValueError:
+        return None
 
 
 def server_environment() -> dict[str, str]:

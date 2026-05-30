@@ -316,6 +316,12 @@ def build_campaign_summary(
             "civilWarInertRuns": int(sum(1 for summary in succeeded
                                         if summary.get("mechanics", {}).get("civilWarInert"))),
         },
+        "secessionDetails": [
+            detail
+            for summary in succeeded
+            for detail in summary.get("secessionDetails", [])
+            if isinstance(detail, dict)
+        ],
     }
 
 

@@ -49,6 +49,20 @@ DYNASTIC_PROBE_FIELDS = [
 MANDATE_FIELDS = ["leader_share", "cohesion", "reform_pressure", "unrest", "mandate", "stress_reduction"]
 ACTION_RE = re.compile(r'\baction="?(?P<action>[A-Za-z0-9_]+)"?')
 SECESSION_RE = re.compile(r"\borganic_history_secession\b.*\btype=(?P<type>[A-Za-z0-9_]+)")
+SECESSION_DETAIL_FIELDS = [
+    "turn",
+    "player",
+    "successor",
+    "successor_name",
+    "successor_nation",
+    "parent_actor",
+    "core_region",
+    "city",
+    "city_region",
+    "city_core",
+    "peripheral",
+    "transferred",
+]
 
 
 def main() -> int:
@@ -132,6 +146,7 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
         "dynasticProbe": log_metrics["dynasticProbe"],
         "mandate": log_metrics["mandate"],
         "secession": log_metrics["secession"],
+        "secessionDetails": log_metrics["secessionDetails"],
         "mechanics": log_metrics["mechanics"],
         "finalPlayers": final_players,
         "perTurn": score_metrics.get("perTurn", []),
@@ -184,6 +199,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
     mandate_values: dict[str, list[float]] = {field: [] for field in MANDATE_FIELDS}
     dynastic_actions: dict[str, int] = {}
     secession_types: dict[str, int] = {}
+    secession_details: list[dict[str, Any]] = []
     for log_path in sorted(run_dir.glob("server_*.log")):
         for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
             if "organic_history turn_begin" in line:
@@ -219,6 +235,8 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
                 counts["secession"] += 1
                 secession_type = secession_match.group("type")
                 secession_types[secession_type] = secession_types.get(secession_type, 0) + 1
+                if secession_type == "secession_triggered":
+                    secession_details.append(parse_line_fields(line, SECESSION_DETAIL_FIELDS))
             if "organic_history_stability" in line:
                 counts["stability"] += 1
                 stress_match = STRESS_RE.search(line)
@@ -270,6 +288,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         },
         "mandate": summarize_float_fields(mandate_values),
         "secession": dict(sorted(secession_types.items())),
+        "secessionDetails": secession_details,
     }
 
 
@@ -301,6 +320,7 @@ def compact_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "dynasticProbe": summary.get("dynasticProbe"),
         "mandate": summary.get("mandate"),
         "secession": summary.get("secession"),
+        "secessionDetails": summary.get("secessionDetails"),
         "mechanics": summary.get("mechanics"),
     }
 
@@ -325,6 +345,29 @@ def summarize_float_fields(values: dict[str, list[float]]) -> dict[str, Any]:
         }
         for field, field_values in values.items()
     }
+
+
+def parse_line_fields(line: str, fields: list[str]) -> dict[str, Any]:
+    return {
+        field: parse_scalar(match.group(1))
+        for field in fields
+        if (match := re.search(rf'\b{re.escape(field)}=("(?:[^"\\]|\\.)*"|\S+)', line))
+    }
+
+
+def parse_scalar(text: str) -> Any:
+    if len(text) >= 2 and text[0] == '"' and text[-1] == '"':
+        return text[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+    if text in ("true", "false"):
+        return text == "true"
+    try:
+        return int(text)
+    except ValueError:
+        try:
+            value = float(text)
+        except ValueError:
+            return text
+        return int(value) if value.is_integer() else value
 
 
 def mean(values: list[float]) -> float:

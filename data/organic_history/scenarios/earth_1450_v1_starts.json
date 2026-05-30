@@ -21,14 +21,17 @@
       "leader": "Isabella",
       "nation": "Spanish",
       "style": "European",
+      "coreRegion": "europe",
+      "successorNation": "Spanish",
+      "successorNames": ["Castilian Crown Secession", "Iberian Frontier Secession"],
       "research": "Navigation",
       "techs": ["Navigation", "Trade"],
       "gold": 125,
       "traits": {"Expansionist": 30, "Trader": 25, "Builder": 10},
       "start": {"x": 34, "y": 19},
-      "city": {"name": "Toledo", "x": 35, "y": 18},
+      "city": {"name": "Toledo", "x": 35, "y": 18, "region": "europe", "core": true},
       "extraCities": [
-        {"name": "Seville", "x": 35, "y": 22}
+        {"name": "Seville", "x": 35, "y": 22, "region": "europe", "core": true}
       ]
     },
     {
@@ -36,14 +39,17 @@
       "leader": "Henry",
       "nation": "Portuguese",
       "style": "European",
+      "coreRegion": "europe",
+      "successorNation": "Portuguese",
+      "successorNames": ["Portuguese Atlantic Secession", "Iberian Port Secession"],
       "research": "Seafaring",
       "techs": ["Seafaring", "Navigation"],
       "gold": 125,
       "traits": {"Expansionist": 35, "Trader": 30, "Builder": 10},
       "start": {"x": 33, "y": 20},
-      "city": {"name": "Lisbon", "x": 32, "y": 20},
+      "city": {"name": "Lisbon", "x": 32, "y": 20, "region": "europe", "core": true},
       "extraCities": [
-        {"name": "Porto", "x": 30, "y": 17}
+        {"name": "Porto", "x": 30, "y": 17, "region": "europe", "core": true}
       ]
     },
     {
@@ -51,66 +57,84 @@
       "leader": "Mehmed II",
       "nation": "Persian",
       "style": "Babylonian",
+      "coreRegion": "near_east",
+      "successorNation": "Persian",
+      "successorNames": ["Anatolian Beylik Secession", "Ottoman Frontier Secession"],
       "research": "Gunpowder",
       "techs": ["Gunpowder", "Monarchy"],
       "gold": 110,
       "start": {"x": 42, "y": 18},
-      "city": {"name": "Istanbul", "x": 42, "y": 18}
+      "city": {"name": "Istanbul", "x": 42, "y": 18, "region": "near_east", "core": true}
     },
     {
       "id": "venice",
       "leader": "Francesco Foscari",
       "nation": "Italian",
       "style": "European",
+      "coreRegion": "europe",
+      "successorNation": "Italian",
+      "successorNames": ["Venetian Terraferma Secession", "Adriatic League Secession"],
       "research": "Banking",
       "techs": ["Banking", "Trade"],
       "gold": 120,
       "start": {"x": 38, "y": 17},
-      "city": {"name": "Venice", "x": 38, "y": 17}
+      "city": {"name": "Venice", "x": 38, "y": 17, "region": "europe", "core": true}
     },
     {
       "id": "ming",
       "leader": "Xuande",
       "nation": "Chinese",
       "style": "Asian",
+      "coreRegion": "china",
+      "successorNation": "Chinese",
+      "successorNames": ["Ming Provincial Secession", "Northern Chinese Secession"],
       "research": "Invention",
       "techs": ["Invention", "Gunpowder"],
       "gold": 115,
       "start": {"x": 59, "y": 18},
-      "city": {"name": "Beijing", "x": 59, "y": 18}
+      "city": {"name": "Beijing", "x": 59, "y": 18, "region": "china", "core": true}
     },
     {
       "id": "japan",
       "leader": "Ashikaga Yoshimasa",
       "nation": "Japanese",
       "style": "Asian",
+      "coreRegion": "east_asia",
+      "successorNation": "Japanese",
+      "successorNames": ["Japanese Daimyo Secession", "Eastern Island Secession"],
       "research": "Feudalism",
       "techs": ["Feudalism", "Seafaring"],
       "gold": 80,
       "start": {"x": 64, "y": 20},
-      "city": {"name": "Kyoto", "x": 67, "y": 14}
+      "city": {"name": "Kyoto", "x": 67, "y": 14, "region": "east_asia", "core": true}
     },
     {
       "id": "aztec",
       "leader": "Moctezuma I",
       "nation": "Aztec",
       "style": "Tropical",
+      "coreRegion": "americas",
+      "successorNation": "Aztec",
+      "successorNames": ["Central Mexican Secession", "Aztec Tributary Secession"],
       "research": "Construction",
       "techs": ["Construction", "Warrior Code"],
       "gold": 75,
       "start": {"x": 14, "y": 24},
-      "city": {"name": "Tenochtitlan", "x": 15, "y": 23}
+      "city": {"name": "Tenochtitlan", "x": 15, "y": 23, "region": "americas", "core": true}
     },
     {
       "id": "inca",
       "leader": "Pachacuti",
       "nation": "Inca",
       "style": "Tropical",
+      "coreRegion": "americas",
+      "successorNation": "Inca",
+      "successorNames": ["Andean Secession", "Inca Provincial Secession"],
       "research": "Masonry",
       "techs": ["Masonry", "Pottery"],
       "gold": 75,
       "start": {"x": 18, "y": 34},
-      "city": {"name": "Cusco", "x": 18, "y": 34}
+      "city": {"name": "Cusco", "x": 18, "y": 34, "region": "americas", "core": true}
     }
   ]
 }

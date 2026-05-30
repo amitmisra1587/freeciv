@@ -14,6 +14,7 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[2]
+REGIONS_PATH = ROOT / "data" / "organic_history" / "scenario_regions.json"
 
 
 def main() -> int:
@@ -74,15 +75,22 @@ def read_json(path: Path) -> dict[str, object]:
 def resolve_starts_plan(plan_arg: Path | None, scenario: Path) -> Path | None:
     if plan_arg is not None:
         return plan_arg if plan_arg.is_absolute() else ROOT / plan_arg
-    if scenario.name.startswith("earth_ancient_v1.sav"):
-        plan = scenario.with_name("earth_ancient_v1_starts.json")
-        if plan.exists():
-            return plan
+    scenario_name = scenario.name
+    if scenario_name.endswith(".sav.gz"):
+        fixture = scenario_name.removesuffix(".sav.gz")
+    elif scenario_name.endswith(".sav"):
+        fixture = scenario_name.removesuffix(".sav")
+    else:
+        fixture = scenario.stem
+    plan = scenario.with_name(f"{fixture}_starts.json")
+    if plan.exists():
+        return plan
     return None
 
 
 def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    valid_regions = load_region_ids()
     save_text = read_save_text(scenario)
     players = parse_save_players(save_text)
     research = parse_research(save_text)
@@ -93,6 +101,8 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
     gold_mismatches: list[str] = []
     missing_techs: list[str] = []
     research_mismatches: list[str] = []
+    metadata_missing: list[str] = []
+    metadata_invalid_regions: list[str] = []
     player_matches = 0
     city_matches = 0
     coordinate_matches = 0
@@ -101,6 +111,17 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
     research_matches = 0
 
     for actor in plan.get("actors", []):
+        actor_id = actor["id"]
+        core_region = actor.get("coreRegion")
+        if not core_region:
+            metadata_missing.append(f"{actor_id}:coreRegion")
+        elif str(core_region) not in valid_regions:
+            metadata_invalid_regions.append(f"{actor_id}:coreRegion={core_region}")
+        if not actor.get("successorNames"):
+            metadata_missing.append(f"{actor_id}:successorNames")
+        if not actor.get("successorNation"):
+            metadata_missing.append(f"{actor_id}:successorNation")
+
         player = next((candidate for candidate in players
                        if candidate.get("name") == actor["leader"]
                        and candidate.get("nation") == actor["nation"]), None)
@@ -129,6 +150,14 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
 
         city_plans = [actor["city"]] + actor.get("extraCities", [])
         for city_plan in city_plans:
+            city_region = city_plan.get("region", core_region)
+            if not city_region:
+                metadata_missing.append(f"{actor_id}:{city_plan['name']}:region")
+            elif str(city_region) not in valid_regions:
+                metadata_invalid_regions.append(
+                    f"{actor_id}:{city_plan['name']}:region={city_region}")
+            if "core" not in city_plan:
+                metadata_missing.append(f"{actor_id}:{city_plan['name']}:core")
             city = next((candidate for candidate in player.get("cities", [])
                          if candidate.get("name") == city_plan["name"]), None)
             if city is None:
@@ -144,7 +173,8 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
     expected_city_count = sum(1 + len(actor.get("extraCities", []))
                               for actor in plan.get("actors", []))
     success = (not missing_players and not missing_cities and not misplaced_cities
-               and not gold_mismatches and not missing_techs and not research_mismatches)
+               and not gold_mismatches and not missing_techs and not research_mismatches
+               and not metadata_missing and not metadata_invalid_regions)
     return {
         "startPlan": str(plan_path),
         "startPlanSuccess": success,
@@ -162,6 +192,9 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
         "goldMismatches": gold_mismatches,
         "missingTechs": missing_techs,
         "researchMismatches": research_mismatches,
+        "metadataMissing": metadata_missing,
+        "metadataInvalidRegions": metadata_invalid_regions,
+        "metadataSuccess": not metadata_missing and not metadata_invalid_regions,
     }
 
 
@@ -170,6 +203,13 @@ def read_save_text(path: Path) -> str:
         with gzip.open(path, "rt", encoding="utf-8") as save_file:
             return save_file.read()
     return path.read_text(encoding="utf-8")
+
+
+def load_region_ids() -> set[str]:
+    if not REGIONS_PATH.exists():
+        return set()
+    regions = json.loads(REGIONS_PATH.read_text(encoding="utf-8")).get("regions", {})
+    return {str(region_id) for region_id in regions}
 
 
 def parse_save_players(text: str) -> list[dict[str, object]]:

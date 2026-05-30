@@ -39,6 +39,9 @@ The v1 starts plan also carries era setup:
 - starting gold
 - known era technologies
 - current research targets
+- actor `coreRegion`
+- per-city `region` and `core` flags
+- `successorNation` and `successorNames` for fallback secession lineage
 - diplomacy metadata scaffolding
 
 The diplomacy entries are not applied to Freeciv diplomatic state yet. They are
@@ -48,10 +51,22 @@ authoring path does not expose arbitrary initial diplomacy editing.
 Historical regions are defined in:
 
 - `data/organic_history/scenario_regions.json` for Python tooling
-- `data/organic_history/scenario_regions.lua` for Lua-facing conventions
+- `data/organic_history/script.lua` for Lua-facing conventions and authored
+  actor/city metadata
 
 The current region boxes are for the 80x50 earth-small coordinate space:
-Americas, Europe, Near East, Africa, Steppe, India, and China.
+Americas, Europe, Near East, Africa, Steppe, India, China, and East Asia.
+
+Lua authored actor/city metadata is intentionally gated. It activates only when
+an authored fixture is detected by exact city/tile matches, and each city entry
+must still be on its authored tile before metadata is applied. Generated maps
+therefore keep coordinate-box regions and generic successor identity even if they
+randomly contain matching leader or city names.
+
+Continuation is checked by
+`tools/organic_history/historical_continuation_gate.sh`, which reloads short
+historical scenario saves and verifies that organic-history hooks, authored
+metadata, and successor lineage resume correctly.
 
 Run a scenario directly:
 
@@ -66,13 +81,14 @@ python3 tools/organic_history/run_ai_game.py \
   --timeout 240
 ```
 
-Regenerate all v0 fixtures plus the authored ancient v1 fixture:
+Regenerate all v0 fixtures plus all authored v1 fixtures:
 
 ```sh
-python3 tools/organic_history/create_scenario_fixture.py --include-v1
+python3 tools/organic_history/create_scenario_fixture.py --include-v1 --all-v1-plans
 ```
 
-Validate v1 and its expected players, cities, gold, technologies, and research:
+Validate v1 and its expected players, cities, gold, technologies, research, and
+metadata:
 
 ```sh
 python3 tools/organic_history/validate_scenario.py \

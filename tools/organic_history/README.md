@@ -224,6 +224,22 @@ python3 tools/organic_history/run_experiment.py \
   --clean
 ```
 
+For authored scenario A/B runs, pass the scenario and label through the
+experiment wrapper:
+
+```bash
+python3 tools/organic_history/run_experiment.py \
+  --ruleset-serv data/organic_history.serv \
+  --profile runs/organic_history_phase19_successor_profile/successor_secession_v1_profile.json \
+  --scenario data/organic_history/scenarios/earth_1450_v1.sav \
+  --label phase19_1450_successor \
+  --seeds 1-3 \
+  --turns 200 \
+  --players 8 \
+  --output-dir runs/organic_history_phase19_ab_1450 \
+  --clean
+```
+
 Campaign and experiment summaries include civil-war eligibility diagnostics:
 `civilWarSkipReasons`, `civilWarInertRuns`, `candidateMechanicInert`, and
 `civilWarChecksPer1000MechanicLogs`. Use these before relaxing thresholds.
@@ -282,7 +298,12 @@ python3 tools/organic_history/compare_campaigns.py \
 ```
 
 Scenario region boxes are stored in
-`data/organic_history/scenario_regions.json`; the Lua ruleset logs
+`data/organic_history/scenario_regions.json`; the Lua ruleset also carries
+authored actor/city metadata for v1 starts so known historical cities use their
+intended core regions before falling back to coordinate boxes. Authored metadata
+activates only when an authored scenario fixture is detected by exact city/tile
+matches, so generated maps do not inherit scenario actor identities from matching
+leader or city names. The ruleset logs
 `organic_history_region`, `organic_history_prestige`,
 `organic_history_city_pressure`, `organic_history_institution`, and
 `organic_history_event_risk` diagnostics without changing gameplay.
@@ -326,17 +347,16 @@ base scenario using Freeciv's Lua edit APIs (`edit.create_player`,
 `edit.city_create`) and save with `scensave`, rather than directly editing all
 savegame player/city sections by hand.
 
-The first practical authored fixture is `earth_ancient_v1.sav`. Regenerate it
-with:
+Regenerate all authored v1 fixtures with:
 
 ```bash
-python3 tools/organic_history/create_scenario_fixture.py --include-v1
+python3 tools/organic_history/create_scenario_fixture.py --include-v1 --all-v1-plans
 ```
 
-Its historical actor/start plan is
-`data/organic_history/scenarios/earth_ancient_v1_starts.json`; validation checks
-that the saved fixture contains the expected fixed players, city coordinates,
-starting gold, known technologies, and current research:
+Historical actor/start plans are stored as `earth_*_v1_starts.json`; validation
+checks that the saved fixtures contain the expected fixed players, city
+coordinates, starting gold, known technologies, current research, and authored
+core-region/successor metadata:
 
 ```bash
 python3 tools/organic_history/validate_scenario.py \
@@ -358,6 +378,8 @@ not expose arbitrary initial diplomacy editing.
 - starting gold
 - known ancient technologies
 - current research targets
+- authored `coreRegion`, per-city `region`/`core`, `successorNation`, and
+  `successorNames` metadata used by Lua diagnostics and fallback secession
 
 The 120-turn dynastic stress A/B after era enrichment is safe:
 
@@ -525,6 +547,11 @@ Authored starts plans now exist for:
 
 Phase 13 60-turn calibration succeeded for all three era fixtures.
 
+Authored starts now also provide core-region and successor metadata. Lua uses
+that metadata for known scenario actors/cities before falling back to compact-map
+coordinate boxes, which makes mandate/core-region diagnostics and secession
+selection less dependent on distorted 80x50 geography.
+
 ## Civilization Outcome Studies
 
 Run per-civilization outcome analysis after long campaigns:
@@ -609,7 +636,10 @@ Guardrails:
 
 - max one fallback secession per turn
 - existing civil-war cooldown still applies
-- first version transfers one non-primary-capital candidate city
+- transfers one non-primary-capital, non-capital, non-government-center
+  candidate city
+- authored metadata biases selection toward peripheral/non-core cities and gives
+  successors parent/region-aware names
 - no default-on behavior
 
 Rome 3 x 200-turn A/B result:
@@ -623,6 +653,63 @@ Rome secessions=4
 ```
 
 Rome still rises, but now shows visible crisis/secession after reaching scale.
+
+Generate the metadata-aware successor profile:
+
+```bash
+python3 tools/organic_history/mechanics_profile.py \
+  --campaign-dir runs/organic_history_phase8_generated_120 \
+  --thresholds-output runs/organic_history_phase18_successor_profile/thresholds.json \
+  --profile-output runs/organic_history_phase18_successor_profile/successor_secession_v1_profile.json \
+  --mode successor
+```
+
+`civilization_outcomes.py` now preserves fallback secession lineage details:
+successor name/nation, parent actor, core region, transferred city, city region,
+and whether the transferred city was authored core or peripheral.
+
+Phase 19 long-run successor-profile A/B:
+
+```text
+generated fixed:  safe=true, final cities 84.0 -> 77.333, max share 0.259 -> 0.257, secessions=28
+ancient v1:       safe=true, final cities 76.333 -> 70.0, max share 0.234 -> 0.209, secessions=12
+medieval v1:      safe=true, final cities 68.667 -> 74.667, max share 0.341 -> 0.202, secessions=15
+1450 v1:          safe=true, final cities 91.667 -> 92.667, max share 0.216 -> 0.187, secessions=29
+```
+
+Phase 19 also hardened scenario metadata and retuned medieval Steppe/Chola
+starts. The tuned medieval fixture gives Temujin a third core steppe city
+(`Beshbalik`) and gives Rajaraja Chola a second core Indian city
+(`Kanchipuram`) plus trade/expansion traits.
+
+Historical continuation readiness:
+
+```bash
+tools/organic_history/historical_continuation_gate.sh
+```
+
+The gate creates fresh short saves and then resumes them for `earth_ancient_v1`,
+balanced `earth_medieval_v1`, and `earth_1450_v1`, both plain and
+successor-enabled. It verifies that loaded games advance turns, organic-history
+hooks resume, authored scenario metadata remains active, successor-mode dynastic
+probes continue, and a resumed Roman fallback secession keeps authored lineage.
+
+Generate a historical readiness report from the long A/B summaries plus the
+continuation gate:
+
+```bash
+python3 tools/organic_history/gameplay_readiness.py \
+  --comparison runs/organic_history_phase19_ab_ancient/experiment_summary.json \
+  --comparison runs/organic_history_phase19_ab_medieval_balanced/experiment_summary.json \
+  --comparison runs/organic_history_phase19_ab_1450/experiment_summary.json \
+  --continuation runs/organic_history_historical_continuation_gate/historical_continuation_summary.json \
+  --output runs/organic_history_phase20_historical_readiness/readiness.json
+```
+
+Phase 20 result: historical continuation/save-load now passes for ancient,
+balanced medieval, and 1450 scenarios. The readiness report says the successor
+profile is ready to evaluate for default-on historical-scenario gameplay, while
+generated-map lineage remains intentionally out of scope.
 
 ## Multi-Civilization Tuning
 
