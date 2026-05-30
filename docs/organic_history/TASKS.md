@@ -565,6 +565,45 @@ Decision:
 - Historical scenarios can now use the candidate profile through repeatable gates
   and campaign commands.
 - Generated maps remain out of scope.
+
+## Phase 22: Mandate-Loss and State-Capacity Cycles
+
+- [x] Preserve baseline: pushed Phase 18-21 commits to `origin/main`.
+- [x] Audit mandate/state-capacity signal ranges from existing historical runs.
+- [x] Add command-gated mandate-loss controls:
+  - `organic_history_mandate_loss_enabled`
+  - `organic_history_mandate_loss_threshold`
+  - `organic_history_mandate_loss_min_cities`
+  - `organic_history_mandate_loss_max_stress_modifier`
+- [x] Add `organic_history_state_capacity` diagnostics with:
+  mandate deficit, overextension, cohesion deficit, reform pressure, unrest,
+  autonomy, frontier risk, crisis, recovery, status, and stress modifier.
+- [x] Feed bounded state-capacity stress into dynastic/civil-war effective stress
+  only when mechanics and mandate-loss profile are enabled.
+- [x] Extend analysis/campaign summaries with state-capacity fields.
+- [x] Add packaged profile:
+  `tools/organic_history/profiles/historical_mandate_loss_candidate.json`.
+- [x] Add gate:
+  `tools/organic_history/historical_mandate_loss_gate.sh`.
+- [x] Run focused 3 x 120-turn mandate-loss validations:
+  - ancient v1: 3/3 succeeded, mean state-capacity modifier `0.035`,
+    secessions `3`
+  - balanced medieval v1: 3/3 succeeded, modifier `0.000`, secessions `2`
+  - 1450 v1: 3/3 succeeded, modifier `0.000`, secessions `4`
+- [x] Run a longer ancient activation probe:
+  - 1 x 200 turns succeeded
+  - mean state-capacity modifier `0.213`
+  - secessions `5`
+  - no failures or runaway civil-war triggers
+
+Decision:
+
+- Mandate-loss is implemented as a conservative, command-gated stress modifier,
+  not a scripted collapse.
+- It activates lightly in mature ancient pressure and remains inert in healthier
+  early/mid historical runs.
+- Keep it separate from the packaged historical successor candidate until longer
+  A/B evidence shows it improves decline/recovery arcs.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

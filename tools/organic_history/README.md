@@ -743,6 +743,40 @@ medieval v1: 3/3 succeeded, mean final cities 53.667, secessions=6
 
 Generated maps remain out of scope for this candidate profile.
 
+Historical mandate-loss candidate:
+
+```bash
+tools/organic_history/historical_mandate_loss_gate.sh
+```
+
+The mandate-loss profile extends the packaged successor candidate with bounded
+state-capacity pressure:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --profile tools/organic_history/profiles/historical_mandate_loss_candidate.json \
+  --scenario data/organic_history/scenarios/earth_ancient_v1.sav \
+  --seeds 1-3 \
+  --turns 120 \
+  --players 7 \
+  --output-dir runs/organic_history_phase22_mandate_loss_candidate/ancient \
+  --clean
+```
+
+Phase 22 result:
+
+```text
+ancient v1:  3/3 succeeded, state-capacity modifier mean 0.035, secessions=3
+medieval v1: 3/3 succeeded, state-capacity modifier mean 0.000, secessions=2
+1450 v1:     3/3 succeeded, state-capacity modifier mean 0.000, secessions=4
+ancient long probe: 1/1 succeeded, modifier mean 0.213, secessions=5
+```
+
+The modifier is intentionally conservative: it only applies when mandate is low,
+state size is above the configured minimum, and the mandate-loss profile is
+selected. It feeds effective stress; it does not directly script collapse.
+
 ## Multi-Civilization Tuning
 
 The Rome tuning pattern now applies to other underperformers: tune starts/traits

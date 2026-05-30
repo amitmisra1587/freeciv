@@ -157,6 +157,15 @@ tools/organic_history/historical_candidate_gate.sh
 Campaigns can select the same profile with
 `--profile tools/organic_history/profiles/historical_successor_candidate.json`.
 
+For bounded mandate-loss/state-capacity checks, use:
+
+```bash
+tools/organic_history/historical_mandate_loss_gate.sh
+```
+
+Campaigns can select that profile with
+`--profile tools/organic_history/profiles/historical_mandate_loss_candidate.json`.
+
 Use skip-reason and inertness fields in campaign summaries before relaxing
 thresholds.
 

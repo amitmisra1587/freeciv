@@ -277,6 +277,8 @@ def build_campaign_summary(
                                              for summary in succeeded)),
             "organicEventRiskLogs": int(sum(num(summary.get("logCounts", {}).get("eventRisk"))
                                            for summary in succeeded)),
+            "organicStateCapacityLogs": int(sum(num(summary.get("logCounts", {}).get("stateCapacity"))
+                                               for summary in succeeded)),
             "organicDynasticProbeLogs": int(sum(num(summary.get("logCounts", {}).get("dynasticProbe"))
                                                 for summary in succeeded)),
             "organicMandateLogs": int(sum(num(summary.get("logCounts", {}).get("mandate"))
@@ -290,9 +292,12 @@ def build_campaign_summary(
             "meanReformPressure": round(mean_metric(succeeded, "institutions", "reform_pressure"), 3),
             "meanSuccessionRisk": round(mean_metric(succeeded, "eventRisks", "succession"), 3),
             "meanFiscalRisk": round(mean_metric(succeeded, "eventRisks", "fiscal"), 3),
+            "meanStateCapacityCrisis": round(mean_metric(succeeded, "stateCapacity", "crisis"), 3),
+            "meanStateCapacityModifier": round(mean_metric(succeeded, "stateCapacity", "stress_modifier"), 3),
             "meanDynasticBonus": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "bonus"), 3),
             "meanInstitutionStressModifier": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "institution_modifier"), 3),
             "meanPressureStressModifier": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "pressure_modifier"), 3),
+            "meanDynasticStateCapacityModifier": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "state_capacity_modifier"), 3),
             "meanMandateStressReduction": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "mandate_reduction"), 3),
             "meanDynasticEffectiveStress": round(mean_nested_metric(succeeded, "dynasticProbe", "fields", "effective_stress"), 3),
             "meanMandate": round(mean_metric(succeeded, "mandate", "mandate"), 3),
@@ -350,6 +355,7 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
         "cityPressureLogs",
         "institutionLogs",
         "eventRiskLogs",
+        "stateCapacityLogs",
         "dynasticProbeLogs",
         "mandateLogs",
         "secessionLogs",
@@ -360,9 +366,12 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
         "meanReformPressure",
         "meanSuccessionRisk",
         "meanFiscalRisk",
+        "meanStateCapacityCrisis",
+        "meanStateCapacityModifier",
         "meanDynasticBonus",
         "meanInstitutionStressModifier",
         "meanPressureStressModifier",
+        "meanDynasticStateCapacityModifier",
         "meanMandateStressReduction",
         "meanDynasticEffectiveStress",
         "meanMandate",
@@ -387,6 +396,7 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
             city_pressure = summary.get("cityPressure", {})
             institutions = summary.get("institutions", {})
             event_risks = summary.get("eventRisks", {})
+            state_capacity = summary.get("stateCapacity", {})
             dynastic = summary.get("dynasticProbe", {})
             dynastic_fields = dynastic.get("fields", {}) if isinstance(dynastic, dict) else {}
             writer.writerow({
@@ -408,6 +418,7 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
                 "cityPressureLogs": log_counts.get("cityPressure"),
                 "institutionLogs": log_counts.get("institution"),
                 "eventRiskLogs": log_counts.get("eventRisk"),
+                "stateCapacityLogs": log_counts.get("stateCapacity"),
                 "dynasticProbeLogs": log_counts.get("dynasticProbe"),
                 "mandateLogs": log_counts.get("mandate"),
                 "secessionLogs": log_counts.get("secession"),
@@ -418,9 +429,12 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
                 "meanReformPressure": metric_mean(institutions, "reform_pressure"),
                 "meanSuccessionRisk": metric_mean(event_risks, "succession"),
                 "meanFiscalRisk": metric_mean(event_risks, "fiscal"),
+                "meanStateCapacityCrisis": metric_mean(state_capacity, "crisis"),
+                "meanStateCapacityModifier": metric_mean(state_capacity, "stress_modifier"),
                 "meanDynasticBonus": metric_mean(dynastic_fields, "bonus"),
                 "meanInstitutionStressModifier": metric_mean(dynastic_fields, "institution_modifier"),
                 "meanPressureStressModifier": metric_mean(dynastic_fields, "pressure_modifier"),
+                "meanDynasticStateCapacityModifier": metric_mean(dynastic_fields, "state_capacity_modifier"),
                 "meanMandateStressReduction": metric_mean(dynastic_fields, "mandate_reduction"),
                 "meanDynasticEffectiveStress": metric_mean(dynastic_fields, "effective_stress"),
                 "meanMandate": metric_mean(summary.get("mandate", {}), "mandate"),

@@ -184,6 +184,7 @@ def main() -> int:
     metadata["organicCityPressureLogCount"] = combined_log.count("organic_history_city_pressure")
     metadata["organicInstitutionLogCount"] = combined_log.count("organic_history_institution")
     metadata["organicEventRiskLogCount"] = combined_log.count("organic_history_event_risk")
+    metadata["organicStateCapacityLogCount"] = combined_log.count("organic_history_state_capacity")
     metadata["organicDynasticProbeLogCount"] = combined_log.count("organic_history_dynastic_probe")
     metadata["finalTurnSeen"] = final_turn_seen(save_files)
     metadata["scenarioMetadataLogCount"] = combined_log.count("organic_history_scenario_metadata")

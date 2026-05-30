@@ -43,6 +43,14 @@ organic_history_pressure_modifiers_enabled =
     organic_history_pressure_modifiers_enabled or false
 organic_history_pressure_max_stress_modifier =
     organic_history_pressure_max_stress_modifier or 6
+organic_history_mandate_loss_enabled =
+    organic_history_mandate_loss_enabled or false
+organic_history_mandate_loss_threshold =
+    organic_history_mandate_loss_threshold or 0.24
+organic_history_mandate_loss_min_cities =
+    organic_history_mandate_loss_min_cities or 10
+organic_history_mandate_loss_max_stress_modifier =
+    organic_history_mandate_loss_max_stress_modifier or 6
 organic_history_secession_fallback_enabled =
     organic_history_secession_fallback_enabled or false
 organic_history_secession_min_cities =
@@ -57,6 +65,7 @@ organic_history_institutions = organic_history_institutions or {}
 organic_history_event_risks = organic_history_event_risks or {}
 organic_history_region_status = organic_history_region_status or {}
 organic_history_mandates = organic_history_mandates or {}
+organic_history_state_capacity = organic_history_state_capacity or {}
 organic_history_secession_success_this_turn = false
 
 
@@ -988,6 +997,84 @@ function organic_history_log_event_risks(turn, player, cities, stress, wars,
   return risks
 end
 
+function organic_history_state_capacity_for(player, turn, cities, pressure_summary,
+                                            institution, mandate, risks)
+  local player_id = organic_history_player_id(player)
+  local mandate_score = mandate.mandate or 0
+  local cohesion = institution.cohesion or 0
+  local reform_pressure = institution.reform_pressure or 0
+  local unrest = pressure_summary.unrest or 0
+  local autonomy = pressure_summary.autonomy or 0
+  local frontier = risks.frontier or 0
+  local mandate_threshold = organic_history_mandate_loss_threshold or 0.24
+  local mandate_deficit = 0
+
+  if mandate_threshold > 0 then
+    mandate_deficit = organic_history_clamp((mandate_threshold - mandate_score)
+                                            / mandate_threshold, 0, 1)
+  end
+
+  local cohesion_deficit = organic_history_clamp((0.48 - cohesion) / 0.48, 0, 1)
+  local overextension = organic_history_clamp((cities - 10) / 12, 0, 1)
+  local crisis = organic_history_clamp(mandate_deficit * 0.35
+                                       + overextension * 0.18
+                                       + cohesion_deficit * 0.16
+                                       + reform_pressure * 0.14
+                                       + autonomy * 0.10
+                                       + frontier * 0.07, 0, 1)
+  local recovery = organic_history_clamp(mandate_score * 0.40
+                                         + cohesion * 0.30
+                                         + (1 - reform_pressure) * 0.15
+                                         + (1 - unrest) * 0.15, 0, 1)
+  local modifier = 0
+
+  if organic_history_mechanics_enabled
+     and organic_history_mandate_loss_enabled
+     and cities >= organic_history_mandate_loss_min_cities
+     and mandate_deficit > 0 then
+    modifier = math.floor(crisis
+                          * organic_history_mandate_loss_max_stress_modifier)
+  end
+
+  local status = "stable"
+  if modifier > 0 and crisis >= 0.55 then
+    status = "legitimacy_crisis"
+  elseif modifier > 0 then
+    status = "strained"
+  elseif overextension >= 0.55 and mandate_score < mandate_threshold + 0.10 then
+    status = "overextended"
+  elseif reform_pressure >= 0.55 then
+    status = "reform_crisis"
+  elseif recovery >= 0.65 then
+    status = "recovery"
+  end
+
+  local state = {
+    mandate = mandate_score,
+    mandate_deficit = mandate_deficit,
+    overextension = overextension,
+    cohesion = cohesion,
+    cohesion_deficit = cohesion_deficit,
+    reform_pressure = reform_pressure,
+    unrest = unrest,
+    autonomy = autonomy,
+    frontier_risk = frontier,
+    crisis = crisis,
+    recovery = recovery,
+    stress_modifier = modifier,
+    status = status
+  }
+  organic_history_state_capacity[player_id] = state
+
+  log.normal('organic_history_state_capacity turn=%d player=%d status=%q cities=%d mandate=%.3f mandate_deficit=%.3f overextension=%.3f cohesion=%.3f cohesion_deficit=%.3f reform_pressure=%.3f unrest=%.3f autonomy=%.3f frontier_risk=%.3f crisis=%.3f recovery=%.3f stress_modifier=%d enabled=%s',
+             turn, player_id, status, cities, mandate_score, mandate_deficit,
+             overextension, cohesion, cohesion_deficit, reform_pressure, unrest,
+             autonomy, frontier, crisis, recovery, modifier,
+             tostring(organic_history_mandate_loss_enabled))
+
+  return state
+end
+
 function organic_history_log_regional_hegemony(turn)
   local regions = {}
   organic_history_region_status = {}
@@ -1113,8 +1200,8 @@ function organic_history_log_player_metrics(turn, year)
     local institution = organic_history_update_institution(player, turn, cities,
                                                           stress, wars,
                                                           pressure_summary)
-    organic_history_mandate_for(player, pressure_summary, institution, prestige,
-                                stress)
+    local mandate = organic_history_mandate_for(player, pressure_summary,
+                                                institution, prestige, stress)
 
     log.normal('organic_history_metric turn=%d year=%d player=%d name=%q nation=%q alive=%s cities=%d units=%d gold=%d culture=%d government=%q',
                turn, year, player.id, player.name, nation,
@@ -1125,8 +1212,11 @@ function organic_history_log_player_metrics(turn, year)
                risk)
     log.normal('organic_history_prestige turn=%d player=%d cities=%d culture=%d wars=%d prestige=%d',
                turn, player.id, cities, culture, wars, prestige)
-    organic_history_log_event_risks(turn, player, cities, stress, wars, gold,
-                                    pressure_summary, institution)
+    local risks = organic_history_log_event_risks(turn, player, cities, stress,
+                                                  wars, gold, pressure_summary,
+                                                  institution)
+    organic_history_state_capacity_for(player, turn, cities, pressure_summary,
+                                       institution, mandate, risks)
   end
 end
 
@@ -1345,6 +1435,8 @@ function organic_history_dynastic_probe_context(player, base_stress)
   local bonus = 0
   local institution_modifier = 0
   local pressure_modifier = 0
+  local state_capacity = organic_history_state_capacity[player_id] or {}
+  local state_capacity_modifier = state_capacity.stress_modifier or 0
   local mandate_reduction = mandate.stress_reduction or 0
 
   if organic_history_mechanics_enabled
@@ -1366,6 +1458,12 @@ function organic_history_dynastic_probe_context(player, base_stress)
                                                            0, 1)
                                      * pressure_max + 0.5)
     end
+    if not organic_history_mandate_loss_enabled then
+      state_capacity_modifier = 0
+    end
+  else
+    mandate_reduction = 0
+    state_capacity_modifier = 0
   end
 
   return {
@@ -1377,11 +1475,15 @@ function organic_history_dynastic_probe_context(player, base_stress)
     bonus = bonus,
     institution_modifier = institution_modifier,
     pressure_modifier = pressure_modifier,
+    state_capacity_modifier = state_capacity_modifier,
+    state_capacity_crisis = state_capacity.crisis or 0,
+    state_capacity_status = state_capacity.status or "unknown",
     mandate_reduction = mandate_reduction,
     mandate = mandate.mandate or 0,
     effective_stress = organic_history_clamp(base_stress + bonus
                                              + institution_modifier
                                              + pressure_modifier
+                                             + state_capacity_modifier
                                              - mandate_reduction, 0, 100),
     max_bonus = max_bonus,
     institution_max = institution_max,
@@ -1397,13 +1499,15 @@ function organic_history_dynastic_probe_log(turn, player, base_stress, context,
     return
   end
 
-  log.normal('organic_history_dynastic_probe turn=%d player=%d action=%q reason=%q base_stress=%d succession_risk=%.3f fiscal_risk=%.3f frontier_risk=%.3f cohesion=%.3f reform_pressure=%.3f mandate=%.3f bonus=%d institution_modifier=%d pressure_modifier=%d mandate_reduction=%d max_bonus=%d institution_max=%d pressure_max=%d effective_stress=%d threshold=%d',
+  log.normal('organic_history_dynastic_probe turn=%d player=%d action=%q reason=%q base_stress=%d succession_risk=%.3f fiscal_risk=%.3f frontier_risk=%.3f cohesion=%.3f reform_pressure=%.3f mandate=%.3f bonus=%d institution_modifier=%d pressure_modifier=%d state_capacity_modifier=%d state_capacity_crisis=%.3f state_capacity_status=%q mandate_reduction=%d max_bonus=%d institution_max=%d pressure_max=%d effective_stress=%d threshold=%d',
              turn, organic_history_player_id(player), action, reason,
              base_stress, context.succession, context.fiscal,
              context.frontier, context.cohesion,
              context.reform_pressure, context.mandate, context.bonus,
              context.institution_modifier, context.pressure_modifier,
-             context.mandate_reduction, context.max_bonus,
+             context.state_capacity_modifier, context.state_capacity_crisis,
+             context.state_capacity_status, context.mandate_reduction,
+             context.max_bonus,
              context.institution_max, context.pressure_max,
              context.effective_stress, organic_history_civil_war_stress_threshold)
 end
