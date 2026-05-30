@@ -1,0 +1,90 @@
+{
+  "fixture": "earth_global_4000_v1",
+  "metadata": {
+    "name": "Organic History Earth Global 4000 BCE v1",
+    "description": "Large Earth 4000 BCE organic-history fixture with initial ancient cores and command-gated dynamic civilization emergence metadata."
+  },
+  "baseScenario": "data/scenarios/earth-large.sav",
+  "startposNations": false,
+  "ruleset": "organic_history",
+  "generationMode": "freeciv-server lua edit APIs plus scensave",
+  "notes": [
+    "Coordinates are in the 160x90 earth-large native coordinate space.",
+    "This fixture intentionally starts with early ancient cores only; later civilizations emerge through command-gated Lua mechanics.",
+    "Dynamic emergence is probabilistic and gated by organic_history_emergence_enabled."
+  ],
+  "actors": [
+    {
+      "id": "egypt",
+      "leader": "Narmer",
+      "nation": "Egyptian",
+      "style": "Classical",
+      "coreRegion": "africa",
+      "successorNation": "Egyptian",
+      "successorNames": ["Nile Delta Secession", "Upper Egyptian Secession"],
+      "research": "Masonry",
+      "techs": ["Masonry", "Pottery"],
+      "gold": 80,
+      "start": {"x": 41, "y": 40},
+      "city": {"name": "Memphis", "x": 41, "y": 40, "region": "africa", "core": true}
+    },
+    {
+      "id": "sumer",
+      "leader": "Gilgamesh",
+      "nation": "Sumerian",
+      "style": "Babylonian",
+      "coreRegion": "near_east",
+      "successorNation": "Sumerian",
+      "successorNames": ["Sumerian City Secession", "Mesopotamian Secession"],
+      "research": "Pottery",
+      "techs": ["Pottery", "Writing"],
+      "gold": 75,
+      "start": {"x": 50, "y": 39},
+      "city": {"name": "Uruk", "x": 50, "y": 39, "region": "near_east", "core": true}
+    },
+    {
+      "id": "india",
+      "leader": "Chandragupta",
+      "nation": "Indian",
+      "style": "Classical",
+      "coreRegion": "india",
+      "successorNation": "Indian",
+      "successorNames": ["Magadhan Secession", "Indian Regional Secession"],
+      "research": "Alphabet",
+      "techs": ["Alphabet", "Pottery"],
+      "gold": 70,
+      "start": {"x": 64, "y": 41},
+      "city": {"name": "Pataliputra", "x": 64, "y": 41, "region": "india", "core": true}
+    },
+    {
+      "id": "china",
+      "leader": "Qin Shi Huang",
+      "nation": "Chinese",
+      "style": "Asian",
+      "coreRegion": "china",
+      "successorNation": "Chinese",
+      "successorNames": ["Chinese Regional Secession", "Yellow River Secession"],
+      "research": "Bronze Working",
+      "techs": ["Bronze Working", "Pottery"],
+      "gold": 70,
+      "start": {"x": 81, "y": 32},
+      "city": {"name": "Chang'an", "x": 81, "y": 32, "region": "china", "core": true}
+    }
+  ],
+  "dormantActors": [
+    {"id": "greece", "leader": "Pericles", "nation": "Greek", "style": "Classical"},
+    {"id": "persia", "leader": "Cyrus", "nation": "Persian", "style": "Classical"},
+    {"id": "rome", "leader": "Romulus", "nation": "Roman", "style": "Classical"},
+    {"id": "franks", "leader": "Charlemagne", "nation": "French", "style": "European"},
+    {"id": "abbasid", "leader": "Harun al-Rashid", "nation": "Arab", "style": "Babylonian"},
+    {"id": "chola", "leader": "Rajaraja Chola", "nation": "Chola", "style": "Classical"},
+    {"id": "song", "leader": "Taizu", "nation": "Chinese", "style": "Asian"},
+    {"id": "steppe", "leader": "Temujin", "nation": "Mongol", "style": "Asian"},
+    {"id": "castile", "leader": "Isabella", "nation": "Spanish", "style": "European"},
+    {"id": "portugal", "leader": "Henry", "nation": "Portuguese", "style": "European"},
+    {"id": "ming", "leader": "Xuande", "nation": "Manchu", "style": "Asian"},
+    {"id": "japan", "leader": "Ashikaga Yoshimasa", "nation": "Japanese", "style": "Asian"},
+    {"id": "aztec", "leader": "Moctezuma I", "nation": "Aztec", "style": "Tropical"},
+    {"id": "inca", "leader": "Pachacuti", "nation": "Inca", "style": "Tropical"}
+  ]
+}

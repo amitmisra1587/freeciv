@@ -166,7 +166,8 @@ def run_resumed_lineage_check() -> dict[str, object]:
     ]
     lineage_ok = any(
         'parent_actor="rome"' in line
-        and 'successor_nation="Roman"' in line
+        and ('successor_nation="Roman"' in line
+             or 'successor_nation="Western Roman"' in line)
         and 'city="Neapolis"' in line
         and "transferred=1" in line
         for line in triggered

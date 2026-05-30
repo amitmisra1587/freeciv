@@ -166,6 +166,17 @@ tools/organic_history/historical_mandate_loss_gate.sh
 Campaigns can select that profile with
 `--profile tools/organic_history/profiles/historical_mandate_loss_candidate.json`.
 
+For the 160x90 global 4000 BCE emergence fixture, use:
+
+```bash
+tools/organic_history/global_4000_gate.sh
+```
+
+Campaigns can select that profile with
+`--profile tools/organic_history/profiles/global_4000_emergence_candidate.json`.
+Global fallback secession is currently disabled in this profile; dynamic
+emergence uses dormant future actors instead of mature-game player creation.
+
 Use skip-reason and inertness fields in campaign summaries before relaxing
 thresholds.
 

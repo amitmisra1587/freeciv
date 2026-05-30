@@ -17,11 +17,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SCENARIO_DIR = ROOT / "data" / "organic_history" / "scenarios"
+EARTH_SMALL_SOURCE = ROOT / "data" / "scenarios" / "earth-small.sav"
+EARTH_LARGE_SOURCE = ROOT / "data" / "scenarios" / "earth-large.sav"
 ANCIENT_V1_PLAN = DEFAULT_SCENARIO_DIR / "earth_ancient_v1_starts.json"
 V1_PLAN_FILES = [
     DEFAULT_SCENARIO_DIR / "earth_ancient_v1_starts.json",
     DEFAULT_SCENARIO_DIR / "earth_medieval_v1_starts.json",
     DEFAULT_SCENARIO_DIR / "earth_1450_v1_starts.json",
+    DEFAULT_SCENARIO_DIR / "earth_global_4000_v1_starts.json",
 ]
 
 FIXTURES = {
@@ -37,11 +40,16 @@ FIXTURES = {
         "name": "Organic History Earth 1450 v0",
         "description": "Minimal 1450-era organic-history fixed Earth fixture for AI-only regional and colonization testing.",
     },
+    "earth_global_4000_v0": {
+        "name": "Organic History Earth Global 4000 BCE v0",
+        "description": "Large Earth 4000 BCE organic-history fixture for dynamic civilization emergence testing.",
+        "source": EARTH_LARGE_SOURCE,
+    },
 }
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Create organic-history scenario fixtures.")
-    parser.add_argument("--source", type=Path, default=ROOT / "data" / "scenarios" / "earth-small.sav")
+    parser.add_argument("--source", type=Path, default=EARTH_SMALL_SOURCE)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_SCENARIO_DIR)
     parser.add_argument("--include-v1", action="store_true",
                         help="Generate all available earth_*_v1.sav fixtures with server/Lua authoring.")
@@ -61,7 +69,11 @@ def main() -> int:
     source_text = source.read_text(encoding="utf-8")
     output_dir.mkdir(parents=True, exist_ok=True)
     for fixture_id, metadata in FIXTURES.items():
-        fixture_text = rewrite_metadata(source_text, metadata["name"], metadata["description"])
+        fixture_source = metadata.get("source", source)
+        fixture_source = fixture_source if fixture_source.is_absolute() else ROOT / fixture_source
+        fixture_text = rewrite_metadata(fixture_source.read_text(encoding="utf-8"),
+                                        metadata["name"], metadata["description"],
+                                        fixture_source)
         output_path = output_dir / f"{fixture_id}.sav"
         output_path.write_text(fixture_text, encoding="utf-8")
         print(output_path)
@@ -72,10 +84,11 @@ def main() -> int:
     return 0
 
 
-def rewrite_metadata(source_text: str, name: str, description: str) -> str:
+def rewrite_metadata(source_text: str, name: str, description: str,
+                     source_path: Path = EARTH_SMALL_SOURCE) -> str:
     text = replace_field(source_text, "name", f'_("{name}")')
     text = replace_field(text, "description", f'_("{description}")')
-    return replace_field(text, "authors", '"The Freeciv Project; organic-history fixture generated from earth-small.sav"')
+    return replace_field(text, "authors", f'"The Freeciv Project; organic-history fixture generated from {source_path.name}"')
 
 
 def create_v1_fixture(
@@ -86,6 +99,12 @@ def create_v1_fixture(
 ) -> None:
     plan_path = plan_path if plan_path.is_absolute() else ROOT / plan_path
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    if plan.get("baseScenario"):
+        source_path = Path(str(plan["baseScenario"]))
+        source_path = source_path if source_path.is_absolute() else ROOT / source_path
+        source_text = source_path.read_text(encoding="utf-8")
+    else:
+        source_path = args.source if args.source.is_absolute() else ROOT / args.source
     actors = plan.get("actors", [])
     if not actors:
         raise SystemExit(f"No actors found in {plan_path}")
@@ -101,9 +120,12 @@ def create_v1_fixture(
     authoring_dir.mkdir(parents=True, exist_ok=True)
 
     base_path = authoring_dir / f"{fixture}_base.sav"
-    base_text = rewrite_metadata(source_text, name, description)
-    base_text = replace_field(base_text, "startpos_nations", "TRUE")
+    startpos_nations = "TRUE" if plan.get("startposNations", True) else "FALSE"
+    base_text = rewrite_metadata(source_text, name, description, source_path)
+    base_text = replace_field(base_text, "startpos_nations", startpos_nations)
+    base_text = replace_setting_row(base_text, "aifill", "0")
     base_text = replace_setting_row(base_text, "mapseed", "1")
+    base_text = replace_setting_row(base_text, "startcity", "FALSE")
     base_path.write_text(base_text, encoding="utf-8")
 
     lua_path = authoring_dir / f"{fixture}_author.lua"
@@ -151,8 +173,8 @@ def create_v1_fixture(
         raise SystemExit(f"ERROR: v1 authoring did not create {generated}; see {stdout_path}")
 
     scenario_text = read_save_text(generated)
-    scenario_text = rewrite_metadata(scenario_text, name, description)
-    scenario_text = replace_field(scenario_text, "startpos_nations", "TRUE")
+    scenario_text = rewrite_metadata(scenario_text, name, description, source_path)
+    scenario_text = replace_field(scenario_text, "startpos_nations", startpos_nations)
     scenario_text = replace_field(scenario_text, "id", '""')
     scenario_text = replace_field(scenario_text, "serverid", '""')
     scenario_text = replace_field(scenario_text, "last_turn_change_time", "0")
@@ -169,6 +191,7 @@ def create_v1_fixture(
 
 def write_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
     actors = plan["actors"]
+    dormant_actors = plan.get("dormantActors", [])
     fixture = lua_string(plan["fixture"])
     lines = [
         "local starts = {",
@@ -202,6 +225,19 @@ def write_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
                     )
                     for city_item in city_items
                 ),
+            )
+        )
+    lines.extend([
+        "}",
+        "local dormant_players = {",
+    ])
+    for actor in dormant_actors if isinstance(dormant_actors, list) else []:
+        lines.append(
+            "  {id = %s, player = %s, nation = %s},"
+            % (
+                lua_string(actor["id"]),
+                lua_string(actor["leader"]),
+                lua_string(actor["nation"]),
             )
         )
     lines.extend([
@@ -270,6 +306,18 @@ def write_v1_lua(plan: dict[str, object], lua_path: Path) -> None:
         "    killed_units = killed_units + 1",
         "  end",
         "end",
+        "for _, dormant in ipairs(dormant_players) do",
+        "  local player = find.player(dormant.player)",
+        "  if player == nil then",
+        "    error(string.format('missing dormant player %s', dormant.player))",
+        "  end",
+        "  for unit in player:units_iterate() do",
+        "    edit.unit_kill(unit, 'editor', nil)",
+        "    killed_units = killed_units + 1",
+        "  end",
+        "  log.normal('organic_history_authoring_dormant fixture=%q id=%q player=%q nation=%q',",
+        f"             {fixture}, dormant.id, player.name, player.nation:rule_name())",
+        "end",
         "log.normal('organic_history_authoring_units_removed fixture=%q units=%d',",
         f"           {fixture}, killed_units)",
         f"log.normal('organic_history_authoring_summary fixture=%q placed=%d expected=%d', {fixture}, placed, {expected_city_count(plan)})",
@@ -298,7 +346,12 @@ def authoring_start_commands(plan: dict[str, object]) -> list[str]:
         "set techlevel 0",
         "set startunits c",
     ]
-    for actor in plan["actors"]:
+    actors = list(plan["actors"])
+    dormant_actors = plan.get("dormantActors", [])
+    if isinstance(dormant_actors, list):
+        actors.extend(dormant_actors)
+
+    for actor in actors:
         leader = quote_server_arg(actor["leader"])
         commands.append(f"create {leader} classic")
         commands.append(

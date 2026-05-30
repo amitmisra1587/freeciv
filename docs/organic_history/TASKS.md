@@ -604,6 +604,53 @@ Decision:
   early/mid historical runs.
 - Keep it separate from the packaged historical successor candidate until longer
   A/B evidence shows it improves decline/recovery arcs.
+
+## Phase 24: Global 4000 BCE Scenario and Dynamic Emergence
+
+- [x] Confirm map size options:
+  - current era fixtures use `earth-small.sav` at `80x50`
+  - Freeciv also includes `earth-large.sav` at `160x90`
+- [x] Add large-Earth fixture generation support.
+- [x] Add global fixtures:
+  - `earth_global_4000_v0.sav`
+  - `earth_global_4000_v1.sav`
+  - `earth_global_4000_v1_starts.json`
+  - `earth_global_4000_timeline.json`
+- [x] Add large-map region boxes and large-map city metadata.
+- [x] Add command-gated dynamic emergence controls:
+  - `organic_history_emergence_enabled`
+  - `organic_history_emergence_probability`
+- [x] Add first-pass emergence actor table for Greece, Persia, Rome, Franks,
+  Abbasid, Chola, Song, Steppe, Castile, Portugal, Ming, Japan, Aztec, and Inca.
+- [x] Add dormant future actors to the global fixture and activate them by giving
+  them cities/tech/gold/traits instead of creating players during mature games.
+- [x] Add packaged global profile:
+  `tools/organic_history/profiles/global_4000_emergence_candidate.json`.
+- [x] Add global gate:
+  `tools/organic_history/global_4000_gate.sh`.
+- [x] Run global gate: passed.
+- [x] Run 3 x 120-turn global pilot:
+  - 3/3 succeeded
+  - mean final cities `145.333`
+  - mean max city share `0.377`
+  - Greece, Persia, Rome, and Franks emerged in all seeds by turn 120
+
+Findings:
+
+- `earth-large.sav` works as a 160x90 basis for the true-global scenario.
+- Pre-creating dormant actors is safer than calling `edit.create_player()` deep
+  into mature global games.
+- Early pilots crashed around turn 101/105 when fallback secession attempted
+  successor player creation under the large-map nation set.
+- Global fallback secession is therefore disabled/deferred in the global
+  emergence profile until large-Earth successor nation mapping is made safe.
+
+Decision:
+
+- The 160x90 global scenario is feasible for staged diagnostics.
+- Dynamic emergence exists and is command-gated.
+- Collapse/successor integration for the global scenario remains a separate
+  follow-up; do not enable fallback secession on the global emergence profile yet.
 - [x] Run Phase 6 calibration campaigns:
   `runs/organic_history_phase6_generated_80`,
   `runs/organic_history_phase6_ancient_v1_80`, and

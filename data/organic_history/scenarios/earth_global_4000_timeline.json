@@ -1,0 +1,30 @@
+{
+  "fixture": "earth_global_4000_v1",
+  "map": {
+    "source": "data/scenarios/earth-large.sav",
+    "width": 160,
+    "height": 90
+  },
+  "initialActors": ["egypt", "sumer", "india", "china"],
+  "emergenceActors": [
+    {"id": "greece", "earliestTurn": 40, "city": "Athens", "x": 41, "y": 34, "coreRegion": "europe", "predecessors": []},
+    {"id": "persia", "earliestTurn": 45, "city": "Parsa", "x": 56, "y": 36, "coreRegion": "near_east", "predecessors": ["sumer"]},
+    {"id": "rome", "earliestTurn": 55, "city": "Roma", "x": 35, "y": 32, "coreRegion": "europe", "predecessors": ["greece"]},
+    {"id": "franks", "earliestTurn": 105, "city": "Aachen", "x": 30, "y": 26, "coreRegion": "europe", "predecessors": ["rome"]},
+    {"id": "abbasid", "earliestTurn": 110, "city": "Baghdad", "x": 50, "y": 43, "coreRegion": "near_east", "predecessors": ["sumer", "persia"]},
+    {"id": "chola", "earliestTurn": 115, "city": "Kanchipuram", "x": 66, "y": 50, "coreRegion": "india", "predecessors": ["india"]},
+    {"id": "song", "earliestTurn": 115, "city": "Kaifeng", "x": 79, "y": 35, "coreRegion": "china", "predecessors": ["china"]},
+    {"id": "steppe", "earliestTurn": 125, "city": "Karakorum", "x": 82, "y": 24, "coreRegion": "steppe", "predecessors": []},
+    {"id": "castile", "earliestTurn": 160, "city": "Toledo", "x": 25, "y": 32, "coreRegion": "europe", "predecessors": ["rome", "franks"]},
+    {"id": "portugal", "earliestTurn": 160, "city": "Lisbon", "x": 23, "y": 35, "coreRegion": "europe", "predecessors": ["rome", "franks"]},
+    {"id": "ming", "earliestTurn": 160, "city": "Beijing", "x": 81, "y": 32, "coreRegion": "china", "predecessors": ["china", "song"]},
+    {"id": "japan", "earliestTurn": 160, "city": "Kyoto", "x": 95, "y": 35, "coreRegion": "east_asia", "predecessors": []},
+    {"id": "aztec", "earliestTurn": 160, "city": "Tenochtitlan", "x": 142, "y": 44, "coreRegion": "americas", "predecessors": []},
+    {"id": "inca", "earliestTurn": 160, "city": "Cusco", "x": 152, "y": 62, "coreRegion": "americas", "predecessors": []}
+  ],
+  "notes": [
+    "The Lua emergence table currently mirrors this metadata directly.",
+    "Emergence is command-gated by organic_history_emergence_enabled and probabilistic through organic_history_emergence_probability.",
+    "Turn windows are first-pass gameplay scaffolding, not final historical dates."
+  ]
+}

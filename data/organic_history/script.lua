@@ -51,6 +51,10 @@ organic_history_mandate_loss_min_cities =
     organic_history_mandate_loss_min_cities or 10
 organic_history_mandate_loss_max_stress_modifier =
     organic_history_mandate_loss_max_stress_modifier or 6
+organic_history_emergence_enabled =
+    organic_history_emergence_enabled or false
+organic_history_emergence_probability =
+    organic_history_emergence_probability or 45
 organic_history_secession_fallback_enabled =
     organic_history_secession_fallback_enabled or false
 organic_history_secession_min_cities =
@@ -66,6 +70,7 @@ organic_history_event_risks = organic_history_event_risks or {}
 organic_history_region_status = organic_history_region_status or {}
 organic_history_mandates = organic_history_mandates or {}
 organic_history_state_capacity = organic_history_state_capacity or {}
+organic_history_emergence_attempts = organic_history_emergence_attempts or {}
 organic_history_secession_success_this_turn = false
 
 
@@ -422,6 +427,7 @@ function organic_history_turn_begin(turn, year)
   organic_history_secession_success_this_turn = false
   log.normal("organic_history turn_begin turn=%d year=%d", turn, year)
   organic_history_log_scenario_metadata_status(turn)
+  organic_history_check_emergence(turn)
   organic_history_log_player_metrics(turn, year)
   organic_history_log_regional_hegemony(turn)
   organic_history_check_civil_wars(turn)
@@ -535,6 +541,17 @@ organic_history_scenario_regions = {
   steppe = {name = "Steppe", x_min = 48, x_max = 69, y_min = 6, y_max = 18}
 }
 
+organic_history_scenario_regions_large = {
+  africa = {name = "Africa", x_min = 30, x_max = 110, y_min = 38, y_max = 89},
+  americas = {name = "Americas", x_min = 0, x_max = 55, y_min = 15, y_max = 78},
+  china = {name = "China", x_min = 76, x_max = 100, y_min = 28, y_max = 46},
+  east_asia = {name = "East Asia", x_min = 88, x_max = 110, y_min = 24, y_max = 40},
+  europe = {name = "Europe", x_min = 24, x_max = 48, y_min = 20, y_max = 38},
+  india = {name = "India", x_min = 60, x_max = 76, y_min = 38, y_max = 56},
+  near_east = {name = "Near East", x_min = 45, x_max = 62, y_min = 34, y_max = 48},
+  steppe = {name = "Steppe", x_min = 55, x_max = 92, y_min = 18, y_max = 34}
+}
+
 organic_history_scenario_actor_metadata = {
   abbasid = {leader = "Harun al-Rashid", nation = "Arab", core_region = "near_east", successor_nation = "Arab", successor_names = {"Abbasid Provincial Secession", "Mesopotamian Emirate"}, core_cities = {["Baghdad"] = true}},
   africa = {leader = "Sundiata", nation = "Egyptian", core_region = "africa", successor_nation = "Egyptian", successor_names = {"Sahelian Secession", "African Regional Secession"}, core_cities = {["Niani"] = true}},
@@ -593,8 +610,94 @@ organic_history_scenario_city_metadata = {
   ["Venice"] = {actor = "venice", region = "europe", core = true, x = 38, y = 17}
 }
 
+organic_history_scenario_city_metadata_large = {
+  ["Aachen"] = {actor = "franks", region = "europe", core = true, x = 30, y = 26},
+  ["Athens"] = {actor = "greece", region = "europe", core = true, x = 41, y = 34},
+  ["Baghdad"] = {actor = "abbasid", region = "near_east", core = true, x = 50, y = 43},
+  ["Beijing"] = {actor = "ming", region = "china", core = true, x = 81, y = 32},
+  ["Chang'an"] = {actor = "china", region = "china", core = true, x = 81, y = 32},
+  ["Constantinople"] = {actor = "byzantium", region = "near_east", core = true, x = 44, y = 34},
+  ["Cusco"] = {actor = "inca", region = "americas", core = true, x = 152, y = 62},
+  ["Istanbul"] = {actor = "ottoman", region = "near_east", core = true, x = 44, y = 34},
+  ["Kaifeng"] = {actor = "song", region = "china", core = true, x = 79, y = 35},
+  ["Kanchipuram"] = {actor = "chola", region = "india", core = true, x = 66, y = 50},
+  ["Karakorum"] = {actor = "steppe", region = "steppe", core = true, x = 82, y = 24},
+  ["Kyoto"] = {actor = "japan", region = "east_asia", core = true, x = 95, y = 35},
+  ["Lisbon"] = {actor = "portugal", region = "europe", core = true, x = 23, y = 35},
+  ["Memphis"] = {actor = "egypt", region = "africa", core = true, x = 41, y = 40},
+  ["Niani"] = {actor = "africa", region = "africa", core = true, x = 31, y = 54},
+  ["Parsa"] = {actor = "persia", region = "near_east", core = true, x = 56, y = 36},
+  ["Pataliputra"] = {actor = "india", region = "india", core = true, x = 64, y = 41},
+  ["Roma"] = {actor = "rome", region = "europe", core = true, x = 35, y = 32},
+  ["Tenochtitlan"] = {actor = "aztec", region = "americas", core = true, x = 142, y = 44},
+  ["Thanjavur"] = {actor = "chola", region = "india", core = true, x = 66, y = 50},
+  ["Toledo"] = {actor = "castile", region = "europe", core = true, x = 25, y = 32},
+  ["Uruk"] = {actor = "sumer", region = "near_east", core = true, x = 50, y = 39}
+}
+
+organic_history_emergence_actors = {
+  greece = {leader = "Pericles", nation = "Greek", style = "Classical", city = "Athens", x = 41, y = 34, core_region = "europe", earliest_turn = 40, gold = 75, techs = {"Alphabet", "Writing"}},
+  persia = {leader = "Cyrus", nation = "Persian", style = "Classical", city = "Parsa", x = 56, y = 36, core_region = "near_east", earliest_turn = 45, gold = 100, techs = {"Horseback Riding", "Bronze Working", "Trade"}, traits = {Expansionist = 30, Aggressive = 25, Builder = 10}},
+  rome = {leader = "Romulus", nation = "Roman", style = "Classical", city = "Roma", x = 35, y = 32, core_region = "europe", earliest_turn = 55, gold = 100, techs = {"Warrior Code", "Bronze Working", "Trade"}, traits = {Expansionist = 40, Aggressive = 25, Builder = 10}},
+  franks = {leader = "Charlemagne", nation = "French", style = "European", city = "Aachen", x = 30, y = 26, core_region = "europe", earliest_turn = 105, gold = 90, techs = {"Monarchy", "Feudalism"}},
+  abbasid = {leader = "Harun al-Rashid", nation = "Arab", style = "Babylonian", city = "Baghdad", x = 50, y = 43, core_region = "near_east", earliest_turn = 110, gold = 100, techs = {"Philosophy", "Mathematics"}},
+  chola = {leader = "Rajaraja Chola", nation = "Chola", style = "Classical", city = "Kanchipuram", x = 66, y = 50, core_region = "india", earliest_turn = 115, gold = 105, techs = {"Seafaring", "Trade"}, traits = {Trader = 35, Expansionist = 25, Builder = 15}},
+  song = {leader = "Taizu", nation = "Chinese", style = "Asian", city = "Kaifeng", x = 79, y = 35, core_region = "china", earliest_turn = 115, gold = 115, techs = {"Invention", "Gunpowder", "Trade"}, traits = {Builder = 35, Expansionist = 20, Trader = 15}},
+  steppe = {leader = "Temujin", nation = "Mongol", style = "Asian", city = "Karakorum", x = 82, y = 24, core_region = "steppe", earliest_turn = 125, gold = 115, techs = {"Horseback Riding", "Warrior Code"}, traits = {Aggressive = 45, Expansionist = 35}},
+  castile = {leader = "Isabella", nation = "Spanish", style = "European", city = "Toledo", x = 25, y = 32, core_region = "europe", earliest_turn = 160, gold = 125, techs = {"Navigation", "Trade"}, traits = {Expansionist = 30, Trader = 25, Builder = 10}},
+  portugal = {leader = "Henry", nation = "Portuguese", style = "European", city = "Lisbon", x = 23, y = 35, core_region = "europe", earliest_turn = 160, gold = 125, techs = {"Seafaring", "Navigation"}, traits = {Expansionist = 35, Trader = 30, Builder = 10}},
+  ming = {leader = "Xuande", nation = "Manchu", style = "Asian", city = "Beijing", x = 81, y = 32, core_region = "china", earliest_turn = 160, gold = 115, techs = {"Invention", "Gunpowder"}},
+  japan = {leader = "Ashikaga Yoshimasa", nation = "Japanese", style = "Asian", city = "Kyoto", x = 95, y = 35, core_region = "east_asia", earliest_turn = 160, gold = 80, techs = {"Feudalism", "Seafaring"}},
+  aztec = {leader = "Moctezuma I", nation = "Aztec", style = "Tropical", city = "Tenochtitlan", x = 142, y = 44, core_region = "americas", earliest_turn = 160, gold = 75, techs = {"Construction", "Warrior Code"}},
+  inca = {leader = "Pachacuti", nation = "Inca", style = "Tropical", city = "Cusco", x = 152, y = 62, core_region = "americas", earliest_turn = 160, gold = 75, techs = {"Masonry", "Pottery"}}
+}
+
 organic_history_scenario_metadata_active_cache = nil
 organic_history_scenario_metadata_match_cache = nil
+organic_history_map_dimensions_cache = nil
+
+function organic_history_map_dimensions()
+  if organic_history_map_dimensions_cache ~= nil then
+    return organic_history_map_dimensions_cache
+  end
+
+  local max_x = 0
+  local max_y = 0
+
+  for tile in whole_map_iterate() do
+    if tile.x > max_x then
+      max_x = tile.x
+    end
+    if tile.y > max_y then
+      max_y = tile.y
+    end
+  end
+
+  organic_history_map_dimensions_cache = {width = max_x + 1, height = max_y + 1}
+  return organic_history_map_dimensions_cache
+end
+
+function organic_history_large_earth_active()
+  local dimensions = organic_history_map_dimensions()
+
+  return dimensions.width > 100 or dimensions.height > 60
+end
+
+function organic_history_active_regions()
+  if organic_history_large_earth_active() then
+    return organic_history_scenario_regions_large
+  end
+
+  return organic_history_scenario_regions
+end
+
+function organic_history_active_city_metadata()
+  if organic_history_large_earth_active() then
+    return organic_history_scenario_city_metadata_large
+  end
+
+  return organic_history_scenario_city_metadata
+end
 
 function organic_history_region_for_tile(tile)
   if tile == nil then
@@ -602,7 +705,7 @@ function organic_history_region_for_tile(tile)
   end
 
   for _, region_id in ipairs(organic_history_scenario_region_order) do
-    local region = organic_history_scenario_regions[region_id]
+    local region = organic_history_active_regions()[region_id]
     if tile.x >= region.x_min and tile.x <= region.x_max
        and tile.y >= region.y_min and tile.y <= region.y_max then
       return region_id, region.name
@@ -613,7 +716,7 @@ function organic_history_region_for_tile(tile)
 end
 
 function organic_history_region_name(region_id)
-  local region = organic_history_scenario_regions[region_id]
+  local region = organic_history_active_regions()[region_id]
 
   if region ~= nil then
     return region.name
@@ -631,7 +734,7 @@ function organic_history_city_metadata_for(city)
     return nil
   end
 
-  local metadata = organic_history_scenario_city_metadata[city.name]
+  local metadata = organic_history_active_city_metadata()[city.name]
 
   if organic_history_city_matches_authored_tile(city, metadata) then
     return metadata
@@ -688,7 +791,7 @@ function organic_history_scenario_metadata_active()
 
   for player in players_iterate() do
     for city in player:cities_iterate() do
-      local metadata = organic_history_scenario_city_metadata[city.name]
+      local metadata = organic_history_active_city_metadata()[city.name]
 
       if organic_history_city_matches_authored_tile(city, metadata) then
         matches = matches + 1
@@ -716,6 +819,119 @@ function organic_history_city_authored_core(city, actor_id)
   local metadata = organic_history_city_metadata_for(city)
 
   return metadata ~= nil and metadata.actor == actor_id and metadata.core
+end
+
+function organic_history_actor_exists(actor)
+  local player = organic_history_find_actor_player(actor)
+
+  return player ~= nil and player:num_cities() > 0
+end
+
+function organic_history_find_actor_player(actor)
+  for player in players_iterate() do
+    if organic_history_player_name(player) == actor.leader
+       and organic_history_rule_name(player.nation) == actor.nation then
+      return player
+    end
+  end
+
+  return nil
+end
+
+function organic_history_give_emergence_setup(player, actor)
+  local gold_delta = (actor.gold or 50) - player:gold()
+
+  if gold_delta ~= 0 then
+    edit.change_gold(player, gold_delta)
+  end
+
+  if actor.techs ~= nil then
+    for _, tech_name in ipairs(actor.techs) do
+      local tech = find.tech_type(tech_name)
+
+      if tech ~= nil then
+        edit.give_tech(player, tech, 0, false, "organic_history_emergence")
+      end
+    end
+  end
+
+  if actor.traits ~= nil then
+    for trait_name, trait_mod in pairs(actor.traits) do
+      edit.trait_mod(player, trait_name, trait_mod)
+    end
+  end
+end
+
+function organic_history_try_emergence(actor_id, actor, turn)
+  if organic_history_actor_exists(actor) then
+    return "exists"
+  end
+
+  if turn < (actor.earliest_turn or 0) then
+    return "too_early"
+  end
+
+  local attempt_key = actor_id .. ":" .. turn
+  if organic_history_emergence_attempts[attempt_key] then
+    return "already_attempted"
+  end
+  organic_history_emergence_attempts[attempt_key] = true
+
+  local probability = actor.probability or organic_history_emergence_probability or 45
+  if random(1, 100) > probability then
+    return "probability"
+  end
+
+  local tile = find.tile(actor.x, actor.y)
+  if tile == nil then
+    return "missing_tile"
+  end
+  if tile:city() ~= nil then
+    return "occupied_tile"
+  end
+
+  local player = organic_history_find_actor_player(actor)
+  if player == nil then
+    local nation = find.nation_type(actor.nation)
+    if nation == nil then
+      return "missing_nation"
+    end
+
+    player = edit.create_player(actor.leader, nation, "classic")
+  end
+  if player == nil then
+    return "create_player_failed"
+  end
+
+  local ok = edit.city_create(player, tile, actor.city, nil)
+  if not ok then
+    return "city_create_failed"
+  end
+
+  organic_history_give_emergence_setup(player, actor)
+  log.normal('organic_history_emergence turn=%d actor=%q action="spawned" player=%d leader=%q nation=%q city=%q x=%d y=%d core_region=%q',
+             turn, actor_id, organic_history_player_id(player), actor.leader,
+             actor.nation, actor.city, actor.x, actor.y, actor.core_region or "unknown")
+  return "spawned"
+end
+
+function organic_history_check_emergence(turn)
+  if not (organic_history_mechanics_enabled
+          and organic_history_emergence_enabled
+          and organic_history_large_earth_active()) then
+    return
+  end
+
+  for actor_id, actor in pairs(organic_history_emergence_actors) do
+    local action = organic_history_try_emergence(actor_id, actor, turn)
+
+    if action ~= "too_early" and action ~= "exists"
+       and action ~= "already_attempted" and action ~= "spawned" then
+      log.normal('organic_history_emergence turn=%d actor=%q action=%q earliest_turn=%d probability=%d',
+                 turn, actor_id, action, actor.earliest_turn or 0,
+                 actor.probability or organic_history_emergence_probability or 45)
+    end
+  end
 end
 
 function organic_history_city_key(city)
@@ -1266,20 +1482,61 @@ function organic_history_successor_name(player, turn, city)
 end
 
 function organic_history_successor_nation(player)
-  local metadata = organic_history_actor_metadata_for(player)
+  local metadata, actor_id = organic_history_actor_metadata_for(player)
+  local options = {
+    rome = {"Western Roman", "Italian", "Byzantine", "Roman"},
+    persia = {"Elamite", "Ottoman", "Persian"},
+    egypt = {"Mamluk", "Egyptian Arab", "Egyptian"},
+    sumer = {"Babylonian", "Assyrian", "Sumerian"},
+    china = {"Manchu", "Korean", "Chinese"},
+    india = {"Mughal", "Chola", "Indian"},
+    greece = {"Hellenic", "Greek"},
+    franks = {"Frankish", "French"},
+    abbasid = {"Arab", "Mamluk"},
+    chola = {"Chola", "Mughal", "Indian"},
+    song = {"Korean", "Manchu", "Chinese"},
+    steppe = {"Mongol", "Tatar"},
+    castile = {"Castilian", "Spanish"},
+    portugal = {"Portuguese"},
+    venice = {"Venetian", "Italian"},
+    ottoman = {"Ottoman", "Turkish", "Persian"},
+    ming = {"Manchu", "Korean", "Chinese"},
+    aztec = {"Mayan", "Aztec"},
+    inca = {"Inca", "Mayan"}
+  }
 
-  if metadata ~= nil
-     and metadata.successor_nation ~= nil
-     and find ~= nil
-     and find.nation_type ~= nil then
-    local nation = find.nation_type(metadata.successor_nation)
+  if find ~= nil and find.nation_type ~= nil then
+    local candidates = options[actor_id] or {}
 
-    if nation ~= nil then
-      return nation, organic_history_rule_name(nation)
+    if metadata ~= nil and metadata.successor_nation ~= nil then
+      table.insert(candidates, metadata.successor_nation)
+    end
+    table.insert(candidates, organic_history_rule_name(player.nation))
+    table.insert(candidates, "Confederate")
+    table.insert(candidates, "Barbarian")
+    table.insert(candidates, "Pirate")
+
+    for _, nation_name in ipairs(candidates) do
+      local nation = find.nation_type(nation_name)
+
+      if nation ~= nil and not organic_history_nation_in_use(nation_name) then
+        return nation, organic_history_rule_name(nation)
+      end
     end
   end
 
   return player.nation, organic_history_rule_name(player.nation)
+end
+
+function organic_history_nation_in_use(nation_name)
+  for other in players_iterate() do
+    if other.nation ~= nil
+       and organic_history_rule_name(other.nation) == nation_name then
+      return true
+    end
+  end
+
+  return false
 end
 
 function organic_history_secession_log(kind, turn, player, stress, extra)
@@ -1341,6 +1598,10 @@ function organic_history_try_secession_fallback(turn, player, base_stress,
   if not organic_history_secession_fallback_enabled then
     organic_history_secession_log("secession_candidate", turn, player, stress,
                                   'eligible=false reason="disabled"')
+    return nil
+  elseif organic_history_large_earth_active() and organic_history_emergence_enabled then
+    organic_history_secession_log("secession_candidate", turn, player, stress,
+                                  'eligible=false reason="global_emergence_deferred"')
     return nil
   elseif organic_history_secession_success_this_turn then
     organic_history_secession_log("secession_candidate", turn, player, stress,

@@ -777,6 +777,63 @@ The modifier is intentionally conservative: it only applies when mandate is low,
 state size is above the configured minimum, and the mandate-loss profile is
 selected. It feeds effective stress; it does not directly script collapse.
 
+## Global 4000 BCE Scenario
+
+The first true-global fixture uses Freeciv's built-in large Earth map:
+
+```text
+data/scenarios/earth-large.sav -> 160x90
+```
+
+Generated fixtures:
+
+```text
+data/organic_history/scenarios/earth_global_4000_v0.sav
+data/organic_history/scenarios/earth_global_4000_v1.sav
+data/organic_history/scenarios/earth_global_4000_v1_starts.json
+data/organic_history/scenarios/earth_global_4000_timeline.json
+```
+
+The v1 fixture starts with four ancient cores: Egypt/Narmer, Sumer/Gilgamesh,
+India/Chandragupta, and China/Qin Shi Huang. Later actors are pre-created as
+dormant players and activated by command-gated emergence, which avoids mature-game
+`edit.create_player()` crashes seen in early global pilots.
+
+Run the global gate:
+
+```bash
+tools/organic_history/global_4000_gate.sh
+```
+
+Run the current emergence candidate:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --profile tools/organic_history/profiles/global_4000_emergence_candidate.json \
+  --scenario data/organic_history/scenarios/earth_global_4000_v1.sav \
+  --seeds 1-3 \
+  --turns 120 \
+  --players 4 \
+  --output-dir runs/organic_history_phase24_global_diagnostics/pilot_3x120 \
+  --clean
+```
+
+Phase 24 pilot result:
+
+```text
+3/3 120-turn runs succeeded
+mean final cities: 145.333
+mean max city share: 0.377
+emerged in all seeds by turn 120: Greece, Persia, Rome, Franks
+```
+
+Global fallback secession is intentionally disabled/deferred in the global
+emergence profile. Early large-map pilots showed Freeciv nation-set crashes when
+creating successor players in mature global games. Dynamic emergence now uses
+dormant players; global successor/collapse integration should be reintroduced
+only after a safe successor nation mapping is implemented for large Earth.
+
 ## Multi-Civilization Tuning
 
 The Rome tuning pattern now applies to other underperformers: tune starts/traits
