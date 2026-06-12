@@ -163,6 +163,7 @@ def main() -> int:
         "Unknown command",
         "Value out of range",
         "lua error",
+        "assertion '",
     ]
     combined_log = completed.stdout + completed.stderr
     save_files = [save_file for save_file in output_dir.glob("*.sav*")
@@ -186,6 +187,36 @@ def main() -> int:
     metadata["organicEventRiskLogCount"] = combined_log.count("organic_history_event_risk")
     metadata["organicStateCapacityLogCount"] = combined_log.count("organic_history_state_capacity")
     metadata["organicDynasticProbeLogCount"] = combined_log.count("organic_history_dynastic_probe")
+    metadata["organicDynasticTransferLogCount"] = combined_log.count("organic_history_dynastic_transfer")
+    metadata["organicLineageHandoffLogCount"] = combined_log.count("organic_history_lineage_handoff")
+    metadata["organicExpansionPressureLogCount"] = combined_log.count("organic_history_expansion_pressure")
+    metadata["organicPartialContractionLogCount"] = combined_log.count("organic_history_partial_contraction")
+    metadata["organicClaimPressureLogCount"] = combined_log.count("organic_history_claim_pressure")
+    metadata["organicEmergenceConditionLogCount"] = combined_log.count("organic_history_emergence_condition")
+    metadata["organicBootstrapLogCount"] = combined_log.count("organic_history_bootstrap")
+    metadata["organicUrbanizationLogCount"] = combined_log.count("organic_history_urbanization")
+    metadata["organicBurstLogCount"] = combined_log.count("organic_history_burst")
+    metadata["organicNearEastHandoffLogCount"] = combined_log.count("organic_history_near_east_handoff")
+    metadata["organicConquestTargetLogCount"] = combined_log.count("organic_history_conquest_target")
+    metadata["organicConquestConversionLogCount"] = combined_log.count("organic_history_conquest_conversion")
+    metadata["organicSettlerConversionLogCount"] = combined_log.count("organic_history_settler_conversion")
+    metadata["organicObjectiveLogCount"] = combined_log.count("organic_history_objective")
+    metadata["organicIberianSiteLogCount"] = combined_log.count("organic_history_iberian_site ")
+    metadata["organicIberianSitePoolLogCount"] = combined_log.count("organic_history_iberian_site_pool")
+    metadata["organicIberianActivationLogCount"] = combined_log.count("organic_history_iberian_activation_order")
+    metadata["organicCoreConsolidationLogCount"] = combined_log.count("organic_history_core_consolidation")
+    metadata["organicContractionRecipientLogCount"] = combined_log.count("organic_history_contraction_recipient")
+    metadata["organicTargetOverlapLogCount"] = combined_log.count("organic_history_target_overlap")
+    metadata["organicTechFloorLogCount"] = combined_log.count("organic_history_tech_floor ")
+    metadata["organicClaimConversionLogCount"] = combined_log.count("organic_history_claim_conversion ")
+    metadata["organicFallbackSuccessorLogCount"] = combined_log.count("organic_history_fallback_successor ")
+    metadata["organicHomelandDefenseLogCount"] = combined_log.count("organic_history_homeland_defense ")
+    metadata["organicCollapseLogCount"] = combined_log.count("organic_history_collapse")
+    metadata["organicFlavorLogCount"] = combined_log.count("organic_history_flavor")
+    metadata["organicArrivalLogCount"] = combined_log.count("organic_history_arrival")
+    metadata["organicOceanCrossingLogCount"] = combined_log.count("organic_history_ocean_crossing")
+    metadata["organicContactLogCount"] = combined_log.count("organic_history_contact")
+    metadata["freecivAssertionLogCount"] = combined_log.count("assertion '")
     metadata["finalTurnSeen"] = final_turn_seen(save_files)
     metadata["scenarioMetadataLogCount"] = combined_log.count("organic_history_scenario_metadata")
     metadata["scenarioMetadataActive"] = (

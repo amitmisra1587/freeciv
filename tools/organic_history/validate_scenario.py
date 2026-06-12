@@ -15,6 +15,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 REGIONS_PATH = ROOT / "data" / "organic_history" / "scenario_regions.json"
+GLOBAL_HISTORY_PATH = ROOT / "data" / "organic_history" / "history" / "earth_global_4000.json"
 
 
 def main() -> int:
@@ -103,6 +104,7 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
     research_mismatches: list[str] = []
     metadata_missing: list[str] = []
     metadata_invalid_regions: list[str] = []
+    duplicate_nations = duplicate_player_nations(plan)
     player_matches = 0
     city_matches = 0
     coordinate_matches = 0
@@ -172,7 +174,8 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
     actor_count = len(plan.get("actors", []))
     expected_city_count = sum(1 + len(actor.get("extraCities", []))
                               for actor in plan.get("actors", []))
-    success = (not missing_players and not missing_cities and not misplaced_cities
+    success = (not duplicate_nations
+               and not missing_players and not missing_cities and not misplaced_cities
                and not gold_mismatches and not missing_techs and not research_mismatches
                and not metadata_missing and not metadata_invalid_regions)
     return {
@@ -195,7 +198,27 @@ def validate_starts_plan(scenario: Path, plan_path: Path) -> dict[str, object]:
         "metadataMissing": metadata_missing,
         "metadataInvalidRegions": metadata_invalid_regions,
         "metadataSuccess": not metadata_missing and not metadata_invalid_regions,
+        "duplicatePlayerNations": duplicate_nations,
     }
+
+
+def duplicate_player_nations(plan: dict[str, object]) -> dict[str, list[str]]:
+    by_nation: dict[str, list[str]] = {}
+    actors: list[object] = list(plan.get("actors", []))
+    dormant_actors = plan.get("dormantActors", [])
+    if isinstance(dormant_actors, list):
+        actors.extend(dormant_actors)
+
+    for actor in actors:
+        if not isinstance(actor, dict):
+            continue
+        nation = actor.get("nation")
+        actor_id = actor.get("id")
+        if isinstance(nation, str) and isinstance(actor_id, str):
+            by_nation.setdefault(nation, []).append(actor_id)
+
+    return {nation: actor_ids for nation, actor_ids in by_nation.items()
+            if len(actor_ids) > 1}
 
 
 def read_save_text(path: Path) -> str:
@@ -206,10 +229,16 @@ def read_save_text(path: Path) -> str:
 
 
 def load_region_ids() -> set[str]:
+    region_ids: set[str] = set()
     if not REGIONS_PATH.exists():
-        return set()
-    regions = json.loads(REGIONS_PATH.read_text(encoding="utf-8")).get("regions", {})
-    return {str(region_id) for region_id in regions}
+        regions = {}
+    else:
+        regions = json.loads(REGIONS_PATH.read_text(encoding="utf-8")).get("regions", {})
+    region_ids.update(str(region_id) for region_id in regions)
+    if GLOBAL_HISTORY_PATH.exists():
+        global_regions = json.loads(GLOBAL_HISTORY_PATH.read_text(encoding="utf-8")).get("regions", {})
+        region_ids.update(str(region_id) for region_id in global_regions.get("boxes", {}))
+    return region_ids
 
 
 def parse_save_players(text: str) -> list[dict[str, object]]:

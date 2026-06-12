@@ -4,12 +4,16 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import csv
+from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+import time
 from typing import Any
 
 from analyze_campaign import analyze_run
@@ -92,6 +96,12 @@ def main() -> int:
     parser.add_argument("--saveturns", type=int, default=10)
     parser.add_argument("--timeout", type=int, default=240)
     parser.add_argument("--jobs", type=int, default=1)
+    parser.add_argument("--max-load-average", type=float, default=0.0,
+                        help="Pause before launching a seed while 1-minute load average is above this value. 0 disables the guard.")
+    parser.add_argument("--load-check-interval", type=float, default=30.0,
+                        help="Seconds between load guard checks.")
+    parser.add_argument("--load-guard-timeout", type=float, default=0.0,
+                        help="Maximum seconds to wait in the load guard before failing a seed. 0 waits indefinitely.")
     parser.add_argument("--preset", choices=sorted(PRESETS), default=None)
     parser.add_argument("--output-dir", type=Path, default=ROOT / "runs" / "organic_history_campaign")
     parser.add_argument("--clean", action="store_true")
@@ -104,8 +114,8 @@ def main() -> int:
 
     if args.preset:
         apply_preset(args, PRESETS[args.preset])
-    if args.jobs != 1:
-        print("ERROR: --jobs > 1 is not enabled yet; keep campaigns sequential until isolation is proven.", file=sys.stderr)
+    if args.jobs < 1:
+        print("ERROR: --jobs must be at least 1.", file=sys.stderr)
         return 2
 
     output_dir = args.output_dir if args.output_dir.is_absolute() else ROOT / args.output_dir
@@ -117,6 +127,8 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     seeds = parse_seeds(args.seeds)
+    seed_ports = {seed: campaign_port(output_dir, index)
+                  for index, seed in enumerate(seeds)}
     manifest = {
         "rulesetServ": str(args.ruleset_serv),
         "seeds": seeds,
@@ -125,53 +137,104 @@ def main() -> int:
         "scenario": str(args.scenario) if args.scenario else None,
         "saveturns": args.saveturns,
         "timeout": args.timeout,
+        "jobs": args.jobs,
+        "maxLoadAverage": args.max_load_average,
+        "loadCheckInterval": args.load_check_interval,
+        "loadGuardTimeout": args.load_guard_timeout,
         "preset": args.preset,
         "label": args.label,
         "profile": str(args.profile) if args.profile else None,
         "extraCommands": args.extra_command,
+        "ports": seed_ports,
     }
     write_json(output_dir / "campaign_manifest.json", manifest)
 
-    summaries = []
+    summaries_by_seed: dict[int, dict[str, Any]] = {}
     failures = []
+    pending = []
     for seed in seeds:
         run_dir = output_dir / f"seed_{seed:04d}"
         existing_summary = read_json(run_dir / "run_summary.json")
         if existing_summary.get("success") and not args.clean:
-            summaries.append(existing_summary)
-            continue
-
-        run_result = run_seed(args, seed, run_dir)
-        try:
-            summary = analyze_run(run_dir)
-            write_json(run_dir / "run_summary.json", summary)
-            write_run_metrics_csv(summary, run_dir / "run_metrics.csv")
-        except Exception as exc:  # noqa: BLE001 - keep campaign failure explicit.
-            summary = {
-                "runDir": str(run_dir),
-                "success": False,
-                "seed": seed,
-                "error": f"analysis failed: {exc}",
-            }
-            write_json(run_dir / "run_summary.json", summary)
-
-        if run_result.returncode != 0:
-            summary["success"] = False
-            summary["runReturncode"] = run_result.returncode
-            write_json(run_dir / "run_summary.json", summary)
-        summaries.append(summary)
-        if not summary.get("success"):
-            failures.append({
+            summaries_by_seed[seed] = existing_summary
+            write_progress(output_dir, {
+                "event": "seed_skipped_success",
                 "seed": seed,
                 "runDir": str(run_dir),
-                "returncode": run_result.returncode,
-                "error": summary.get("error"),
             })
+            continue
+        pending.append((seed, run_dir))
 
+    write_progress(output_dir, {
+        "event": "campaign_start",
+        "jobs": args.jobs,
+        "seedsRequested": len(seeds),
+        "seedsPending": len(pending),
+        "seedsSkipped": len(seeds) - len(pending),
+    })
+    if args.jobs == 1:
+        for seed, run_dir in pending:
+            result = execute_seed(args, seed, run_dir, seed_ports[seed],
+                                  output_dir)
+            summaries_by_seed[seed] = result["summary"]
+            if result.get("failure"):
+                failures.append(result["failure"])
+    else:
+        with ThreadPoolExecutor(max_workers=args.jobs) as executor:
+            futures = {}
+            for seed, run_dir in pending:
+                write_progress(output_dir, {
+                    "event": "seed_submitted",
+                    "seed": seed,
+                    "runDir": str(run_dir),
+                    "port": seed_ports[seed],
+                })
+                future = executor.submit(execute_seed, args, seed, run_dir,
+                                         seed_ports[seed], output_dir)
+                futures[future] = seed
+            for future in as_completed(futures):
+                seed = futures[future]
+                try:
+                    result = future.result()
+                except Exception as exc:  # noqa: BLE001 - explicit seed failure.
+                    run_dir = output_dir / f"seed_{seed:04d}"
+                    summary = {
+                        "runDir": str(run_dir),
+                        "success": False,
+                        "seed": seed,
+                        "error": f"worker failed: {exc}",
+                    }
+                    write_json(run_dir / "run_summary.json", summary)
+                    result = {
+                        "summary": summary,
+                        "failure": {
+                            "seed": seed,
+                            "runDir": str(run_dir),
+                            "returncode": None,
+                            "error": summary["error"],
+                        },
+                    }
+                    write_progress(output_dir, {
+                        "event": "seed_worker_failed",
+                        "seed": seed,
+                        "runDir": str(run_dir),
+                        "error": summary["error"],
+                    })
+                summaries_by_seed[seed] = result["summary"]
+                if result.get("failure"):
+                    failures.append(result["failure"])
+
+    summaries = [summaries_by_seed[seed] for seed in seeds
+                 if seed in summaries_by_seed]
     campaign_summary = build_campaign_summary(args, seeds, summaries, failures)
     write_json(output_dir / "campaign_summary.json", campaign_summary)
     write_json(output_dir / "failed_runs.json", failures)
     write_campaign_csv(output_dir / "campaign_metrics.csv", summaries)
+    write_progress(output_dir, {
+        "event": "campaign_complete",
+        "runsSucceeded": campaign_summary["runsSucceeded"],
+        "runsFailed": campaign_summary["runsFailed"],
+    })
     print(json.dumps(campaign_summary, sort_keys=True))
     return 0 if campaign_summary["runsFailed"] == 0 else 1
 
@@ -203,7 +266,115 @@ def parse_seeds(seed_text: str) -> list[int]:
     return seeds
 
 
-def run_seed(args: argparse.Namespace, seed: int, run_dir: Path) -> subprocess.CompletedProcess[str]:
+def execute_seed(
+    args: argparse.Namespace,
+    seed: int,
+    run_dir: Path,
+    port: int,
+    campaign_dir: Path,
+) -> dict[str, Any]:
+    wait_for_load_guard(args, campaign_dir, seed)
+    write_progress(campaign_dir, {
+        "event": "seed_start",
+        "seed": seed,
+        "runDir": str(run_dir),
+        "port": port,
+    })
+    run_result = run_seed(args, seed, run_dir, port)
+    try:
+        summary = analyze_run(run_dir)
+        write_json(run_dir / "run_summary.json", summary)
+        write_run_metrics_csv(summary, run_dir / "run_metrics.csv")
+    except Exception as exc:  # noqa: BLE001 - keep campaign failure explicit.
+        summary = {
+            "runDir": str(run_dir),
+            "success": False,
+            "seed": seed,
+            "error": f"analysis failed: {exc}",
+        }
+        write_json(run_dir / "run_summary.json", summary)
+
+    if run_result.returncode != 0:
+        summary["success"] = False
+        summary["runReturncode"] = run_result.returncode
+        write_json(run_dir / "run_summary.json", summary)
+
+    failure = None
+    if not summary.get("success"):
+        failure = {
+            "seed": seed,
+            "runDir": str(run_dir),
+            "returncode": run_result.returncode,
+            "error": summary.get("error"),
+        }
+    write_progress(campaign_dir, {
+        "event": "seed_complete" if summary.get("success") else "seed_failed",
+        "seed": seed,
+        "runDir": str(run_dir),
+        "returncode": run_result.returncode,
+        "success": bool(summary.get("success")),
+        "finalTurn": summary.get("finalTurn"),
+        "elapsedSeconds": summary.get("elapsedSeconds"),
+        "error": summary.get("error"),
+    })
+    return {"summary": summary, "failure": failure}
+
+
+def wait_for_load_guard(
+    args: argparse.Namespace,
+    campaign_dir: Path,
+    seed: int,
+) -> None:
+    max_load = float(args.max_load_average or 0)
+    if max_load <= 0:
+        return
+
+    interval = max(1.0, float(args.load_check_interval or 30))
+    timeout = float(args.load_guard_timeout or 0)
+    started = time.monotonic()
+    wait_count = 0
+
+    while True:
+        load1, load5, load15 = os.getloadavg()
+        if load1 <= max_load:
+            if wait_count > 0:
+                write_progress(campaign_dir, {
+                    "event": "seed_load_guard_released",
+                    "seed": seed,
+                    "load1": round(load1, 3),
+                    "load5": round(load5, 3),
+                    "load15": round(load15, 3),
+                    "maxLoadAverage": max_load,
+                    "waitSeconds": round(time.monotonic() - started, 3),
+                })
+            return
+
+        waited = time.monotonic() - started
+        if timeout > 0 and waited >= timeout:
+            raise RuntimeError(
+                "load guard timeout: "
+                f"load1={load1:.3f} max={max_load:.3f} waited={waited:.1f}s"
+            )
+
+        write_progress(campaign_dir, {
+            "event": "seed_load_guard_wait",
+            "seed": seed,
+            "load1": round(load1, 3),
+            "load5": round(load5, 3),
+            "load15": round(load15, 3),
+            "maxLoadAverage": max_load,
+            "waitSeconds": round(waited, 3),
+        })
+        wait_count += 1
+        time.sleep(interval)
+
+
+def run_seed(
+    args: argparse.Namespace,
+    seed: int,
+    run_dir: Path,
+    port: int | None = None,
+) -> subprocess.CompletedProcess[str]:
     command = [
         sys.executable,
         "tools/organic_history/run_ai_game.py",
@@ -216,6 +387,8 @@ def run_seed(args: argparse.Namespace, seed: int, run_dir: Path) -> subprocess.C
         "--timeout", str(args.timeout),
         "--clean-output-dir",
     ]
+    if port is not None:
+        command.extend(["--port", str(port)])
     if args.scenario:
         command.extend(["--load-scenario", str(args.scenario)])
     if args.profile:
@@ -281,10 +454,58 @@ def build_campaign_summary(
                                                for summary in succeeded)),
             "organicDynasticProbeLogs": int(sum(num(summary.get("logCounts", {}).get("dynasticProbe"))
                                                 for summary in succeeded)),
+            "organicDynasticTransferLogs": int(sum(num(summary.get("logCounts", {}).get("dynasticTransfer"))
+                                                  for summary in succeeded)),
+            "organicLineageHandoffLogs": int(sum(num(summary.get("logCounts", {}).get("lineageHandoff"))
+                                                 for summary in succeeded)),
+            "organicExpansionPressureLogs": int(sum(num(summary.get("logCounts", {}).get("expansionPressure"))
+                                                   for summary in succeeded)),
+            "organicPartialContractionLogs": int(sum(num(summary.get("logCounts", {}).get("partialContraction"))
+                                                    for summary in succeeded)),
+            "organicUrbanizationLogs": int(sum(num(summary.get("logCounts", {}).get("urbanization"))
+                                              for summary in succeeded)),
+            "organicBurstLogs": int(sum(num(summary.get("logCounts", {}).get("burst"))
+                                        for summary in succeeded)),
+            "organicNearEastHandoffLogs": int(sum(num(summary.get("logCounts", {}).get("nearEastHandoff"))
+                                                  for summary in succeeded)),
+            "organicConquestTargetLogs": int(sum(num(summary.get("logCounts", {}).get("conquestTarget"))
+                                                 for summary in succeeded)),
+            "organicConquestConversionLogs": int(sum(num(summary.get("logCounts", {}).get("conquestConversion"))
+                                                     for summary in succeeded)),
+            "organicSettlerConversionLogs": int(sum(num(summary.get("logCounts", {}).get("settlerConversion"))
+                                                    for summary in succeeded)),
+            "organicObjectiveLogs": int(sum(num(summary.get("logCounts", {}).get("objective"))
+                                           for summary in succeeded)),
+            "organicIberianSiteLogs": int(sum(num(summary.get("logCounts", {}).get("iberianSite"))
+                                             for summary in succeeded)),
+            "organicIberianSitePoolLogs": int(sum(num(summary.get("logCounts", {}).get("iberianSitePool"))
+                                                for summary in succeeded)),
+            "organicIberianActivationLogs": int(sum(num(summary.get("logCounts", {}).get("iberianActivation"))
+                                                  for summary in succeeded)),
+            "organicCoreConsolidationLogs": int(sum(num(summary.get("logCounts", {}).get("coreConsolidation"))
+                                                    for summary in succeeded)),
+            "organicContractionRecipientLogs": int(sum(num(summary.get("logCounts", {}).get("contractionRecipient"))
+                                                     for summary in succeeded)),
+            "organicTargetOverlapLogs": int(sum(num(summary.get("logCounts", {}).get("targetOverlap"))
+                                              for summary in succeeded)),
+            "organicTechFloorLogs": int(sum(num(summary.get("logCounts", {}).get("techFloor"))
+                                            for summary in succeeded)),
+            "organicClaimConversionLogs": int(sum(num(summary.get("logCounts", {}).get("claimConversion"))
+                                                  for summary in succeeded)),
+            "organicFallbackSuccessorLogs": int(sum(num(summary.get("logCounts", {}).get("fallbackSuccessor"))
+                                                    for summary in succeeded)),
+            "organicHomelandDefenseLogs": int(sum(num(summary.get("logCounts", {}).get("homelandDefense"))
+                                                  for summary in succeeded)),
             "organicMandateLogs": int(sum(num(summary.get("logCounts", {}).get("mandate"))
                                           for summary in succeeded)),
             "organicSecessionLogs": int(sum(num(summary.get("logCounts", {}).get("secession"))
                                             for summary in succeeded)),
+            "organicArrivalLogs": int(sum(num(summary.get("logCounts", {}).get("arrival"))
+                                          for summary in succeeded)),
+            "organicOceanCrossingLogs": int(sum(num(summary.get("logCounts", {}).get("oceanCrossing"))
+                                               for summary in succeeded)),
+            "organicContactLogs": int(sum(num(summary.get("logCounts", {}).get("contact"))
+                                          for summary in succeeded)),
             "meanCityUnrest": round(mean_metric(succeeded, "cityPressure", "unrest"), 3),
             "meanCityAutonomy": round(mean_metric(succeeded, "cityPressure", "autonomy"), 3),
             "meanMigrationPressure": round(mean_metric(succeeded, "cityPressure", "migration_pressure"), 3),
@@ -305,8 +526,308 @@ def build_campaign_summary(
                 summary.get("dynasticProbe", {}).get("actions", {})
                 for summary in succeeded
             ),
+            "dynasticTransferActions": merge_count_maps(
+                summary.get("dynasticTransfer", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "dynasticTransferReasons": merge_count_maps(
+                summary.get("dynasticTransfer", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "dynasticTransferActorActions": merge_count_maps(
+                summary.get("dynasticTransfer", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "dynasticTransferActorReasons": merge_count_maps(
+                summary.get("dynasticTransfer", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
+            "lineageHandoffActions": merge_count_maps(
+                summary.get("lineageHandoff", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "lineageHandoffReasons": merge_count_maps(
+                summary.get("lineageHandoff", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "lineageHandoffActorActions": merge_count_maps(
+                summary.get("lineageHandoff", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "lineageHandoffActorReasons": merge_count_maps(
+                summary.get("lineageHandoff", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
+            "expansionPressureActions": merge_count_maps(
+                summary.get("expansionPressure", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "partialContractionActions": merge_count_maps(
+                summary.get("partialContraction", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "partialContractionReasons": merge_count_maps(
+                summary.get("partialContraction", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "partialContractionActorActions": merge_count_maps(
+                summary.get("partialContraction", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "partialContractionActorReasons": merge_count_maps(
+                summary.get("partialContraction", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
+            "urbanizationActions": merge_count_maps(
+                summary.get("urbanization", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "urbanizationReasons": merge_count_maps(
+                summary.get("urbanization", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "burstActions": merge_count_maps(
+                summary.get("burst", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "burstReasons": merge_count_maps(
+                summary.get("burst", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "burstActorActions": merge_count_maps(
+                summary.get("burst", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "burstActorReasons": merge_count_maps(
+                summary.get("burst", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
+            "nearEastHandoffActions": merge_count_maps(
+                summary.get("nearEastHandoff", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "nearEastHandoffReasons": merge_count_maps(
+                summary.get("nearEastHandoff", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "nearEastHandoffActorActions": merge_count_maps(
+                summary.get("nearEastHandoff", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "nearEastHandoffActorReasons": merge_count_maps(
+                summary.get("nearEastHandoff", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
+            "conquestTargetActions": merge_count_maps(
+                summary.get("conquestTarget", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "conquestTargetReasons": merge_count_maps(
+                summary.get("conquestTarget", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "conquestTargetActorActions": merge_count_maps(
+                summary.get("conquestTarget", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "conquestTargetActorReasons": merge_count_maps(
+                summary.get("conquestTarget", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
+            "conquestConversionActions": merge_count_maps(
+                summary.get("conquestConversion", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "conquestConversionReasons": merge_count_maps(
+                summary.get("conquestConversion", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "conquestConversionActorActions": merge_count_maps(
+                summary.get("conquestConversion", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "conquestConversionActorReasons": merge_count_maps(
+                summary.get("conquestConversion", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
+            "settlerConversionActions": merge_count_maps(
+                summary.get("settlerConversion", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "settlerConversionReasons": merge_count_maps(
+                summary.get("settlerConversion", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "settlerConversionActorActions": merge_count_maps(
+                summary.get("settlerConversion", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "settlerConversionActorReasons": merge_count_maps(
+                summary.get("settlerConversion", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
+            "objectiveActions": merge_count_maps(
+                summary.get("objective", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "objectiveReasons": merge_count_maps(
+                summary.get("objective", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "objectiveActorActions": merge_count_maps(
+                summary.get("objective", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "objectiveActorReasons": merge_count_maps(
+                summary.get("objective", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
+            "objectiveActorObjectives": merge_count_maps(
+                summary.get("objective", {}).get("actorObjectives", {})
+                for summary in succeeded
+            ),
+            "iberianSiteActorPlacements": merge_count_maps(
+                summary.get("iberianSite", {}).get("actorPlacements", {})
+                for summary in succeeded
+            ),
+            "iberianSiteActorTargetHolders": merge_count_maps(
+                summary.get("iberianSite", {}).get("actorTargetHolders", {})
+                for summary in succeeded
+            ),
+            "iberianSitePoolActorRegions": merge_count_maps(
+                summary.get("iberianSitePool", {}).get("actorRegions", {})
+                for summary in succeeded
+            ),
+            "iberianSitePoolActorScopes": merge_count_maps(
+                summary.get("iberianSitePool", {}).get("actorScopes", {})
+                for summary in succeeded
+            ),
+            "iberianActivationActorActions": merge_count_maps(
+                summary.get("iberianActivation", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "contractionRecipientActorCounts": merge_count_maps(
+                summary.get("contractionRecipient", {}).get("actorCounts", {})
+                for summary in succeeded
+            ),
+            "targetOverlapActorRegions": merge_count_maps(
+                summary.get("targetOverlap", {}).get("actorRegions", {})
+                for summary in succeeded
+            ),
+            "targetOverlapActorSources": merge_count_maps(
+                summary.get("targetOverlap", {}).get("actorSources", {})
+                for summary in succeeded
+            ),
+            "targetOverlapSelectedRegions": merge_count_maps(
+                summary.get("targetOverlap", {}).get("selectedRegions", {})
+                for summary in succeeded
+            ),
+            "targetOverlapTopRivals": merge_count_maps(
+                summary.get("targetOverlap", {}).get("topRivals", {})
+                for summary in succeeded
+            ),
+            "techFloorActorReasons": merge_count_maps(
+                summary.get("techFloor", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
+            "techFloorActorApplied": merge_count_maps(
+                summary.get("techFloor", {}).get("actorApplied", {})
+                for summary in succeeded
+            ),
+            "techFloorActorSkips": merge_count_maps(
+                summary.get("techFloor", {}).get("actorSkips", {})
+                for summary in succeeded
+            ),
+            "techFloorSkipReasons": merge_count_maps(
+                summary.get("techFloor", {}).get("skipReasons", {})
+                for summary in succeeded
+            ),
+            "claimConversionActorApplied": merge_count_maps(
+                summary.get("claimConversion", {}).get("actorApplied", {})
+                for summary in succeeded
+            ),
+            "claimConversionActorSkips": merge_count_maps(
+                summary.get("claimConversion", {}).get("actorSkips", {})
+                for summary in succeeded
+            ),
+            "claimConversionActorClaimClasses": merge_count_maps(
+                summary.get("claimConversion", {}).get("actorClaimClasses", {})
+                for summary in succeeded
+            ),
+            "claimConversionActorRegions": merge_count_maps(
+                summary.get("claimConversion", {}).get("actorRegions", {})
+                for summary in succeeded
+            ),
+            "claimConversionSkipReasons": merge_count_maps(
+                summary.get("claimConversion", {}).get("skipReasons", {})
+                for summary in succeeded
+            ),
+            "fallbackSuccessorOutcomes": merge_count_maps(
+                summary.get("fallbackSuccessor", {}).get("outcomes", {})
+                for summary in succeeded
+            ),
+            "fallbackSuccessorParentRegions": merge_count_maps(
+                summary.get("fallbackSuccessor", {}).get("parentRegions", {})
+                for summary in succeeded
+            ),
+            "fallbackSuccessorDormantActors": merge_count_maps(
+                summary.get("fallbackSuccessor", {}).get("dormantActors", {})
+                for summary in succeeded
+            ),
+            "homelandDefenseActorApplied": merge_count_maps(
+                summary.get("homelandDefense", {}).get("actorApplied", {})
+                for summary in succeeded
+            ),
+            "homelandDefenseActorSkips": merge_count_maps(
+                summary.get("homelandDefense", {}).get("actorSkips", {})
+                for summary in succeeded
+            ),
+            "homelandDefenseActorCities": merge_count_maps(
+                summary.get("homelandDefense", {}).get("actorCities", {})
+                for summary in succeeded
+            ),
+            "homelandDefenseSkipReasons": merge_count_maps(
+                summary.get("homelandDefense", {}).get("skipReasons", {})
+                for summary in succeeded
+            ),
+            "coreConsolidationActions": merge_count_maps(
+                summary.get("coreConsolidation", {}).get("actions", {})
+                for summary in succeeded
+            ),
+            "coreConsolidationReasons": merge_count_maps(
+                summary.get("coreConsolidation", {}).get("reasons", {})
+                for summary in succeeded
+            ),
+            "coreConsolidationActorActions": merge_count_maps(
+                summary.get("coreConsolidation", {}).get("actorActions", {})
+                for summary in succeeded
+            ),
+            "coreConsolidationActorReasons": merge_count_maps(
+                summary.get("coreConsolidation", {}).get("actorReasons", {})
+                for summary in succeeded
+            ),
             "secessionEvents": merge_count_maps(
                 summary.get("secession", {})
+                for summary in succeeded
+            ),
+            "arrivalGroups": merge_count_maps(
+                summary.get("contactDiagnostics", {}).get("arrivalGroups", {})
+                for summary in succeeded
+            ),
+            "arrivalActors": merge_count_maps(
+                summary.get("contactDiagnostics", {}).get("arrivalActors", {})
+                for summary in succeeded
+            ),
+            "oceanCrossingRoutes": merge_count_maps(
+                summary.get("contactDiagnostics", {}).get("oceanCrossingRoutes", {})
+                for summary in succeeded
+            ),
+            "oceanCrossingActors": merge_count_maps(
+                summary.get("contactDiagnostics", {}).get("oceanCrossingActors", {})
+                for summary in succeeded
+            ),
+            "contactRegions": merge_count_maps(
+                summary.get("contactDiagnostics", {}).get("contactRegions", {})
                 for summary in succeeded
             ),
             "civilWarChecks": int(sum(num(summary.get("mechanics", {}).get("civilWarChecks"))
@@ -331,6 +852,22 @@ def build_campaign_summary(
             for summary in succeeded
             for detail in summary.get("secessionDetails", [])
             if isinstance(detail, dict)
+        ],
+        "firstNewWorldArrivals": [
+            {
+                "seed": summary.get("seed"),
+                **summary.get("contactDiagnostics", {}).get("firstNewWorldArrival", {}),
+            }
+            for summary in succeeded
+            if isinstance(summary.get("contactDiagnostics", {}).get("firstNewWorldArrival"), dict)
+        ],
+        "firstOceanCrossings": [
+            {
+                "seed": summary.get("seed"),
+                **summary.get("contactDiagnostics", {}).get("firstOceanCrossing", {}),
+            }
+            for summary in succeeded
+            if isinstance(summary.get("contactDiagnostics", {}).get("firstOceanCrossing"), dict)
         ],
     }
 
@@ -357,8 +894,14 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
         "eventRiskLogs",
         "stateCapacityLogs",
         "dynasticProbeLogs",
+        "dynasticTransferLogs",
+        "expansionPressureLogs",
+        "partialContractionLogs",
         "mandateLogs",
         "secessionLogs",
+        "arrivalLogs",
+        "oceanCrossingLogs",
+        "contactLogs",
         "meanCityUnrest",
         "meanCityAutonomy",
         "meanMigrationPressure",
@@ -420,8 +963,14 @@ def write_campaign_csv(path: Path, summaries: list[dict[str, Any]]) -> None:
                 "eventRiskLogs": log_counts.get("eventRisk"),
                 "stateCapacityLogs": log_counts.get("stateCapacity"),
                 "dynasticProbeLogs": log_counts.get("dynasticProbe"),
+                "dynasticTransferLogs": log_counts.get("dynasticTransfer"),
+                "expansionPressureLogs": log_counts.get("expansionPressure"),
+                "partialContractionLogs": log_counts.get("partialContraction"),
                 "mandateLogs": log_counts.get("mandate"),
                 "secessionLogs": log_counts.get("secession"),
+                "arrivalLogs": log_counts.get("arrival"),
+                "oceanCrossingLogs": log_counts.get("oceanCrossing"),
+                "contactLogs": log_counts.get("contact"),
                 "meanCityUnrest": metric_mean(city_pressure, "unrest"),
                 "meanCityAutonomy": metric_mean(city_pressure, "autonomy"),
                 "meanMigrationPressure": metric_mean(city_pressure, "migration_pressure"),
@@ -475,12 +1024,26 @@ def write_json(path: Path, data: Any) -> None:
                     encoding="utf-8")
 
 
+def write_progress(output_dir: Path, event: dict[str, Any]) -> None:
+    event = dict(event)
+    event["timestamp"] = datetime.now(timezone.utc).isoformat()
+    with (output_dir / "campaign_progress.jsonl").open("a",
+                                                       encoding="utf-8") as progress_file:
+        progress_file.write(json.dumps(event, sort_keys=True) + "\n")
+
+
 def is_relative_to(path: Path, parent: Path) -> bool:
     try:
         path.relative_to(parent)
     except ValueError:
         return False
     return True
+
+
+def campaign_port(output_dir: Path, index: int) -> int:
+    import hashlib
+    digest = hashlib.md5(str(output_dir.resolve()).encode("utf-8")).hexdigest()
+    return 6200 + (int(digest[:6], 16) % 5000) + index
 
 
 def num(value: Any) -> float:

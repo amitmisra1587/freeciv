@@ -108,6 +108,7 @@ def create_v1_fixture(
     actors = plan.get("actors", [])
     if not actors:
         raise SystemExit(f"No actors found in {plan_path}")
+    validate_unique_player_nations(plan, plan_path)
     expected_cities = expected_city_count(plan)
     fixture = str(plan["fixture"])
     metadata = plan.get("metadata", {})
@@ -334,6 +335,34 @@ def expected_city_count(plan: dict[str, object]) -> int:
     return total
 
 
+def validate_unique_player_nations(plan: dict[str, object], plan_path: Path) -> None:
+    """Freeciv Nation_type ownership is one-to-one with players."""
+    by_nation: dict[str, list[str]] = {}
+    actors: list[object] = list(plan.get("actors", []))
+    dormant_actors = plan.get("dormantActors", [])
+    if isinstance(dormant_actors, list):
+        actors.extend(dormant_actors)
+
+    for actor in actors:
+        if not isinstance(actor, dict):
+            continue
+        nation = actor.get("nation")
+        actor_id = actor.get("id")
+        if isinstance(nation, str) and isinstance(actor_id, str):
+            by_nation.setdefault(nation, []).append(actor_id)
+
+    duplicates = {nation: actor_ids for nation, actor_ids in by_nation.items()
+                  if len(actor_ids) > 1}
+    if duplicates:
+        details = ", ".join(f"{nation}: {', '.join(actor_ids)}"
+                            for nation, actor_ids in sorted(duplicates.items()))
+        raise SystemExit(
+            f"ERROR: duplicate player nations in {plan_path}: {details}. "
+            "Each scenario player, including dormant actors, must use a unique "
+            "Freeciv nation slot."
+        )
+
+
 def authoring_start_commands(plan: dict[str, object]) -> list[str]:
     commands = [
         "cmdlevel hack",
@@ -343,6 +372,7 @@ def authoring_start_commands(plan: dict[str, object]) -> list[str]:
         "set minplayers 0",
         "set aifill 0",
         "set animals 0",
+        "set nationset all",
         "set techlevel 0",
         "set startunits c",
     ]
