@@ -31,6 +31,14 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, default=ROOT / "runs" / "organic_history_mechanics_ab")
     parser.add_argument("--label", default=None,
                         help="Experiment label stored in the manifest and arm labels.")
+    parser.add_argument("--jobs", type=int, default=1,
+                        help="Bounded local parallelism forwarded to each campaign arm.")
+    parser.add_argument("--max-load-average", type=float, default=0.0,
+                        help="Load-average guard forwarded to each campaign arm (0 disables).")
+    parser.add_argument("--load-check-interval", type=float, default=30.0,
+                        help="Seconds between load checks, forwarded to each campaign arm.")
+    parser.add_argument("--load-guard-timeout", type=float, default=0.0,
+                        help="Max seconds to wait on the load guard, forwarded to each arm.")
     parser.add_argument("--clean", action="store_true")
     args = parser.parse_args()
 
@@ -65,6 +73,8 @@ def main() -> int:
         "timeout": args.timeout,
         "scenario": str(args.scenario) if args.scenario else None,
         "label": args.label,
+        "jobs": args.jobs,
+        "maxLoadAverage": args.max_load_average,
         "thresholds": str(args.thresholds) if args.thresholds else None,
         "profile": str(args.profile) if args.profile else None,
         "mechanicCommands": mechanic_commands,
@@ -130,6 +140,10 @@ def run_campaign(
         "--players", str(args.players),
         "--saveturns", str(args.saveturns),
         "--timeout", str(args.timeout),
+        "--jobs", str(args.jobs),
+        "--max-load-average", str(args.max_load_average),
+        "--load-check-interval", str(args.load_check_interval),
+        "--load-guard-timeout", str(args.load_guard_timeout),
         "--output-dir", str(output_dir),
         "--clean",
         "--label", label,
