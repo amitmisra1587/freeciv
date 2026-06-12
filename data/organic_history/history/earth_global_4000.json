@@ -1,0 +1,2258 @@
+{
+  "schemaVersion": 1,
+  "fixture": "earth_global_4000_v1",
+  "metadata": {
+    "name": "Organic History Earth Global 4000 BCE v1",
+    "description": "Large Earth 4000 BCE organic-history fixture with initial ancient cores and command-gated dynamic civilization emergence metadata."
+  },
+  "artifacts": {
+    "startsPlan": "data/organic_history/scenarios/earth_global_4000_v1_starts.json",
+    "timeline": "data/organic_history/scenarios/earth_global_4000_timeline.json",
+    "luaRuntimeScript": "data/organic_history/script.lua"
+  },
+  "map": {
+    "source": "data/scenarios/earth-large.sav",
+    "width": 160,
+    "height": 90,
+    "startposNations": false
+  },
+  "ruleset": "organic_history",
+  "generationMode": "freeciv-server lua edit APIs plus scensave",
+  "regions": {
+    "source": "data/organic_history/scenario_regions.json",
+    "scale": "large-earth",
+    "order": [
+      "iberia",
+      "gaul",
+      "italy",
+      "balkans_aegean",
+      "anatolia",
+      "levant",
+      "mesopotamia",
+      "iran",
+      "nile",
+      "maghreb_punic_west",
+      "north_india",
+      "deccan_south_india",
+      "north_china",
+      "south_china",
+      "japan_korea",
+      "steppe_mongolia",
+      "mesoamerica",
+      "andes",
+      "europe",
+      "near_east",
+      "africa",
+      "india",
+      "china",
+      "east_asia",
+      "steppe",
+      "americas"
+    ],
+    "boxes": {
+      "africa": {
+        "name": "Africa",
+        "x_min": 30,
+        "x_max": 62,
+        "y_min": 38,
+        "y_max": 78
+      },
+      "americas": {
+        "name": "Americas",
+        "x_min": 118,
+        "x_max": 159,
+        "y_min": 15,
+        "y_max": 78
+      },
+      "anatolia": {
+        "name": "Anatolia",
+        "x_min": 44,
+        "x_max": 48,
+        "y_min": 32,
+        "y_max": 37
+      },
+      "andes": {
+        "name": "Andes",
+        "x_min": 148,
+        "x_max": 157,
+        "y_min": 55,
+        "y_max": 70
+      },
+      "balkans_aegean": {
+        "name": "Balkans and Aegean",
+        "x_min": 38,
+        "x_max": 43,
+        "y_min": 30,
+        "y_max": 37
+      },
+      "china": {
+        "name": "China",
+        "x_min": 76,
+        "x_max": 91,
+        "y_min": 28,
+        "y_max": 46
+      },
+      "deccan_south_india": {
+        "name": "Deccan and South India",
+        "x_min": 63,
+        "x_max": 70,
+        "y_min": 46,
+        "y_max": 56
+      },
+      "east_asia": {
+        "name": "East Asia",
+        "x_min": 92,
+        "x_max": 110,
+        "y_min": 24,
+        "y_max": 42
+      },
+      "europe": {
+        "name": "Europe",
+        "x_min": 20,
+        "x_max": 43,
+        "y_min": 20,
+        "y_max": 38
+      },
+      "gaul": {
+        "name": "Gaul",
+        "x_min": 28,
+        "x_max": 34,
+        "y_min": 23,
+        "y_max": 31
+      },
+      "iberia": {
+        "name": "Iberia",
+        "x_min": 20,
+        "x_max": 27,
+        "y_min": 30,
+        "y_max": 38
+      },
+      "india": {
+        "name": "India",
+        "x_min": 60,
+        "x_max": 76,
+        "y_min": 38,
+        "y_max": 56
+      },
+      "iran": {
+        "name": "Iranian Plateau",
+        "x_min": 54,
+        "x_max": 62,
+        "y_min": 34,
+        "y_max": 44
+      },
+      "italy": {
+        "name": "Italy",
+        "x_min": 34,
+        "x_max": 37,
+        "y_min": 30,
+        "y_max": 36
+      },
+      "japan_korea": {
+        "name": "Japan and Korea",
+        "x_min": 92,
+        "x_max": 110,
+        "y_min": 24,
+        "y_max": 42
+      },
+      "levant": {
+        "name": "Levant",
+        "x_min": 45,
+        "x_max": 49,
+        "y_min": 38,
+        "y_max": 42
+      },
+      "maghreb_punic_west": {
+        "name": "Maghreb and Punic West",
+        "x_min": 30,
+        "x_max": 38,
+        "y_min": 38,
+        "y_max": 45
+      },
+      "mesoamerica": {
+        "name": "Mesoamerica",
+        "x_min": 136,
+        "x_max": 148,
+        "y_min": 38,
+        "y_max": 50
+      },
+      "mesopotamia": {
+        "name": "Mesopotamia",
+        "x_min": 49,
+        "x_max": 53,
+        "y_min": 37,
+        "y_max": 44
+      },
+      "near_east": {
+        "name": "Near East",
+        "x_min": 44,
+        "x_max": 62,
+        "y_min": 34,
+        "y_max": 48
+      },
+      "nile": {
+        "name": "Nile Valley",
+        "x_min": 39,
+        "x_max": 43,
+        "y_min": 38,
+        "y_max": 49
+      },
+      "north_china": {
+        "name": "North China",
+        "x_min": 76,
+        "x_max": 86,
+        "y_min": 28,
+        "y_max": 36
+      },
+      "north_india": {
+        "name": "North India",
+        "x_min": 60,
+        "x_max": 67,
+        "y_min": 38,
+        "y_max": 45
+      },
+      "south_china": {
+        "name": "South China",
+        "x_min": 76,
+        "x_max": 91,
+        "y_min": 37,
+        "y_max": 46
+      },
+      "steppe": {
+        "name": "Steppe",
+        "x_min": 55,
+        "x_max": 92,
+        "y_min": 18,
+        "y_max": 30
+      },
+      "steppe_mongolia": {
+        "name": "Mongolian Steppe",
+        "x_min": 76,
+        "x_max": 92,
+        "y_min": 18,
+        "y_max": 30
+      }
+    }
+  },
+  "historicalGravity": {
+    "principle": "Historical roles are pressure and opportunity, not scripted destiny. Mechanics must be condition-gated, avoidable through good management, and probabilistic when pressure is high.",
+    "conditionGates": {
+      "collapseOrContraction": [
+        "sustained_high_collapse_risk",
+        "overextension",
+        "low_core_control",
+        "low_mandate",
+        "low_cohesion",
+        "high_unrest_or_autonomy",
+        "fiscal_or_war_stress",
+        "validated_release_candidates"
+      ],
+      "dynasticTransfer": [
+        "successor_window_open",
+        "predecessor_low_mandate_or_fragmented",
+        "successor_core_controlled_by_predecessor_or_foreign_holder",
+        "validated_core_transfer_or_claimant_site",
+        "no_recent_birth_protection"
+      ],
+      "regionalExpansionPressure": [
+        "below_target_city_curve",
+        "under_owned_core_or_historical_region",
+        "nearby_weak_holder_or_vacant_site",
+        "sufficient_economy_or_profile_bootstrap",
+        "no_active_collapse_crisis"
+      ],
+      "contactShock": [
+        "actual_old_world_new_world_contact",
+        "isolation_or_low_contact_immunity",
+        "population_density_or_city_size",
+        "development_and_diplomacy_modifiers"
+      ]
+    },
+    "escapeRoutes": {
+      "generic": [
+        "high_core_control",
+        "high_mandate",
+        "high_cohesion",
+        "low_unrest",
+        "positive_economy",
+        "adequate_garrisons",
+        "defensive_investment",
+        "successful_reform",
+        "good_diplomacy",
+        "restrained_expansion"
+      ],
+      "examples": {
+        "rome": "A Rome with strong Italy/core control, good cohesion, and restrained frontier overreach should avoid collapse pressure.",
+        "china": "A high-mandate, unified China should continue or reform instead of always being replaced by Song or Ming.",
+        "new_world": "Aztec/Inca outcomes after contact should vary with development, diplomacy, geography, and preparedness."
+      }
+    },
+    "outcomeWeights": {
+      "collapsePressure": {
+        "recovery": 20,
+        "reform": 20,
+        "autonomy_increase": 25,
+        "single_city_release": 20,
+        "regional_cluster_release": 10,
+        "no_event": 5
+      },
+      "dynasticPressure": {
+        "continuity": 25,
+        "reform_or_rename": 25,
+        "claimant_spawn": 20,
+        "core_inheritance": 20,
+        "delay": 10
+      },
+      "expansionPressure": {
+        "settlement_support": 35,
+        "defensive_support": 20,
+        "offensive_support": 20,
+        "economic_support": 15,
+        "no_event": 10
+      }
+    },
+    "mechanicSeparation": {
+      "historicalDataRole": "Defines claims, niches, successor identities, expected pressures, and flavor.",
+      "mechanicTriggerRole": "Generic mechanics decide whether current overextension, mandate, core control, contact, war, or economy conditions justify pressure.",
+      "forbiddenPattern": "Do not fire events only because an actor and calendar date match history."
+    }
+  },
+  "lifecycleArchetypes": {
+    "initial_core": {
+      "description": "Original 4000 BCE cores that should face pressure, reform, contraction, and successors rather than simple scripted death.",
+      "bootstrapPackage": {
+        "gold": 0,
+        "defenders": 0,
+        "settlers": 0,
+        "workers": 0,
+        "ships": 0
+      },
+      "targetCityCurve": {
+        "turnsAfterBirth10": [
+          1,
+          8
+        ],
+        "turnsAfterBirth30": [
+          2,
+          16
+        ],
+        "turnsAfterBirth60": [
+          3,
+          28
+        ]
+      },
+      "successorMode": [
+        "continuity",
+        "reform_or_rename",
+        "regional_split",
+        "claimant_spawn"
+      ],
+      "birthProtectionTurns": 0,
+      "contractionRules": {
+        "sustainedRiskTurns": 12,
+        "minCities": 12,
+        "firstEffect": "autonomy_increase"
+      },
+      "escapeRoutes": [
+        "high_core_control",
+        "high_mandate",
+        "high_cohesion",
+        "positive_economy",
+        "restrained_expansion"
+      ],
+      "outcomeWeights": {
+        "continuity": 30,
+        "reform": 25,
+        "regional_split": 25,
+        "claimant_spawn": 10,
+        "no_event": 10
+      }
+    },
+    "imperial_claimant": {
+      "description": "Expansion-oriented land empires that need enough early agency to reach regional scale before collapse pressure matters.",
+      "bootstrapPackage": {
+        "gold": 150,
+        "defenders": 3,
+        "offensiveUnits": 4,
+        "settlers": 2,
+        "workers": 1,
+        "ships": 0
+      },
+      "targetCityCurve": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          4,
+          8
+        ],
+        "turnsAfterBirth60": [
+          6,
+          14
+        ]
+      },
+      "successorMode": [
+        "claimant_spawn",
+        "core_inheritance",
+        "regional_split",
+        "delay"
+      ],
+      "birthProtectionTurns": 12,
+      "contractionRules": {
+        "sustainedRiskTurns": 10,
+        "minCities": 8,
+        "firstEffect": "autonomy_increase"
+      },
+      "escapeRoutes": [
+        "core_consolidation",
+        "successful_reform",
+        "high_garrison_ratio",
+        "positive_economy"
+      ],
+      "outcomeWeights": {
+        "expansion_support": 35,
+        "defensive_support": 20,
+        "claimant_pressure": 20,
+        "delay": 15,
+        "no_event": 10
+      }
+    },
+    "dynastic_successor": {
+      "description": "Successor identities that should often transform or inherit from predecessors instead of appearing as weak one-city rivals.",
+      "bootstrapPackage": {
+        "gold": 155,
+        "defenders": 3,
+        "offensiveUnits": 2,
+        "settlers": 2,
+        "workers": 1,
+        "ships": 0
+      },
+      "targetCityCurve": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          9
+        ],
+        "turnsAfterBirth60": [
+          5,
+          15
+        ]
+      },
+      "successorMode": [
+        "continuity",
+        "reform_or_rename",
+        "core_inheritance",
+        "regional_split",
+        "claimant_spawn",
+        "delay"
+      ],
+      "birthProtectionTurns": 15,
+      "contractionRules": {
+        "sustainedRiskTurns": 10,
+        "minCities": 8,
+        "firstEffect": "autonomy_increase"
+      },
+      "escapeRoutes": [
+        "predecessor_high_mandate",
+        "predecessor_high_core_control",
+        "peaceful_reform",
+        "strong_defense"
+      ],
+      "outcomeWeights": {
+        "continuity": 25,
+        "reform_or_rename": 25,
+        "core_inheritance": 20,
+        "claimant_spawn": 15,
+        "regional_split": 10,
+        "delay": 5
+      }
+    },
+    "maritime_trader": {
+      "description": "Coastal trade and colonial powers that need ships, settlers, and coastal pressure rather than inland empire behavior.",
+      "bootstrapPackage": {
+        "gold": 175,
+        "defenders": 3,
+        "offensiveUnits": 1,
+        "settlers": 3,
+        "workers": 1,
+        "ships": 2
+      },
+      "targetCityCurve": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          7
+        ],
+        "turnsAfterBirth60": [
+          4,
+          12
+        ]
+      },
+      "successorMode": [
+        "claimant_spawn",
+        "maritime_colony",
+        "trade_network",
+        "delay"
+      ],
+      "birthProtectionTurns": 12,
+      "contractionRules": {
+        "sustainedRiskTurns": 10,
+        "minCities": 6,
+        "firstEffect": "autonomy_increase"
+      },
+      "escapeRoutes": [
+        "naval_security",
+        "coastal_core_control",
+        "positive_economy",
+        "good_diplomacy"
+      ],
+      "outcomeWeights": {
+        "ship_settler_support": 35,
+        "trade_support": 25,
+        "defensive_support": 15,
+        "claimant_pressure": 15,
+        "no_event": 10
+      }
+    },
+    "steppe_conqueror": {
+      "description": "Mobile steppe polities that should get burst potential against rich, fragmented, under-defended neighbors.",
+      "bootstrapPackage": {
+        "gold": 150,
+        "defenders": 1,
+        "offensiveUnits": 7,
+        "settlers": 1,
+        "workers": 0,
+        "ships": 0
+      },
+      "targetCityCurve": {
+        "turnsAfterBirth10": [
+          1,
+          3
+        ],
+        "turnsAfterBirth30": [
+          3,
+          9
+        ],
+        "turnsAfterBirth60": [
+          5,
+          18
+        ]
+      },
+      "successorMode": [
+        "conquest_burst",
+        "regional_split",
+        "delay"
+      ],
+      "birthProtectionTurns": 12,
+      "contractionRules": {
+        "sustainedRiskTurns": 8,
+        "minCities": 8,
+        "firstEffect": "autonomy_increase"
+      },
+      "escapeRoutes": [
+        "neighbor_strong_defense",
+        "poor_steppe_economy",
+        "failed_conquest",
+        "good_diplomacy"
+      ],
+      "outcomeWeights": {
+        "mobile_army_support": 40,
+        "claimant_pressure": 20,
+        "regional_split": 15,
+        "delay": 15,
+        "no_event": 10
+      }
+    },
+    "island_core": {
+      "description": "Island civilizations that need durable island setup and protection from premature extinction.",
+      "bootstrapPackage": {
+        "gold": 100,
+        "defenders": 2,
+        "offensiveUnits": 0,
+        "settlers": 2,
+        "workers": 1,
+        "ships": 1
+      },
+      "targetCityCurve": {
+        "turnsAfterBirth10": [
+          1,
+          3
+        ],
+        "turnsAfterBirth30": [
+          2,
+          5
+        ],
+        "turnsAfterBirth60": [
+          3,
+          7
+        ]
+      },
+      "successorMode": [
+        "continuity",
+        "island_consolidation",
+        "delay"
+      ],
+      "birthProtectionTurns": 20,
+      "contractionRules": {
+        "sustainedRiskTurns": 12,
+        "minCities": 6,
+        "firstEffect": "autonomy_increase"
+      },
+      "escapeRoutes": [
+        "island_core_control",
+        "naval_security",
+        "defensive_investment"
+      ],
+      "outcomeWeights": {
+        "defensive_support": 35,
+        "settlement_support": 25,
+        "naval_support": 20,
+        "no_event": 20
+      }
+    },
+    "tribal_horizon": {
+      "description": "Broad cultural/tribal horizons that should exert regional pressure without necessarily becoming durable centralized empires.",
+      "bootstrapPackage": {
+        "gold": 70,
+        "defenders": 1,
+        "offensiveUnits": 1,
+        "settlers": 1,
+        "workers": 0,
+        "ships": 0
+      },
+      "targetCityCurve": {
+        "turnsAfterBirth10": [
+          1,
+          4
+        ],
+        "turnsAfterBirth30": [
+          2,
+          7
+        ],
+        "turnsAfterBirth60": [
+          2,
+          9
+        ]
+      },
+      "successorMode": [
+        "cultural_pressure",
+        "regional_absorption",
+        "delay"
+      ],
+      "birthProtectionTurns": 10,
+      "contractionRules": {
+        "sustainedRiskTurns": 8,
+        "minCities": 6,
+        "firstEffect": "autonomy_increase"
+      },
+      "escapeRoutes": [
+        "regional_autonomy",
+        "good_relations_with_empires",
+        "defensive_terrain"
+      ],
+      "outcomeWeights": {
+        "regional_pressure": 35,
+        "autonomy": 25,
+        "absorption": 20,
+        "no_event": 20
+      }
+    },
+    "regional_kingdom": {
+      "description": "Regional powers that should consolidate a local core without necessarily becoming world empires.",
+      "bootstrapPackage": {
+        "gold": 85,
+        "defenders": 1,
+        "offensiveUnits": 1,
+        "settlers": 1,
+        "workers": 1,
+        "ships": 0
+      },
+      "targetCityCurve": {
+        "turnsAfterBirth10": [
+          1,
+          3
+        ],
+        "turnsAfterBirth30": [
+          2,
+          6
+        ],
+        "turnsAfterBirth60": [
+          3,
+          9
+        ]
+      },
+      "successorMode": [
+        "claimant_spawn",
+        "regional_consolidation",
+        "delay"
+      ],
+      "birthProtectionTurns": 12,
+      "contractionRules": {
+        "sustainedRiskTurns": 10,
+        "minCities": 7,
+        "firstEffect": "autonomy_increase"
+      },
+      "escapeRoutes": [
+        "core_consolidation",
+        "defensive_investment",
+        "good_diplomacy",
+        "positive_economy"
+      ],
+      "outcomeWeights": {
+        "settlement_support": 30,
+        "defensive_support": 25,
+        "regional_pressure": 20,
+        "delay": 15,
+        "no_event": 10
+      }
+    },
+    "nubian_regional_kingdom": {
+      "description": "Upper Nile regional kingdom that should keep a compact core and shed excess peripheral expansion more readily than generic regional powers.",
+      "bootstrapPackage": {
+        "gold": 85,
+        "defenders": 1,
+        "offensiveUnits": 1,
+        "settlers": 1,
+        "workers": 1,
+        "ships": 0
+      },
+      "targetCityCurve": {
+        "turnsAfterBirth10": [
+          1,
+          3
+        ],
+        "turnsAfterBirth30": [
+          2,
+          5
+        ],
+        "turnsAfterBirth60": [
+          3,
+          8
+        ]
+      },
+      "successorMode": [
+        "claimant_spawn",
+        "regional_consolidation",
+        "delay"
+      ],
+      "birthProtectionTurns": 12,
+      "contractionRules": {
+        "riskThreshold": 0.48,
+        "sustainedRiskTurns": 6,
+        "minCities": 8,
+        "maxReleaseCities": 2,
+        "clusterRiskThreshold": 0.58,
+        "clusterPeripheralShare": 0.12,
+        "debtRequired": 3,
+        "debtThresholdBonus": 0.08,
+        "debtOverextensionThreshold": 0.12,
+        "debtPeripheralThreshold": 0.10,
+        "firstEffect": "autonomy_increase"
+      },
+      "escapeRoutes": [
+        "core_consolidation",
+        "defensive_investment",
+        "good_diplomacy",
+        "positive_economy"
+      ],
+      "outcomeWeights": {
+        "regional_pressure": 35,
+        "autonomy": 25,
+        "absorption": 20,
+        "no_event": 20
+      }
+    }
+  },
+  "actorLifecycleTypes": {
+    "egypt": "initial_core",
+    "sumer": "initial_core",
+    "india": "initial_core",
+    "china": "initial_core",
+    "nubia": "nubian_regional_kingdom",
+    "assyria": "imperial_claimant",
+    "hittite": "imperial_claimant",
+    "phoenicia": "maritime_trader",
+    "carthage": "maritime_trader",
+    "celts": "tribal_horizon",
+    "greece": "regional_kingdom",
+    "persia": "imperial_claimant",
+    "rome": "imperial_claimant",
+    "franks": "dynastic_successor",
+    "abbasid": "dynastic_successor",
+    "chola": "dynastic_successor",
+    "song": "dynastic_successor",
+    "steppe": "steppe_conqueror",
+    "castile": "maritime_trader",
+    "portugal": "maritime_trader",
+    "ming": "dynastic_successor",
+    "japan": "island_core",
+    "aztec": "regional_kingdom",
+    "inca": "regional_kingdom"
+  },
+  "startsNotes": [
+    "Coordinates are in the 160x90 earth-large native coordinate space.",
+    "This fixture intentionally starts with early ancient cores only; later civilizations emerge through command-gated Lua mechanics.",
+    "Dynamic emergence is probabilistic and gated by organic_history_emergence_enabled."
+  ],
+  "timelineNotes": [
+    "The Lua emergence table currently mirrors this metadata directly.",
+    "Emergence is command-gated by organic_history_emergence_enabled and probabilistic through organic_history_emergence_probability.",
+    "Turn windows are first-pass gameplay scaffolding, not final historical dates."
+  ],
+  "actors": [
+    {
+      "id": "egypt",
+      "role": "initial",
+      "leader": "Narmer",
+      "nation": "Egyptian",
+      "style": "Classical",
+      "coreRegion": "nile",
+      "successorNation": "Egyptian",
+      "successorNames": [
+        "Nile Delta Secession",
+        "Upper Egyptian Secession"
+      ],
+      "research": "Masonry",
+      "techs": [
+        "Masonry",
+        "Pottery"
+      ],
+      "gold": 80,
+      "start": {
+        "x": 41,
+        "y": 40
+      },
+      "city": {
+        "name": "Memphis",
+        "x": 41,
+        "y": 40,
+        "region": "nile",
+        "core": true
+      },
+      "claims": {
+        "core": [
+          "nile"
+        ],
+        "historical": [
+          "levant",
+          "mesopotamia"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "river_valley_core",
+        "nile_food_security"
+      ],
+      "uhvDiagnostics": [
+        "nile_core_retention",
+        "early_monumental_growth"
+      ]
+    },
+    {
+      "id": "sumer",
+      "role": "initial",
+      "leader": "Gilgamesh",
+      "nation": "Sumerian",
+      "style": "Babylonian",
+      "coreRegion": "mesopotamia",
+      "successorNation": "Sumerian",
+      "successorNames": [
+        "Sumerian City Secession",
+        "Mesopotamian Secession"
+      ],
+      "research": "Pottery",
+      "techs": [
+        "Pottery",
+        "Writing"
+      ],
+      "gold": 75,
+      "start": {
+        "x": 50,
+        "y": 39
+      },
+      "city": {
+        "name": "Uruk",
+        "x": 50,
+        "y": 39,
+        "region": "mesopotamia",
+        "core": true
+      },
+      "claims": {
+        "core": [
+          "mesopotamia"
+        ],
+        "historical": [
+          "levant",
+          "nile"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "city_state_core",
+        "mesopotamian_irrigation"
+      ],
+      "uhvDiagnostics": [
+        "early_writing",
+        "mesopotamian_city_density"
+      ]
+    },
+    {
+      "id": "india",
+      "role": "initial",
+      "leader": "Chandragupta",
+      "nation": "Indian",
+      "style": "Classical",
+      "coreRegion": "north_india",
+      "successorNation": "Indian",
+      "successorNames": [
+        "Magadhan Secession",
+        "Indian Regional Secession"
+      ],
+      "research": "Alphabet",
+      "techs": [
+        "Alphabet",
+        "Pottery"
+      ],
+      "gold": 70,
+      "start": {
+        "x": 64,
+        "y": 41
+      },
+      "city": {
+        "name": "Pataliputra",
+        "x": 64,
+        "y": 41,
+        "region": "north_india",
+        "core": true
+      },
+      "claims": {
+        "core": [
+          "north_india"
+        ],
+        "historical": [
+          "deccan_south_india",
+          "iran"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "subcontinental_core",
+        "river_plain_growth"
+      ],
+      "uhvDiagnostics": [
+        "ganges_core_retention",
+        "subcontinental_scale"
+      ]
+    },
+    {
+      "id": "china",
+      "role": "initial",
+      "leader": "Qin Shi Huang",
+      "nation": "Chinese",
+      "style": "Asian",
+      "coreRegion": "north_china",
+      "successorNation": "Chinese",
+      "successorNames": [
+        "Chinese Regional Secession",
+        "Yellow River Secession"
+      ],
+      "research": "Bronze Working",
+      "techs": [
+        "Bronze Working",
+        "Pottery"
+      ],
+      "gold": 70,
+      "start": {
+        "x": 81,
+        "y": 32
+      },
+      "city": {
+        "name": "Chang'an",
+        "x": 81,
+        "y": 32,
+        "region": "north_china",
+        "core": true
+      },
+      "claims": {
+        "core": [
+          "north_china"
+        ],
+        "historical": [
+          "south_china",
+          "japan_korea",
+          "steppe_mongolia"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "yellow_river_core",
+        "dynastic_reunification"
+      ],
+      "uhvDiagnostics": [
+        "north_china_core_retention",
+        "dynastic_continuity"
+      ]
+    },
+    {
+      "id": "nubia",
+      "role": "emergent",
+      "leader": "Piye",
+      "nation": "Nubian",
+      "style": "Classical",
+      "coreRegion": "nile",
+      "successorNation": "Nubian",
+      "successorNames": [
+        "Kushite Secession",
+        "Upper Nile Kingdom"
+      ],
+      "gold": 80,
+      "techs": [
+        "Masonry",
+        "Bronze Working"
+      ],
+      "traits": {
+        "Builder": 15,
+        "Aggressive": 10
+      },
+      "emergence": {
+        "earliestTurn": 35,
+        "city": "Napata",
+        "x": 42,
+        "y": 46,
+        "predecessors": [
+          "egypt"
+        ]
+      },
+      "claims": {
+        "core": [
+          "nile"
+        ],
+        "historical": [
+          "africa",
+          "levant"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "upper_nile_core",
+        "egyptian_successor_pressure"
+      ],
+      "uhvDiagnostics": [
+        "upper_nile_core",
+        "nile_corridor_pressure"
+      ]
+    },
+    {
+      "id": "assyria",
+      "role": "emergent",
+      "leader": "Ashurbanipal",
+      "nation": "Assyrian",
+      "style": "Babylonian",
+      "coreRegion": "mesopotamia",
+      "successorNation": "Assyrian",
+      "successorNames": [
+        "Assyrian Provincial Secession",
+        "Upper Mesopotamian Kingdom"
+      ],
+      "gold": 95,
+      "techs": [
+        "Bronze Working",
+        "Warrior Code"
+      ],
+      "traits": {
+        "Aggressive": 35,
+        "Expansionist": 20
+      },
+      "bootstrapPackage": {
+        "gold": 170,
+        "defenders": 2,
+        "offensiveUnits": 4,
+        "settlers": 1,
+        "workers": 0,
+        "ships": 0
+      },
+      "burst": {
+        "archetype": "near_east_military",
+        "startTurnAfterBirth": 0,
+        "durationTurns": 42,
+        "maxApplications": 3,
+        "cooldownTurns": 12,
+        "gold": 45,
+        "offensiveUnits": 3
+      },
+      "emergence": {
+        "earliestTurn": 38,
+        "city": "Ashur",
+        "x": 50,
+        "y": 37,
+        "predecessors": [
+          "sumer"
+        ],
+        "fallbackRegions": [
+          "levant",
+          "anatolia",
+          "iran"
+        ]
+      },
+      "claims": {
+        "core": [
+          "mesopotamia"
+        ],
+        "historical": [
+          "levant",
+          "anatolia",
+          "iran",
+          "nile"
+        ],
+        "contested": [
+          "steppe_mongolia"
+        ]
+      },
+      "policyHints": [
+        "upper_mesopotamian_core",
+        "military_empire"
+      ],
+      "uhvDiagnostics": [
+        "mesopotamian_core",
+        "near_east_military_pressure"
+      ]
+    },
+    {
+      "id": "hittite",
+      "role": "emergent",
+      "leader": "Suppiluliuma",
+      "nation": "Hittite",
+      "style": "Classical",
+      "coreRegion": "anatolia",
+      "successorNation": "Hittite",
+      "successorNames": [
+        "Anatolian Secession",
+        "Hittite Successor Kingdom"
+      ],
+      "gold": 85,
+      "techs": [
+        "Bronze Working",
+        "Horseback Riding"
+      ],
+      "traits": {
+        "Builder": 15,
+        "Aggressive": 20
+      },
+      "emergence": {
+        "earliestTurn": 42,
+        "city": "Hattusa",
+        "x": 45,
+        "y": 34,
+        "predecessors": [
+          "sumer"
+        ]
+      },
+      "claims": {
+        "core": [
+          "anatolia"
+        ],
+        "historical": [
+          "levant",
+          "mesopotamia"
+        ],
+        "contested": [
+          "balkans_aegean"
+        ]
+      },
+      "policyHints": [
+        "anatolian_core",
+        "bronze_age_rival"
+      ],
+      "uhvDiagnostics": [
+        "anatolian_core",
+        "bronze_age_balance"
+      ]
+    },
+    {
+      "id": "phoenicia",
+      "role": "emergent",
+      "leader": "Hiram",
+      "nation": "Phoenician",
+      "style": "Classical",
+      "coreRegion": "levant",
+      "successorNation": "Phoenician",
+      "successorNames": [
+        "Levantine City Secession",
+        "Phoenician Maritime League"
+      ],
+      "gold": 90,
+      "techs": [
+        "Seafaring",
+        "Trade"
+      ],
+      "traits": {
+        "Trader": 35,
+        "Expansionist": 15
+      },
+      "emergence": {
+        "earliestTurn": 50,
+        "city": "Tyre",
+        "x": 46,
+        "y": 39,
+        "predecessors": [
+          "sumer",
+          "egypt"
+        ]
+      },
+      "claims": {
+        "core": [
+          "levant"
+        ],
+        "historical": [
+          "maghreb_punic_west",
+          "iberia",
+          "italy",
+          "balkans_aegean"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "levantine_maritime",
+        "trade_network"
+      ],
+      "uhvDiagnostics": [
+        "levantine_core",
+        "mediterranean_trade"
+      ]
+    },
+    {
+      "id": "carthage",
+      "role": "emergent",
+      "leader": "Hannibal",
+      "nation": "Carthaginian",
+      "style": "Classical",
+      "coreRegion": "maghreb_punic_west",
+      "successorNation": "Carthaginian",
+      "successorNames": [
+        "Punic Provincial Secession",
+        "Western Mediterranean League"
+      ],
+      "gold": 130,
+      "techs": [
+        "Seafaring",
+        "Trade",
+        "Warrior Code"
+      ],
+      "traits": {
+        "Trader": 30,
+        "Expansionist": 25,
+        "Aggressive": 20
+      },
+      "emergence": {
+        "earliestTurn": 70,
+        "city": "Carthage",
+        "x": 35,
+        "y": 39,
+        "predecessors": [
+          "phoenicia"
+        ]
+      },
+      "claims": {
+        "core": [
+          "maghreb_punic_west"
+        ],
+        "historical": [
+          "iberia",
+          "italy"
+        ],
+        "contested": [
+          "levant",
+          "balkans_aegean"
+        ]
+      },
+      "policyHints": [
+        "western_mediterranean_maritime",
+        "punic_rival_pressure"
+      ],
+      "uhvDiagnostics": [
+        "punic_core",
+        "western_mediterranean_reach"
+      ]
+    },
+    {
+      "id": "celts",
+      "role": "emergent",
+      "leader": "Vercingetorix",
+      "nation": "Celtic",
+      "style": "Celtic",
+      "coreRegion": "gaul",
+      "successorNation": "Celtic",
+      "successorNames": [
+        "Gallic Tribal Secession",
+        "Celtic Confederation"
+      ],
+      "gold": 80,
+      "techs": [
+        "Warrior Code",
+        "Horseback Riding"
+      ],
+      "traits": {
+        "Aggressive": 25,
+        "Expansionist": 20
+      },
+      "emergence": {
+        "earliestTurn": 75,
+        "city": "Bibracte",
+        "x": 30,
+        "y": 28,
+        "predecessors": []
+      },
+      "claims": {
+        "core": [
+          "gaul"
+        ],
+        "historical": [
+          "iberia",
+          "italy",
+          "europe"
+        ],
+        "contested": [
+          "italy"
+        ]
+      },
+      "policyHints": [
+        "tribal_european_core",
+        "anti_imperial_pressure"
+      ],
+      "uhvDiagnostics": [
+        "gallic_core",
+        "european_tribal_pressure"
+      ]
+    },
+    {
+      "id": "greece",
+      "role": "emergent",
+      "leader": "Pericles",
+      "nation": "Greek",
+      "style": "Classical",
+      "coreRegion": "balkans_aegean",
+      "successorNation": "Greek",
+      "successorNames": [
+        "Hellenic League Secession",
+        "Greek City Secession"
+      ],
+      "gold": 75,
+      "techs": [
+        "Alphabet",
+        "Writing"
+      ],
+      "traits": {
+        "Builder": 10
+      },
+      "emergence": {
+        "earliestTurn": 40,
+        "city": "Athens",
+        "x": 41,
+        "y": 34,
+        "predecessors": []
+      },
+      "claims": {
+        "core": [
+          "balkans_aegean"
+        ],
+        "historical": [
+          "anatolia",
+          "levant",
+          "italy"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "mediterranean_maritime",
+        "city_state_core"
+      ],
+      "uhvDiagnostics": [
+        "aegean_city_density",
+        "classical_knowledge"
+      ]
+    },
+    {
+      "id": "persia",
+      "role": "emergent",
+      "leader": "Cyrus",
+      "nation": "Persian",
+      "style": "Classical",
+      "coreRegion": "iran",
+      "successorNation": "Persian",
+      "successorNames": [
+        "Persian Satrapy Secession",
+        "Iranian Plateau Secession"
+      ],
+      "gold": 100,
+      "techs": [
+        "Horseback Riding",
+        "Bronze Working",
+        "Trade"
+      ],
+      "traits": {
+        "Expansionist": 30,
+        "Aggressive": 25,
+        "Builder": 10
+      },
+      "burst": {
+        "archetype": "iranian_imperial",
+        "startTurnAfterBirth": 0,
+        "durationTurns": 45,
+        "maxApplications": 2,
+        "cooldownTurns": 16,
+        "gold": 35,
+        "offensiveUnits": 2
+      },
+      "emergence": {
+        "earliestTurn": 45,
+        "city": "Parsa",
+        "x": 56,
+        "y": 36,
+        "predecessors": [
+          "sumer"
+        ]
+      },
+      "claims": {
+        "core": [
+          "iran"
+        ],
+        "historical": [
+          "mesopotamia",
+          "levant",
+          "anatolia",
+          "north_india"
+        ],
+        "contested": [
+          "steppe_mongolia",
+          "balkans_aegean"
+        ]
+      },
+      "policyHints": [
+        "imperial_successor",
+        "satrapy_overextension"
+      ],
+      "uhvDiagnostics": [
+        "iranian_core_retention",
+        "near_east_imperial_scale"
+      ]
+    },
+    {
+      "id": "rome",
+      "role": "emergent",
+      "leader": "Romulus",
+      "nation": "Roman",
+      "style": "Classical",
+      "coreRegion": "italy",
+      "successorNation": "Roman",
+      "successorNames": [
+        "Western Roman Secession",
+        "Italian Roman Secession",
+        "Roman Frontier Secession"
+      ],
+      "gold": 100,
+      "techs": [
+        "Warrior Code",
+        "Bronze Working",
+        "Trade"
+      ],
+      "traits": {
+        "Expansionist": 50,
+        "Aggressive": 30,
+        "Builder": 10
+      },
+      "objectives": [
+        {
+          "id": "rome_mediterranean_conquest",
+          "type": "conquest",
+          "targetRegions": [
+            "italy",
+            "gaul",
+            "iberia"
+          ],
+          "minCities": 1,
+          "targetCities": 10,
+          "startTurnAfterBirth": 8,
+          "durationTurns": 100,
+          "cooldownTurns": 18,
+          "maxApplications": 3,
+          "minRivalCities": 1,
+          "expeditionaryStaging": true,
+          "declareWar": true,
+          "gold": 45,
+          "offensiveUnits": 2,
+          "defenders": 1,
+          "holdDefenders": 0,
+          "holdGold": 0,
+          "escapeRoutes": [
+            "on_target",
+            "no_rival_target",
+            "high_city_scale",
+            "unreachable_target"
+          ]
+        }
+      ],
+      "burst": {
+        "archetype": "mediterranean_imperial",
+        "startTurnAfterBirth": 0,
+        "durationTurns": 80,
+        "maxApplications": 3,
+        "cooldownTurns": 16,
+        "gold": 55,
+        "offensiveUnits": 3
+      },
+      "emergence": {
+        "earliestTurn": 55,
+        "city": "Roma",
+        "x": 35,
+        "y": 32,
+        "predecessors": [
+          "greece"
+        ],
+        "fallbackRegions": [
+          "balkans_aegean",
+          "gaul"
+        ]
+      },
+      "claims": {
+        "core": [
+          "italy"
+        ],
+        "historical": [
+          "iberia",
+          "gaul",
+          "balkans_aegean",
+          "maghreb_punic_west",
+          "levant",
+          "anatolia"
+        ],
+        "contested": [
+          "steppe_mongolia"
+        ]
+      },
+      "policyHints": [
+        "italian_core",
+        "mediterranean_empire",
+        "frontier_pressure"
+      ],
+      "uhvDiagnostics": [
+        "italian_core_retention",
+        "mediterranean_reach",
+        "late_imperial_stress"
+      ]
+    },
+    {
+      "id": "franks",
+      "role": "emergent",
+      "leader": "Charlemagne",
+      "nation": "French",
+      "style": "European",
+      "coreRegion": "gaul",
+      "successorNation": "French",
+      "successorNames": [
+        "Frankish March Secession",
+        "West Frankish Secession"
+      ],
+      "gold": 90,
+      "techs": [
+        "Monarchy",
+        "Feudalism"
+      ],
+      "bootstrapPackage": {
+        "gold": 170,
+        "defenders": 3,
+        "offensiveUnits": 2,
+        "settlers": 2,
+        "workers": 1,
+        "ships": 0
+      },
+      "probability": 85,
+      "emergence": {
+        "earliestTurn": 105,
+        "city": "Aachen",
+        "x": 30,
+        "y": 26,
+        "predecessors": [
+          "rome"
+        ],
+        "fallbackRegions": [
+          "europe",
+          "italy"
+        ]
+      },
+      "claims": {
+        "core": [
+          "gaul"
+        ],
+        "historical": [
+          "italy",
+          "iberia",
+          "europe"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "post_roman_successor",
+        "feudal_core"
+      ],
+      "uhvDiagnostics": [
+        "western_europe_core",
+        "post_roman_recovery"
+      ]
+    },
+    {
+      "id": "abbasid",
+      "role": "emergent",
+      "leader": "Harun al-Rashid",
+      "nation": "Arab",
+      "style": "Babylonian",
+      "coreRegion": "mesopotamia",
+      "successorNation": "Arab",
+      "successorNames": [
+        "Abbasid Provincial Secession",
+        "Mesopotamian Emirate"
+      ],
+      "gold": 100,
+      "techs": [
+        "Philosophy",
+        "Mathematics"
+      ],
+      "objectives": [
+        {
+          "id": "abbasid_corridor_consolidation",
+          "type": "settlement",
+          "targetRegions": [
+            "mesopotamia",
+            "levant",
+            "iran"
+          ],
+          "targetCities": 4,
+          "startTurnAfterBirth": 0,
+          "durationTurns": 90,
+          "cooldownTurns": 20,
+          "maxApplications": 1,
+          "gold": 30,
+          "createCity": true,
+          "cityName": "Abbasid Provincial Centre",
+          "settlers": 0,
+          "defenders": 1,
+          "escapeRoutes": [
+            "on_target",
+            "missing_site",
+            "site_already_filled"
+          ]
+        }
+      ],
+      "bootstrapPackage": {
+        "gold": 190,
+        "defenders": 3,
+        "offensiveUnits": 2,
+        "settlers": 3,
+        "workers": 1,
+        "ships": 0
+      },
+      "probability": 85,
+      "emergence": {
+        "earliestTurn": 110,
+        "city": "Baghdad",
+        "x": 50,
+        "y": 43,
+        "predecessors": [
+          "sumer",
+          "persia"
+        ],
+        "fallbackRegions": [
+          "levant",
+          "iran"
+        ]
+      },
+      "claims": {
+        "core": [
+          "mesopotamia"
+        ],
+        "historical": [
+          "levant",
+          "iran",
+          "nile",
+          "north_india"
+        ],
+        "contested": [
+          "balkans_aegean"
+        ]
+      },
+      "policyHints": [
+        "caliphal_core",
+        "trade_network"
+      ],
+      "uhvDiagnostics": [
+        "mesopotamian_capital",
+        "islamic_golden_age"
+      ]
+    },
+    {
+      "id": "chola",
+      "role": "emergent",
+      "leader": "Rajaraja Chola",
+      "nation": "Chola",
+      "style": "Classical",
+      "coreRegion": "deccan_south_india",
+      "successorNation": "Indian",
+      "successorNames": [
+        "Tamil Country Secession",
+        "Indian Ocean Polity"
+      ],
+      "gold": 105,
+      "techs": [
+        "Seafaring",
+        "Trade"
+      ],
+      "traits": {
+        "Trader": 35,
+        "Expansionist": 25,
+        "Builder": 15
+      },
+      "emergence": {
+        "earliestTurn": 115,
+        "city": "Kanchipuram",
+        "x": 66,
+        "y": 50,
+        "predecessors": [
+          "india"
+        ]
+      },
+      "claims": {
+        "core": [
+          "deccan_south_india"
+        ],
+        "historical": [
+          "north_india",
+          "east_asia"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "indian_ocean_maritime",
+        "southern_india_core"
+      ],
+      "uhvDiagnostics": [
+        "southern_india_core",
+        "indian_ocean_trade"
+      ]
+    },
+    {
+      "id": "song",
+      "role": "emergent",
+      "leader": "Taizu",
+      "nation": "Korean",
+      "style": "Asian",
+      "coreRegion": "north_china",
+      "successorNation": "Chinese",
+      "successorNames": [
+        "Southern Song Secession",
+        "Chinese Provincial Secession"
+      ],
+      "gold": 135,
+      "techs": [
+        "Invention",
+        "Gunpowder",
+        "Trade"
+      ],
+      "traits": {
+        "Builder": 35,
+        "Expansionist": 20,
+        "Trader": 15
+      },
+      "bootstrapPackage": {
+        "gold": 180,
+        "defenders": 3,
+        "offensiveUnits": 2,
+        "settlers": 2,
+        "workers": 1,
+        "ships": 0
+      },
+      "probability": 85,
+      "emergence": {
+        "earliestTurn": 115,
+        "city": "Kaifeng",
+        "x": 79,
+        "y": 35,
+        "predecessors": [
+          "china"
+        ],
+        "fallbackRegions": [
+          "south_china"
+        ]
+      },
+      "claims": {
+        "core": [
+          "north_china"
+        ],
+        "historical": [
+          "south_china",
+          "japan_korea"
+        ],
+        "contested": [
+          "steppe_mongolia"
+        ]
+      },
+      "policyHints": [
+        "chinese_reunification",
+        "commercial_bureaucracy"
+      ],
+      "uhvDiagnostics": [
+        "kaifeng_core",
+        "commercial_and_tech_growth"
+      ]
+    },
+    {
+      "id": "steppe",
+      "role": "emergent",
+      "leader": "Temujin",
+      "nation": "Mongol",
+      "style": "Asian",
+      "coreRegion": "steppe_mongolia",
+      "successorNation": "Mongol",
+      "successorNames": [
+        "Steppe Ulus Secession",
+        "Mongol Horde Secession"
+      ],
+      "gold": 115,
+      "techs": [
+        "Horseback Riding",
+        "Warrior Code"
+      ],
+      "traits": {
+        "Aggressive": 55,
+        "Expansionist": 45
+      },
+      "burst": {
+        "archetype": "steppe_conquest",
+        "startTurnAfterBirth": 0,
+        "durationTurns": 70,
+        "maxApplications": 4,
+        "cooldownTurns": 12,
+        "gold": 45,
+        "offensiveUnits": 4
+      },
+      "probability": 85,
+      "emergence": {
+        "earliestTurn": 125,
+        "city": "Karakorum",
+        "x": 82,
+        "y": 24,
+        "predecessors": [],
+        "fallbackRegions": [
+          "steppe",
+          "north_china"
+        ]
+      },
+      "claims": {
+        "core": [
+          "steppe_mongolia"
+        ],
+        "historical": [
+          "north_china",
+          "iran",
+          "mesopotamia",
+          "europe"
+        ],
+        "contested": [
+          "gaul"
+        ]
+      },
+      "policyHints": [
+        "nomadic_pressure",
+        "horse_archer_expansion"
+      ],
+      "uhvDiagnostics": [
+        "steppe_core",
+        "eurasian_reach"
+      ]
+    },
+    {
+      "id": "castile",
+      "role": "emergent",
+      "leader": "Isabella",
+      "nation": "Spanish",
+      "style": "European",
+      "coreRegion": "iberia",
+      "successorNation": "Spanish",
+      "successorNames": [
+        "Castilian Crown Secession",
+        "Iberian Frontier Secession"
+      ],
+      "gold": 150,
+      "techs": [
+        "Navigation",
+        "Trade"
+      ],
+      "traits": {
+        "Expansionist": 35,
+        "Trader": 35,
+        "Builder": 10
+      },
+      "objectives": [
+        {
+          "id": "castile_iberian_consolidation",
+          "type": "settlement",
+          "targetRegions": [
+            "iberia"
+          ],
+          "fallbackRegions": [
+            "maghreb_punic_west"
+          ],
+          "targetCities": 3,
+          "startTurnAfterBirth": 0,
+          "durationTurns": 80,
+          "cooldownTurns": 18,
+          "maxApplications": 2,
+          "gold": 30,
+          "settlers": 1,
+          "defenders": 1,
+          "escapeRoutes": [
+            "on_target",
+            "missing_site",
+            "site_already_filled"
+          ]
+        }
+      ],
+      "bootstrapPackage": {
+        "gold": 190,
+        "defenders": 4,
+        "offensiveUnits": 1,
+        "settlers": 3,
+        "workers": 1,
+        "ships": 1
+      },
+      "probability": 90,
+      "emergence": {
+        "earliestTurn": 160,
+        "city": "Toledo",
+        "x": 25,
+        "y": 32,
+        "predecessors": [
+          "rome",
+          "franks"
+        ],
+        "fallbackRegions": [
+          "maghreb_punic_west",
+          "gaul"
+        ]
+      },
+      "claims": {
+        "core": [
+          "iberia"
+        ],
+        "historical": [
+          "mesoamerica",
+          "andes",
+          "maghreb_punic_west"
+        ],
+        "colonial": [
+          "americas"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "iberian_core",
+        "atlantic_colonizer"
+      ],
+      "uhvDiagnostics": [
+        "iberian_core",
+        "atlantic_contact"
+      ]
+    },
+    {
+      "id": "portugal",
+      "role": "emergent",
+      "leader": "Henry",
+      "nation": "Portuguese",
+      "style": "European",
+      "coreRegion": "iberia",
+      "successorNation": "Portuguese",
+      "successorNames": [
+        "Portuguese Atlantic Secession",
+        "Iberian Port Secession"
+      ],
+      "gold": 150,
+      "techs": [
+        "Seafaring",
+        "Navigation"
+      ],
+      "traits": {
+        "Expansionist": 40,
+        "Trader": 40,
+        "Builder": 10
+      },
+      "objectives": [
+        {
+          "id": "portugal_iberian_port_consolidation",
+          "type": "settlement",
+          "targetRegions": [
+            "iberia"
+          ],
+          "fallbackRegions": [
+            "maghreb_punic_west"
+          ],
+          "targetCities": 2,
+          "startTurnAfterBirth": 0,
+          "durationTurns": 80,
+          "cooldownTurns": 18,
+          "maxApplications": 2,
+          "gold": 35,
+          "settlers": 1,
+          "defenders": 1,
+          "ships": 1,
+          "escapeRoutes": [
+            "on_target",
+            "missing_site",
+            "site_already_filled"
+          ]
+        }
+      ],
+      "bootstrapPackage": {
+        "gold": 200,
+        "defenders": 3,
+        "offensiveUnits": 1,
+        "settlers": 3,
+        "workers": 1,
+        "ships": 3
+      },
+      "probability": 90,
+      "emergence": {
+        "earliestTurn": 160,
+        "city": "Lisbon",
+        "x": 23,
+        "y": 35,
+        "predecessors": [
+          "rome",
+          "franks"
+        ],
+        "fallbackRegions": [
+          "maghreb_punic_west",
+          "gaul",
+          "africa"
+        ]
+      },
+      "claims": {
+        "core": [
+          "iberia"
+        ],
+        "historical": [
+          "maghreb_punic_west",
+          "deccan_south_india",
+          "mesoamerica",
+          "andes"
+        ],
+        "colonial": [
+          "americas",
+          "africa",
+          "india"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "atlantic_maritime",
+        "trade_post_colonizer"
+      ],
+      "uhvDiagnostics": [
+        "lisbon_core",
+        "oceanic_trade_reach"
+      ]
+    },
+    {
+      "id": "ming",
+      "role": "emergent",
+      "leader": "Xuande",
+      "nation": "Manchu",
+      "style": "Asian",
+      "coreRegion": "north_china",
+      "successorNation": "Chinese",
+      "successorNames": [
+        "Ming Provincial Secession",
+        "Northern Chinese Secession"
+      ],
+      "gold": 115,
+      "techs": [
+        "Invention",
+        "Gunpowder"
+      ],
+      "bootstrapPackage": {
+        "gold": 200,
+        "defenders": 3,
+        "offensiveUnits": 3,
+        "settlers": 2,
+        "workers": 1,
+        "ships": 0
+      },
+      "probability": 90,
+      "emergence": {
+        "earliestTurn": 160,
+        "city": "Beijing",
+        "x": 81,
+        "y": 32,
+        "predecessors": [
+          "china",
+          "song"
+        ],
+        "fallbackRegions": [
+          "south_china",
+          "japan_korea"
+        ]
+      },
+      "claims": {
+        "core": [
+          "north_china"
+        ],
+        "historical": [
+          "south_china",
+          "japan_korea"
+        ],
+        "contested": [
+          "steppe_mongolia"
+        ]
+      },
+      "policyHints": [
+        "northern_china_capital",
+        "dynastic_reunification"
+      ],
+      "uhvDiagnostics": [
+        "beijing_core",
+        "dynastic_recovery"
+      ]
+    },
+    {
+      "id": "japan",
+      "role": "emergent",
+      "leader": "Ashikaga Yoshimasa",
+      "nation": "Japanese",
+      "style": "Asian",
+      "coreRegion": "japan_korea",
+      "successorNation": "Japanese",
+      "successorNames": [
+        "Japanese Daimyo Secession",
+        "Eastern Island Secession"
+      ],
+      "gold": 100,
+      "techs": [
+        "Feudalism",
+        "Seafaring"
+      ],
+      "emergence": {
+        "earliestTurn": 160,
+        "city": "Kyoto",
+        "x": 95,
+        "y": 35,
+        "predecessors": []
+      },
+      "claims": {
+        "core": [
+          "japan_korea"
+        ],
+        "historical": [
+          "north_china",
+          "south_china"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "island_core",
+        "maritime_defense"
+      ],
+      "uhvDiagnostics": [
+        "kyoto_core",
+        "island_unification"
+      ]
+    },
+    {
+      "id": "aztec",
+      "role": "emergent",
+      "leader": "Moctezuma I",
+      "nation": "Aztec",
+      "style": "Tropical",
+      "coreRegion": "mesoamerica",
+      "successorNation": "Aztec",
+      "successorNames": [
+        "Central Mexican Secession",
+        "Aztec Tributary Secession"
+      ],
+      "gold": 75,
+      "techs": [
+        "Construction",
+        "Warrior Code"
+      ],
+      "emergence": {
+        "earliestTurn": 160,
+        "city": "Tenochtitlan",
+        "x": 142,
+        "y": 44,
+        "predecessors": []
+      },
+      "claims": {
+        "core": [
+          "mesoamerica"
+        ],
+        "historical": [
+          "americas"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "mesoamerican_core",
+        "tributary_expansion"
+      ],
+      "uhvDiagnostics": [
+        "central_mexico_core",
+        "tributary_scale"
+      ]
+    },
+    {
+      "id": "inca",
+      "role": "emergent",
+      "leader": "Pachacuti",
+      "nation": "Inca",
+      "style": "Tropical",
+      "coreRegion": "andes",
+      "successorNation": "Inca",
+      "successorNames": [
+        "Andean Secession",
+        "Inca Provincial Secession"
+      ],
+      "gold": 75,
+      "techs": [
+        "Masonry",
+        "Pottery"
+      ],
+      "emergence": {
+        "earliestTurn": 160,
+        "city": "Cusco",
+        "x": 152,
+        "y": 62,
+        "predecessors": []
+      },
+      "claims": {
+        "core": [
+          "andes"
+        ],
+        "historical": [
+          "americas"
+        ],
+        "contested": []
+      },
+      "policyHints": [
+        "andean_core",
+        "mountain_empire"
+      ],
+      "uhvDiagnostics": [
+        "cusco_core",
+        "andean_reach"
+      ]
+    }
+  ]
+}

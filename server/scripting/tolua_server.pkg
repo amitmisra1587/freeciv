@@ -142,6 +142,8 @@ module edit {
   bool api_edit_create_city
     @ city_create (lua_State *L, Player *pplayer, Tile *ptile,
                    const char *name, Player *nationality);
+  bool api_edit_can_create_city
+    @ can_create_city (lua_State *L, Player *pplayer, Tile *ptile);
   bool api_edit_transfer_city
     @ transfer_city (lua_State *L, City *pcity, Player *new_owner);
   void api_edit_remove_city
@@ -208,6 +210,8 @@ module edit {
                       int effect);
   Player *api_edit_civil_war
     @ civil_war(lua_State *L, Player *pplayer, int probability);
+  bool api_edit_enter_war
+    @ enter_war(lua_State *L, Player *pplayer, Player *pplayer2);
   void api_edit_unit_turn
     @ unit_turn(lua_State *L, Unit *punit, Direction dir);
   void api_edit_player_victory

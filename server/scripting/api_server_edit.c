@@ -19,10 +19,12 @@
 #include "rand.h"
 
 /* common */
+#include "city.h"
 #include "citizens.h"
 #include "map.h"
 #include "movement.h"
 #include "research.h"
+#include "unit.h"
 #include "unittype.h"
 
 /* common/scriptcore */
@@ -35,6 +37,7 @@
 #include "citytools.h"
 #include "cityturn.h" /* city_refresh() auto_arrange_workers() */
 #include "console.h" /* enum rfc_status */
+#include "diplhand.h"
 #include "gamehand.h"
 #include "maphand.h"
 #include "notify.h"
@@ -702,6 +705,19 @@ bool api_edit_create_city(lua_State *L, Player *pplayer, Tile *ptile,
 }
 
 /**********************************************************************//**
+  Return whether edit.city_create() can legally create a city here.
+**************************************************************************/
+bool api_edit_can_create_city(lua_State *L, Player *pplayer, Tile *ptile)
+{
+  LUASCRIPT_CHECK_STATE(L, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, ptile, 3, Tile, FALSE);
+
+  return !is_enemy_unit_tile(ptile, pplayer)
+         && city_can_be_built_here(&(wld.map), ptile, NULL, FALSE);
+}
+
+/**********************************************************************//**
   Destroy a city
 **************************************************************************/
 void api_edit_remove_city(lua_State *L, City *pcity)
@@ -1222,6 +1238,36 @@ Player *api_edit_civil_war(lua_State *L, Player *pplayer, int probability)
   }
 
   return civil_war(pplayer);
+}
+
+/**********************************************************************//**
+  Set two players at war.
+**************************************************************************/
+bool api_edit_enter_war(lua_State *L, Player *pplayer, Player *pplayer2)
+{
+  struct player_diplstate *ds_plrplr2;
+  struct player_diplstate *ds_plr2plr;
+
+  LUASCRIPT_CHECK_STATE(L, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, pplayer2, 3, Player, FALSE);
+
+  if (pplayer == pplayer2 || !pplayer->is_alive || !pplayer2->is_alive
+      || players_on_same_team(pplayer, pplayer2)) {
+    return FALSE;
+  }
+
+  ds_plrplr2 = player_diplstate_get(pplayer, pplayer2);
+  ds_plr2plr = player_diplstate_get(pplayer2, pplayer);
+  if (ds_plrplr2->type == DS_WAR && ds_plr2plr->type == DS_WAR) {
+    return TRUE;
+  }
+
+  set_diplstate_type(ds_plrplr2, ds_plr2plr, DS_WAR);
+  enter_war(pplayer, pplayer2);
+  send_player_diplstate_c(NULL, NULL);
+
+  return TRUE;
 }
 
 /**********************************************************************//**

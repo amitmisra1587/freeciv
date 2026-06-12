@@ -74,6 +74,7 @@ bool api_edit_change_terrain(lua_State *L, Tile *ptile, Terrain *pterr);
 
 bool api_edit_create_city(lua_State *L, Player *pplayer, Tile *ptile,
                           const char *name, Player *nationality);
+bool api_edit_can_create_city(lua_State *L, Player *pplayer, Tile *ptile);
 void api_edit_remove_city(lua_State *L, City *pcity);
 bool api_edit_transfer_city(lua_State *L, City *pcity, Player *new_owner);
 void api_edit_create_building(lua_State *L, City *pcity, Building_Type *impr);
@@ -107,6 +108,7 @@ bool api_edit_tile_hide(lua_State *L, Tile *ptile, Player *pplayer);
 void api_edit_climate_change(lua_State *L, enum climate_change_type type,
                              int effect);
 Player *api_edit_civil_war(lua_State *L, Player *pplayer, int probability);
+bool api_edit_enter_war(lua_State *L, Player *pplayer, Player *pplayer2);
 
 
 void api_edit_player_victory(lua_State *L, Player *pplayer);
