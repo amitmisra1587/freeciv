@@ -1,14 +1,9 @@
 {
-  "description": "Command-gated global 4000 BCE candidate profile for large-Earth dynamic civilization emergence experiments.",
+  "description": "Phase 29 successor inheritance candidate profile. Enables condition-gated dynastic successor activation and one-city local inheritance while keeping fallback secession and collapse disabled.",
   "luaCommands": [
     "lua cmd organic_history_mechanics_enabled = true",
     "lua cmd organic_history_civil_war_enabled = false",
-    "lua cmd organic_history_civil_war_stress_threshold = 43",
-    "lua cmd organic_history_civil_war_min_cities = 8",
-    "lua cmd organic_history_civil_war_probability = 6",
-    "lua cmd organic_history_civil_war_cooldown = 40",
     "lua cmd organic_history_dynastic_stress_enabled = false",
-    "lua cmd organic_history_dynastic_stress_max_bonus = 10",
     "lua cmd organic_history_mandate_enabled = true",
     "lua cmd organic_history_mandate_max_stress_reduction = 4",
     "lua cmd organic_history_pressure_modifiers_enabled = true",
@@ -18,15 +13,22 @@
     "lua cmd organic_history_mandate_loss_min_cities = 10",
     "lua cmd organic_history_mandate_loss_max_stress_modifier = 6",
     "lua cmd organic_history_secession_fallback_enabled = false",
-    "lua cmd organic_history_secession_min_cities = 10",
-    "lua cmd organic_history_secession_max_cities = 1",
     "lua cmd organic_history_emergence_enabled = true",
     "lua cmd organic_history_emergence_conditional_enabled = true",
     "lua cmd organic_history_emergence_relocation_radius = 18",
-    "lua cmd organic_history_emergence_probability = 65"
+    "lua cmd organic_history_emergence_probability = 65",
+    "lua cmd organic_history_bootstrap_enabled = true",
+    "lua cmd organic_history_bootstrap_max_gold = 150",
+    "lua cmd organic_history_bootstrap_max_units = 8",
+    "lua cmd organic_history_dynastic_transfer_probe_enabled = true",
+    "lua cmd organic_history_dynastic_transfer_enabled = true",
+    "lua cmd organic_history_dynastic_transfer_low_mandate_threshold = 0.35",
+    "lua cmd organic_history_dynastic_transfer_crisis_threshold = 0.30",
+    "lua cmd organic_history_dynastic_transfer_min_predecessor_cities = 4",
+    "lua cmd organic_history_contact_diagnostics_enabled = true"
   ],
-  "mode": "global_4000_emergence_candidate",
-  "name": "global_4000_emergence_candidate_v1",
+  "mode": "phase29_successor_inheritance_v1_candidate",
+  "name": "phase29_successor_inheritance_v1_candidate",
   "scope": "earth_global_4000_v1",
   "validatedScenarios": [
     "earth_global_4000_v1"

@@ -67,6 +67,176 @@ gate: success, 20 turns, 4 AI players, 21 saves
 
 ## Next Tasks
 
+## Phase 27: Expanded global evidence sweep
+
+- [x] Run the expanded 5x200 global pilot on
+  `earth_global_4000_v1` with `global_4000_emergence_candidate`.
+  Result: 5/5 runs succeeded to turn 201 with zero Freeciv assertions.
+- [x] Pilot runtime: 1156.9-1270.0s/seed, mean 1220.2s/seed. A 100x200
+  sequential sweep is roughly 34 hours at this size/profile.
+- [x] Pilot aggregate: mean final cities 161.2, mean max city share 0.253, no
+  domination/stagnation warnings.
+- [x] Pilot emergence coverage:
+  Greece, Persia, Rome, Nubia, Celts, Aztec, and Inca emerged in all 5 seeds;
+  Steppe emerged in 4/5; Japan in 4/5; Song in 3/5. Crowded Near East/Punic,
+  Chola, Franks, Iberian, and Ming actors mostly delayed.
+- [x] Fix large-Earth region boxes after pilot diagnostics showed broad overlap
+  was misclassifying Old World AI-founded cities as Americas/Africa.
+- [x] Tune collapse diagnostics so `unknown` region cities do not become release
+  candidates. This keeps unknown cities in totals but avoids noisy false
+  peripheral release suggestions.
+- [x] Validate the region/diagnostic tuning with the global gate, an 80-turn
+  smoke, and a 200-turn smoke. The 200-turn post-tuning smoke reached turn 201
+  with zero assertions, final cities 166, and max city share 0.247.
+- [x] Decision: do not start the full 100x200 historical-fit sweep yet. Run a
+  smaller post-tuning 5x200 confirmation batch first, because the original 5x200
+  pilot used the pre-fix region model.
+- [ ] Run post-tuning 5x200 confirmation, then launch 100x200 in 20-seed batches
+  if it remains assertion-clean and diagnostic quality holds.
+- [x] Run the full post-tuning 100x200 global sweep in five 20-seed batches.
+  Result: 100/100 runs succeeded, zero Freeciv assertions, no domination or
+  stagnation warnings.
+- [x] Write aggregate artifacts:
+  `runs/organic_history_phase27_global_sweeps/full_100x200/full_100x200_summary.json`,
+  `full_100x200_emergence_summary.json`, and
+  `full_100x200_collapse_summary.json`.
+- [x] 100x200 aggregate: mean final cities 165.06, median final cities 165,
+  min/max final cities 117/194, mean max city share 0.255, median max city share
+  0.246.
+- [x] 100x200 emergence rates: Assyria, Aztec, Carthage, Celts, Franks, Greece,
+  Inca, Nubia, Persia, Phoenicia, and Rome emerged in all 100 seeds; Japan 94,
+  Abbasid 92, Chola 80, Steppe 78, Song 70, Ming 60, Portugal 42, Castile 29,
+  Hittite 4.
+- [x] Collapse diagnostics remain diagnostics-only. Highest max collapse risks in
+  the 100x200 summary were India 0.843, Egypt 0.780, Greece 0.768, Assyria
+  0.756, China 0.749, and Nubia 0.694.
+
+## Phase 28: Lifecycle mechanics and faster evidence loops
+
+- [x] Implement `run_campaign.py --jobs N` with bounded parallel workers,
+  deterministic per-seed ports, per-seed output isolation, campaign progress
+  logging, and successful-seed skipping on resume.
+- [x] Add optional local load guard flags to `run_campaign.py`
+  (`--max-load-average`, `--load-check-interval`, `--load-guard-timeout`) so
+  long parallel sweeps can pause seed launches under host pressure.
+- [x] Add `tools/organic_history/parallel_campaign_gate.sh`.
+- [x] Verify parallel generated-map and global-scenario smoke campaigns with
+  `--jobs 2`, plus resume/skip behavior.
+- [x] Add `tools/organic_history/global_historical_fit_report.py` to generate
+  per-civ pass/warn/fail historical-fit reports from global sweeps. Default mode
+  is report-only; `--strict` can fail CI on actor failures.
+- [x] Add historical-gravity safeguards to canonical data and reports:
+  condition gates, escape routes, probabilistic outcome weights, and explicit
+  separation between historical role data and generic mechanic triggers.
+- [x] Emit `organic_history_global_historical_gravity` in generated Lua runtime
+  data and include `historicalGravityAssessment` in the historical-fit report.
+- [x] Add canonical lifecycle archetypes and actor mappings:
+  initial core, imperial claimant, dynastic successor, maritime trader, steppe
+  conqueror, island core, tribal horizon, and regional kingdom.
+- [x] Emit `organic_history_global_lifecycle_archetypes` and
+  `organic_history_global_actor_lifecycle_types` in generated Lua runtime data.
+- [x] Include lifecycle type, target city curves, escape routes, and outcome
+  weights in `global_historical_fit_report.py`.
+- [x] Add command-gated bootstrap package v1:
+  `organic_history_bootstrap_enabled` applies one bounded lifecycle package per
+  emerged actor after safe city creation, without creating players, reassigning
+  nations, or transferring cities.
+- [x] Add `tools/organic_history/profiles/global_4000_bootstrap_candidate.json`
+  for bootstrap A/B sweeps while preserving the emergence-only baseline profile.
+- [x] Add `tools/organic_history/global_4000_bootstrap_gate.sh` and bootstrap
+  log counting in run metadata/analyzer output.
+- [x] Run bootstrap 5x120 smoke:
+  5/5 seeds succeeded, 0 assertions, mean final cities 137.2, mean max city
+  share 0.245, no domination/stagnation warnings.
+- [x] Refine large-Earth geography and actor claims with generated canonical
+  subregions: Nile, Mesopotamia, Anatolia, Levant, Iran, Italy, Gaul, Iberia,
+  Aegean/Balkans, Maghreb/Punic West, North/South China, Japan/Korea,
+  Mongolian Steppe, Mesoamerica, and Andes.
+- [x] Extend `validate_scenario.py` to accept canonical global subregions and
+  regenerate `earth_global_4000_v1.sav` from the updated starts plan.
+- [x] Run forced 170-turn subregion smoke with bootstrap profile and emergence
+  probability 100: success to turn 171, 0 assertions, and confirmed region logs
+  for Rome/Italy, Castile/Iberia, Japan/Japan-Korea, Aztec/Mesoamerica,
+  Inca/Andes, Steppe/Mongolian Steppe, Chola/South India, Franks/Gaul, and
+  Abbasid/Mesopotamia.
+- [x] Add diagnostics-only dynastic transfer v1:
+  `organic_history_dynastic_transfer_probe_enabled` evaluates dynastic-successor
+  pressure using predecessor mandate/crisis, target-region holder state, and
+  lifecycle metadata, then logs `protected` escape routes or `candidate`
+  pressure with `applied=false`.
+- [x] Add `tools/organic_history/dynastic_transfer_gate.sh`, which forces a
+  short candidate probe and verifies no city transfers or secessions occur.
+- [x] Add diagnostics-only regional expansion pressure v1:
+  `organic_history_expansion_pressure_probe_enabled` compares current city count
+  to lifecycle target curves, checks under-owned core/historical claims, and
+  logs `candidate` or protected escape-route outcomes with `applied=false`.
+- [x] Add `tools/organic_history/expansion_pressure_gate.sh`, which forces a
+  short target-curve gap and verifies structured expansion-pressure diagnostics
+  without city ownership changes.
+- [x] Add diagnostics-only partial contraction v1:
+  `organic_history_partial_contraction_probe_enabled` consumes collapse risk,
+  release candidates, and lifecycle contraction rules, tracks sustained-risk
+  streaks, and logs `protected`, `monitor`, or `candidate` with `applied=false`.
+- [x] Add `tools/organic_history/partial_contraction_gate.sh`, which forces a
+  short peripheral-risk candidate and verifies no city transfer or secession.
+
+## Phase 26: DoC-Informed Global Historical Model
+
+- [x] Treat the Dawn of Civilization comparison as design/data guidance, not as a
+  fixed event-script blueprint.
+- [x] Reorder the roadmap so large-Earth dynamic actor lifecycle safety comes
+  before 100-run global sweeps, DoC-scale actor expansion, or multi-city
+  collapse/resurrection mechanics.
+- [x] Identify the global 200-turn assertion source: duplicate Freeciv nation
+  ownership between active/dormant players, notably China/Song sharing the
+  `Chinese` nation slot.
+- [x] Give Song the unique `Han` nation slot in the global 4000 fixture data and
+  Lua emergence metadata.
+- [x] Add duplicate player-nation validation to scenario generation and scenario
+  validation.
+- [x] Make `run_ai_game.py` treat Freeciv assertion logs as failures and record
+  `freecivAssertionLogCount`.
+- [x] Verify the regenerated 160x90 global fixture runs to turn 200 with zero
+  assertions and resumes from the final save through turn 220 with zero
+  assertions.
+- [x] Add `tools/organic_history/global_4000_lifecycle_gate.sh`.
+- [x] Add the first canonical global historical data model at
+  `data/organic_history/history/earth_global_4000.json`.
+- [x] Add `tools/organic_history/generate_history_artifacts.py --check` and wire
+  it into global gates so the global starts plan and timeline do not drift from
+  the canonical model.
+- [x] Generate/check the canonical large-Earth Lua runtime block in
+  `data/organic_history/script.lua` so global actor metadata, city metadata,
+  region claims, and emergence actors are sourced from
+  `earth_global_4000.json`.
+- [x] Add diagnostic-only region claims and `organic_history_claim_pressure`
+  logging for authored actors, with campaign summary parsing.
+- [x] Replace date/probability-only global emergence with conditional v2 modes:
+  empty-core, lineage-successor, weak-holder, and foreign-core claimant.
+- [x] Add relocation search across core regions plus delayed no-site handling so
+  saturated cores do not become permanent blocks or per-turn log noise.
+- [x] Switch global scenario authoring to the extended nation set and keep Song on
+  a unique Korean runtime slot to avoid active China/Han conflicts.
+- [x] Expand canonical global data with a first DoC-inspired ancient/classical
+  wave: Nubia, Assyria, Hittite, Phoenicia, Carthage, and Celts.
+- [x] Keep relocation conservative after expansion: actors may relocate near their
+  target inside the core region, but no longer jump across continent-scale
+  regions.
+- [x] Add diagnostics-only collapse/resurrection groundwork:
+  `organic_history_collapse` and `organic_history_collapse_candidate` logs
+  summarize collapse risk and candidate release cities without transferring
+  ownership or creating successors.
+- [x] Add diagnostics-only DoC flavor scaffolding:
+  `organic_history_flavor` logs UHV-style diagnostics and policy hints from the
+  canonical global actor data without changing AI behavior or UI.
+- [x] Validate the expanded global fixture through the standard global gate and
+  the 200-turn plus continuation lifecycle gate.
+- [ ] Promote collapse/resurrection from diagnostics to command-gated mechanics
+  only after release-candidate quality is reviewed across longer sweeps.
+- [ ] Promote flavor diagnostics into visible objectives, dynamic names,
+  diplomacy, contact/colonial systems, or UI only after long-run diagnostics are
+  reviewed.
+
 ## Phase 2: Overnight Simulation Lab
 
 - [x] Isolate scorelogs under each run directory.

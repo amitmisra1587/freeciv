@@ -76,6 +76,35 @@ tools/organic_history/campaign_gate.sh
 The campaign gate runs the single-run gate plus a 3-seed AI-only campaign and
 writes summaries under `runs/organic_history_campaign_gate/`.
 
+Use the parallel campaign gate after editing campaign orchestration or per-run
+port/output isolation:
+
+```bash
+tools/organic_history/parallel_campaign_gate.sh
+```
+
+The campaign runner supports bounded local parallelism with `--jobs N`.
+Start large global sweeps conservatively with `--jobs 2` unless resource usage
+has been measured on the host.
+On shared or interactive macOS hosts, add a load guard so new seeds wait instead
+of launching during system pressure:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --jobs 2 \
+  --max-load-average 18 \
+  --load-check-interval 30
+```
+
+After global sweeps, generate the historical-fit report:
+
+```bash
+python3 tools/organic_history/global_historical_fit_report.py \
+  --sweep-dir runs/organic_history_phase27_global_sweeps/full_100x200
+```
+
+Use `--strict` only when you want failed actor expectations to fail CI.
+
 Use the mechanics gate for the first disabled-by-default civil-war mechanic:
 
 ```bash
@@ -101,6 +130,27 @@ stress/succession-risk probe:
 
 ```bash
 tools/organic_history/dynastic_stress_gate.sh
+```
+
+Use the dynastic transfer gate after editing diagnostics-only dynastic transfer
+or lifecycle successor pressure:
+
+```bash
+tools/organic_history/dynastic_transfer_gate.sh
+```
+
+Use the expansion pressure gate after editing diagnostics-only regional
+expansion pressure or lifecycle target-city curves:
+
+```bash
+tools/organic_history/expansion_pressure_gate.sh
+```
+
+Use the partial contraction gate after editing diagnostics-only contraction or
+collapse-to-release-candidate logic:
+
+```bash
+tools/organic_history/partial_contraction_gate.sh
 ```
 
 Use the full overnight runner for calibration, continuation check, mechanics
@@ -172,10 +222,49 @@ For the 160x90 global 4000 BCE emergence fixture, use:
 tools/organic_history/global_4000_gate.sh
 ```
 
-Campaigns can select that profile with
+Before large global sweeps or DoC-style actor expansion, use the longer lifecycle
+gate:
+
+```bash
+tools/organic_history/global_4000_lifecycle_gate.sh
+```
+
+It runs the global fixture to turn 200, fails on Freeciv assertions, then resumes
+the final save through turn 220. Campaigns can select that profile with
 `--profile tools/organic_history/profiles/global_4000_emergence_candidate.json`.
 Global fallback secession is currently disabled in this profile; dynamic
-emergence uses dormant future actors instead of mature-game player creation.
+emergence uses unique dormant future actors instead of mature-game player
+creation.
+
+The canonical global historical data layer is
+`data/organic_history/history/earth_global_4000.json`. Check generated starts and
+timeline artifacts with:
+
+```bash
+python3 tools/organic_history/generate_history_artifacts.py --check
+```
+
+Collapse/resurrection is diagnostics-only in the global profile for now. Inspect
+`organic_history_collapse` and `organic_history_collapse_candidate` logs before
+promoting any city-transfer or successor-creation behavior.
+
+DoC-style flavor is diagnostics-only too. Inspect `organic_history_flavor` logs
+for canonical UHV diagnostics and policy hints before adding UI, names,
+diplomacy, contact/colonial effects, or objective mechanics.
+
+Historical data must be treated as **historical gravity, not destiny**. The
+canonical global model has `historicalGravity` condition gates, escape routes,
+and probabilistic outcome weights; mechanics should consume those safeguards
+instead of firing scripted outcomes just because an actor/date matches history.
+
+Lifecycle archetypes are defined in canonical data as well. Treat
+`lifecycleArchetypes` and `actorLifecycleTypes` as data contracts for future
+profile-gated mechanics, not default-on behavior.
+
+The emergence-only global profile is the baseline. Use
+`tools/organic_history/profiles/global_4000_bootstrap_candidate.json` when
+testing lifecycle bootstrap packages, and keep bootstrap gated behind
+`organic_history_bootstrap_enabled`.
 
 Use skip-reason and inertness fields in campaign summaries before relaxing
 thresholds.

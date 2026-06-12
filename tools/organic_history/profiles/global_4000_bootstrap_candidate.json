@@ -1,5 +1,5 @@
 {
-  "description": "Command-gated global 4000 BCE candidate profile for large-Earth dynamic civilization emergence experiments.",
+  "description": "Command-gated global 4000 BCE candidate profile with conditional emergence plus lifecycle bootstrap packages.",
   "luaCommands": [
     "lua cmd organic_history_mechanics_enabled = true",
     "lua cmd organic_history_civil_war_enabled = false",
@@ -23,10 +23,13 @@
     "lua cmd organic_history_emergence_enabled = true",
     "lua cmd organic_history_emergence_conditional_enabled = true",
     "lua cmd organic_history_emergence_relocation_radius = 18",
-    "lua cmd organic_history_emergence_probability = 65"
+    "lua cmd organic_history_emergence_probability = 65",
+    "lua cmd organic_history_bootstrap_enabled = true",
+    "lua cmd organic_history_bootstrap_max_gold = 150",
+    "lua cmd organic_history_bootstrap_max_units = 8"
   ],
-  "mode": "global_4000_emergence_candidate",
-  "name": "global_4000_emergence_candidate_v1",
+  "mode": "global_4000_bootstrap_candidate",
+  "name": "global_4000_bootstrap_candidate_v1",
   "scope": "earth_global_4000_v1",
   "validatedScenarios": [
     "earth_global_4000_v1"

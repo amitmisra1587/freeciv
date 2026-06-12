@@ -1,0 +1,38 @@
+{
+  "description": "Combined Phase 29 lifecycle candidate profile. Enables bounded single-city peripheral contraction plus dynastic successor activation/inheritance, with broader collapse, cluster release, civil war, and fallback secession disabled.",
+  "luaCommands": [
+    "lua cmd organic_history_mechanics_enabled = true",
+    "lua cmd organic_history_civil_war_enabled = false",
+    "lua cmd organic_history_dynastic_stress_enabled = false",
+    "lua cmd organic_history_mandate_enabled = true",
+    "lua cmd organic_history_mandate_max_stress_reduction = 4",
+    "lua cmd organic_history_pressure_modifiers_enabled = true",
+    "lua cmd organic_history_pressure_max_stress_modifier = 6",
+    "lua cmd organic_history_mandate_loss_enabled = true",
+    "lua cmd organic_history_mandate_loss_threshold = 0.24",
+    "lua cmd organic_history_mandate_loss_min_cities = 10",
+    "lua cmd organic_history_mandate_loss_max_stress_modifier = 6",
+    "lua cmd organic_history_secession_fallback_enabled = false",
+    "lua cmd organic_history_emergence_enabled = true",
+    "lua cmd organic_history_emergence_conditional_enabled = true",
+    "lua cmd organic_history_emergence_relocation_radius = 18",
+    "lua cmd organic_history_emergence_probability = 65",
+    "lua cmd organic_history_bootstrap_enabled = true",
+    "lua cmd organic_history_bootstrap_max_gold = 150",
+    "lua cmd organic_history_bootstrap_max_units = 8",
+    "lua cmd organic_history_dynastic_transfer_probe_enabled = true",
+    "lua cmd organic_history_dynastic_transfer_enabled = true",
+    "lua cmd organic_history_expansion_pressure_probe_enabled = true",
+    "lua cmd organic_history_partial_contraction_probe_enabled = true",
+    "lua cmd organic_history_partial_contraction_enabled = true",
+    "lua cmd organic_history_partial_contraction_risk_threshold = 0.65",
+    "lua cmd organic_history_partial_contraction_cooldown = 30",
+    "lua cmd organic_history_contact_diagnostics_enabled = true"
+  ],
+  "mode": "phase29_lifecycle_active_candidate",
+  "name": "phase29_lifecycle_active_candidate",
+  "scope": "earth_global_4000_v1",
+  "validatedScenarios": [
+    "earth_global_4000_v1"
+  ]
+}

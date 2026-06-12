@@ -19,72 +19,238 @@
       "leader": "Narmer",
       "nation": "Egyptian",
       "style": "Classical",
-      "coreRegion": "africa",
+      "coreRegion": "nile",
       "successorNation": "Egyptian",
-      "successorNames": ["Nile Delta Secession", "Upper Egyptian Secession"],
+      "successorNames": [
+        "Nile Delta Secession",
+        "Upper Egyptian Secession"
+      ],
       "research": "Masonry",
-      "techs": ["Masonry", "Pottery"],
+      "techs": [
+        "Masonry",
+        "Pottery"
+      ],
       "gold": 80,
-      "start": {"x": 41, "y": 40},
-      "city": {"name": "Memphis", "x": 41, "y": 40, "region": "africa", "core": true}
+      "start": {
+        "x": 41,
+        "y": 40
+      },
+      "city": {
+        "name": "Memphis",
+        "x": 41,
+        "y": 40,
+        "region": "nile",
+        "core": true
+      }
     },
     {
       "id": "sumer",
       "leader": "Gilgamesh",
       "nation": "Sumerian",
       "style": "Babylonian",
-      "coreRegion": "near_east",
+      "coreRegion": "mesopotamia",
       "successorNation": "Sumerian",
-      "successorNames": ["Sumerian City Secession", "Mesopotamian Secession"],
+      "successorNames": [
+        "Sumerian City Secession",
+        "Mesopotamian Secession"
+      ],
       "research": "Pottery",
-      "techs": ["Pottery", "Writing"],
+      "techs": [
+        "Pottery",
+        "Writing"
+      ],
       "gold": 75,
-      "start": {"x": 50, "y": 39},
-      "city": {"name": "Uruk", "x": 50, "y": 39, "region": "near_east", "core": true}
+      "start": {
+        "x": 50,
+        "y": 39
+      },
+      "city": {
+        "name": "Uruk",
+        "x": 50,
+        "y": 39,
+        "region": "mesopotamia",
+        "core": true
+      }
     },
     {
       "id": "india",
       "leader": "Chandragupta",
       "nation": "Indian",
       "style": "Classical",
-      "coreRegion": "india",
+      "coreRegion": "north_india",
       "successorNation": "Indian",
-      "successorNames": ["Magadhan Secession", "Indian Regional Secession"],
+      "successorNames": [
+        "Magadhan Secession",
+        "Indian Regional Secession"
+      ],
       "research": "Alphabet",
-      "techs": ["Alphabet", "Pottery"],
+      "techs": [
+        "Alphabet",
+        "Pottery"
+      ],
       "gold": 70,
-      "start": {"x": 64, "y": 41},
-      "city": {"name": "Pataliputra", "x": 64, "y": 41, "region": "india", "core": true}
+      "start": {
+        "x": 64,
+        "y": 41
+      },
+      "city": {
+        "name": "Pataliputra",
+        "x": 64,
+        "y": 41,
+        "region": "north_india",
+        "core": true
+      }
     },
     {
       "id": "china",
       "leader": "Qin Shi Huang",
       "nation": "Chinese",
       "style": "Asian",
-      "coreRegion": "china",
+      "coreRegion": "north_china",
       "successorNation": "Chinese",
-      "successorNames": ["Chinese Regional Secession", "Yellow River Secession"],
+      "successorNames": [
+        "Chinese Regional Secession",
+        "Yellow River Secession"
+      ],
       "research": "Bronze Working",
-      "techs": ["Bronze Working", "Pottery"],
+      "techs": [
+        "Bronze Working",
+        "Pottery"
+      ],
       "gold": 70,
-      "start": {"x": 81, "y": 32},
-      "city": {"name": "Chang'an", "x": 81, "y": 32, "region": "china", "core": true}
+      "start": {
+        "x": 81,
+        "y": 32
+      },
+      "city": {
+        "name": "Chang'an",
+        "x": 81,
+        "y": 32,
+        "region": "north_china",
+        "core": true
+      }
     }
   ],
   "dormantActors": [
-    {"id": "greece", "leader": "Pericles", "nation": "Greek", "style": "Classical"},
-    {"id": "persia", "leader": "Cyrus", "nation": "Persian", "style": "Classical"},
-    {"id": "rome", "leader": "Romulus", "nation": "Roman", "style": "Classical"},
-    {"id": "franks", "leader": "Charlemagne", "nation": "French", "style": "European"},
-    {"id": "abbasid", "leader": "Harun al-Rashid", "nation": "Arab", "style": "Babylonian"},
-    {"id": "chola", "leader": "Rajaraja Chola", "nation": "Chola", "style": "Classical"},
-    {"id": "song", "leader": "Taizu", "nation": "Chinese", "style": "Asian"},
-    {"id": "steppe", "leader": "Temujin", "nation": "Mongol", "style": "Asian"},
-    {"id": "castile", "leader": "Isabella", "nation": "Spanish", "style": "European"},
-    {"id": "portugal", "leader": "Henry", "nation": "Portuguese", "style": "European"},
-    {"id": "ming", "leader": "Xuande", "nation": "Manchu", "style": "Asian"},
-    {"id": "japan", "leader": "Ashikaga Yoshimasa", "nation": "Japanese", "style": "Asian"},
-    {"id": "aztec", "leader": "Moctezuma I", "nation": "Aztec", "style": "Tropical"},
-    {"id": "inca", "leader": "Pachacuti", "nation": "Inca", "style": "Tropical"}
+    {
+      "id": "nubia",
+      "leader": "Piye",
+      "nation": "Nubian",
+      "style": "Classical"
+    },
+    {
+      "id": "assyria",
+      "leader": "Ashurbanipal",
+      "nation": "Assyrian",
+      "style": "Babylonian"
+    },
+    {
+      "id": "hittite",
+      "leader": "Suppiluliuma",
+      "nation": "Hittite",
+      "style": "Classical"
+    },
+    {
+      "id": "phoenicia",
+      "leader": "Hiram",
+      "nation": "Phoenician",
+      "style": "Classical"
+    },
+    {
+      "id": "carthage",
+      "leader": "Hannibal",
+      "nation": "Carthaginian",
+      "style": "Classical"
+    },
+    {
+      "id": "celts",
+      "leader": "Vercingetorix",
+      "nation": "Celtic",
+      "style": "Celtic"
+    },
+    {
+      "id": "greece",
+      "leader": "Pericles",
+      "nation": "Greek",
+      "style": "Classical"
+    },
+    {
+      "id": "persia",
+      "leader": "Cyrus",
+      "nation": "Persian",
+      "style": "Classical"
+    },
+    {
+      "id": "rome",
+      "leader": "Romulus",
+      "nation": "Roman",
+      "style": "Classical"
+    },
+    {
+      "id": "franks",
+      "leader": "Charlemagne",
+      "nation": "French",
+      "style": "European"
+    },
+    {
+      "id": "abbasid",
+      "leader": "Harun al-Rashid",
+      "nation": "Arab",
+      "style": "Babylonian"
+    },
+    {
+      "id": "chola",
+      "leader": "Rajaraja Chola",
+      "nation": "Chola",
+      "style": "Classical"
+    },
+    {
+      "id": "song",
+      "leader": "Taizu",
+      "nation": "Korean",
+      "style": "Asian"
+    },
+    {
+      "id": "steppe",
+      "leader": "Temujin",
+      "nation": "Mongol",
+      "style": "Asian"
+    },
+    {
+      "id": "castile",
+      "leader": "Isabella",
+      "nation": "Spanish",
+      "style": "European"
+    },
+    {
+      "id": "portugal",
+      "leader": "Henry",
+      "nation": "Portuguese",
+      "style": "European"
+    },
+    {
+      "id": "ming",
+      "leader": "Xuande",
+      "nation": "Manchu",
+      "style": "Asian"
+    },
+    {
+      "id": "japan",
+      "leader": "Ashikaga Yoshimasa",
+      "nation": "Japanese",
+      "style": "Asian"
+    },
+    {
+      "id": "aztec",
+      "leader": "Moctezuma I",
+      "nation": "Aztec",
+      "style": "Tropical"
+    },
+    {
+      "id": "inca",
+      "leader": "Pachacuti",
+      "nation": "Inca",
+      "style": "Tropical"
+    }
   ]
 }

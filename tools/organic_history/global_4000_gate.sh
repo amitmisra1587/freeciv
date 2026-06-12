@@ -7,6 +7,7 @@ gate_dir=runs/organic_history_global_4000_gate
 
 python3 -m json.tool data/organic_history/scenarios/earth_global_4000_v1_starts.json >/dev/null
 python3 -m json.tool data/organic_history/scenarios/earth_global_4000_timeline.json >/dev/null
+python3 tools/organic_history/generate_history_artifacts.py --check >/dev/null
 
 python3 tools/organic_history/validate_scenario.py \
   data/organic_history/scenarios/earth_global_4000_v1.sav \
@@ -27,6 +28,8 @@ python3 tools/organic_history/run_ai_game.py \
   --timeout 420 \
   --extra-command "lua cmd organic_history_mechanics_enabled = true" \
   --extra-command "lua cmd organic_history_emergence_enabled = true" \
+  --extra-command "lua cmd organic_history_emergence_conditional_enabled = true" \
+  --extra-command "lua cmd organic_history_emergence_relocation_radius = 18" \
   --extra-command "lua cmd organic_history_emergence_probability = 100" >/dev/null
 
 for actor in greece persia rome; do
@@ -36,8 +39,8 @@ for actor in greece persia rome; do
   fi
 done
 
-if ! grep -q 'organic_history_city_pressure .*city="Roma".*region="europe"' "$gate_dir"/emergence/server_*.log; then
-  echo "FAIL: emerged Rome did not use European city metadata"
+if ! grep -q 'organic_history_city_pressure .*city="Roma".*region="italy"' "$gate_dir"/emergence/server_*.log; then
+  echo "FAIL: emerged Rome did not use Italian city metadata"
   exit 1
 fi
 
@@ -61,6 +64,8 @@ python3 tools/organic_history/run_ai_game.py \
   --timeout 300 \
   --extra-command "lua cmd organic_history_mechanics_enabled = true" \
   --extra-command "lua cmd organic_history_emergence_enabled = true" \
+  --extra-command "lua cmd organic_history_emergence_conditional_enabled = true" \
+  --extra-command "lua cmd organic_history_emergence_relocation_radius = 18" \
   --extra-command "lua cmd organic_history_emergence_probability = 100" >/dev/null
 
 python3 - "$gate_dir/continued/run_metadata.json" <<'PY'

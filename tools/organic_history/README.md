@@ -115,7 +115,207 @@ tools/organic_history/campaign_gate.sh
 
 Verified local campaign gate:
 
-```text
+```
+
+Run the parallel campaign gate after changing campaign orchestration:
+
+```bash
+tools/organic_history/parallel_campaign_gate.sh
+```
+
+`run_campaign.py` supports bounded local parallelism:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --profile tools/organic_history/profiles/global_4000_emergence_candidate.json \
+  --scenario data/organic_history/scenarios/earth_global_4000_v1.sav \
+  --seeds 1-20 \
+  --turns 200 \
+  --players 4 \
+  --saveturns 25 \
+  --timeout 3000 \
+  --jobs 2 \
+  --output-dir runs/organic_history_parallel_example
+```
+
+Each seed keeps its own output directory, scorelog, save files, server logs,
+`run_metadata.json`, and `run_summary.json`. The manifest records the explicit
+port assigned to each seed, and `campaign_progress.jsonl` records submissions,
+starts, skips, completions, and failures. Resume behavior skips successful seeds
+when `--clean` is omitted.
+
+For long local sweeps on an interactive Mac, use a load guard so queued seeds
+wait until the machine is below the threshold:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --profile tools/organic_history/profiles/global_4000_emergence_candidate.json \
+  --scenario data/organic_history/scenarios/earth_global_4000_v1.sav \
+  --seeds 1-100 \
+  --turns 200 \
+  --players 4 \
+  --jobs 2 \
+  --max-load-average 18 \
+  --load-check-interval 30 \
+  --output-dir runs/organic_history_global_100x200
+```
+
+`--max-load-average 0` disables the guard, which is the default for short gates.
+
+Run the Phase 29 diagnostics-only lifecycle probe after editing lifecycle probe
+profiles, contact/discovery diagnostics, or probe reporting:
+
+```bash
+tools/organic_history/phase29_probe_gate.sh
+```
+
+The gate enables the Phase 29 lifecycle probe profile plus deterministic
+threshold overrides, then checks that dynastic-transfer, expansion-pressure,
+partial-contraction, and arrival diagnostics are all structured and nonzero
+without changing city ownership or triggering secession.
+
+For longer Phase 29 evidence runs, use:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --profile tools/organic_history/profiles/phase29_lifecycle_probe.json \
+  --scenario data/organic_history/scenarios/earth_global_4000_v1.sav \
+  --seeds 1-20 \
+  --turns 200 \
+  --players 4 \
+  --saveturns 25 \
+  --timeout 3000 \
+  --jobs 2 \
+  --max-load-average 18 \
+  --load-check-interval 30 \
+  --output-dir runs/organic_history_phase29_probe_20x200
+```
+
+Contact/discovery diagnostics are report-only. `organic_history_arrival` logs
+the first time an actor owns a city in a region, `organic_history_ocean_crossing`
+logs first region-arrival proxies across Atlantic/Pacific group boundaries, and
+`organic_history_contact` logs first shared-region contact proxies between
+actors. These are not diplomacy, disease, or colonial gameplay mechanics.
+
+Run the Phase 29 active contraction gate after editing the first bounded
+contraction effect:
+
+```bash
+tools/organic_history/phase29_contraction_gate.sh
+```
+
+The candidate profile keeps full collapse, cluster release, civil war, and
+fallback secession disabled. It only permits sustained-risk single-city
+peripheral release behind `organic_history_partial_contraction_enabled`.
+
+Run the Phase 29 successor inheritance gate after editing dynastic transfer
+activation:
+
+```bash
+tools/organic_history/phase29_successor_inheritance_gate.sh
+```
+
+The candidate profile keeps raw mechanics bounded: eligible dynastic successors
+can be activated through their normal emergence path and inherit one validated
+local predecessor city. Strong/healthy predecessors still log protected outcomes
+instead of being forced to collapse.
+
+Run the Phase 30 diagnostics gate after editing contraction or inheritance
+activation/skip reporting:
+
+```bash
+tools/organic_history/phase30_diagnostics_gate.sh
+```
+
+The gate wraps the Phase 29 probe, contraction, and successor-inheritance gates
+and also requires per-actor reason counts plus candidate-quality fields. For
+Phase 30 diagnostics pilots, use
+`tools/organic_history/profiles/phase30_lifecycle_diagnostics_candidate.json`.
+
+Run the Phase 30 successor inheritance gate after editing bounded inheritance
+transfer limits or predecessor selection:
+
+```bash
+tools/organic_history/phase30_successor_inheritance_gate.sh
+```
+
+The gate forces a local Mesopotamian successor case and verifies that the
+Phase 30 cluster cap can transfer multiple safe local cities while preserving
+the older one-city inheritance gate.
+
+Run the other focused Phase 30 lifecycle gates after editing their slices:
+
+```bash
+tools/organic_history/phase30_contraction_gate.sh
+tools/organic_history/phase30_iberia_gate.sh
+tools/organic_history/phase30_sumer_gate.sh
+tools/organic_history/phase30_burst_gate.sh
+```
+
+These gates cover bounded contraction clusters, Iberia-local successor handling,
+Sumer/Mesopotamian city-density support for Abbasid handoff, and bounded burst
+support for Assyria/Persia/Rome/Steppe. All remain profile-gated through
+`phase30_lifecycle_diagnostics_candidate.json`.
+
+For combined Phase 30 active lifecycle pilots, use:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --profile tools/organic_history/profiles/phase30_lifecycle_diagnostics_candidate.json \
+  --scenario data/organic_history/scenarios/earth_global_4000_v1.sav \
+  --seeds 1-20 \
+  --turns 200 \
+  --players 4 \
+  --saveturns 25 \
+  --timeout 3000 \
+  --jobs 2 \
+  --max-load-average 18 \
+  --load-check-interval 30 \
+  --output-dir runs/organic_history_phase30_lifecycle_candidate_20x200
+```
+
+For combined Phase 29 active lifecycle pilots, use:
+
+```bash
+python3 tools/organic_history/run_campaign.py \
+  --ruleset-serv data/organic_history.serv \
+  --profile tools/organic_history/profiles/phase29_lifecycle_active_candidate.json \
+  --scenario data/organic_history/scenarios/earth_global_4000_v1.sav \
+  --seeds 1-20 \
+  --turns 200 \
+  --players 4 \
+  --saveturns 25 \
+  --timeout 3000 \
+  --jobs 2 \
+  --max-load-average 18 \
+  --load-check-interval 30 \
+  --output-dir runs/organic_history_phase29_lifecycle_active_20x200
+```
+
+Generate a per-civilization historical-fit report from a global sweep:
+
+```bash
+python3 tools/organic_history/generate_civilization_evidence.py \
+  --campaign-dir runs/organic_history_phase29_lifecycle_active_20x200
+
+python3 tools/organic_history/global_historical_fit_report.py \
+  --sweep-dir runs/organic_history_phase29_lifecycle_active_20x200
+```
+
+The report writes `global_historical_fit_report.json` under the sweep directory.
+It compares observed spawn rate, survival/scale proxies, collapse risk, and
+release-candidate diagnostics against first-pass expectations. By default it is
+report-only; pass `--strict` to exit non-zero when any actor has a fail verdict.text
+The report also includes `historicalGravityAssessment` per actor to distinguish
+pressure reasons from escape routes such as strong core control, restrained
+expansion, and low rival pressure.text
+`global_historical_fit_report.py` accepts either the legacy
+`full_100x200_summary.json` or the normal `campaign_summary.json` written by
+`run_campaign.py`.
 runs/organic_history_campaign_gate/
 runsRequested: 3
 runsSucceeded: 3
@@ -797,12 +997,121 @@ data/organic_history/scenarios/earth_global_4000_timeline.json
 The v1 fixture starts with four ancient cores: Egypt/Narmer, Sumer/Gilgamesh,
 India/Chandragupta, and China/Qin Shi Huang. Later actors are pre-created as
 dormant players and activated by command-gated emergence, which avoids mature-game
-`edit.create_player()` crashes seen in early global pilots.
+`edit.create_player()` crashes seen in early global pilots. Each active or
+dormant actor must use a unique Freeciv nation slot; Freeciv treats nation
+ownership as one-to-one with players.
 
 Run the global gate:
 
 ```bash
 tools/organic_history/global_4000_gate.sh
+```
+
+Run the longer lifecycle gate before large global sweeps or DoC-style actor
+expansion:
+
+```bash
+tools/organic_history/global_4000_lifecycle_gate.sh
+```
+
+This gate runs the 160x90 global fixture to turn 200, checks that Freeciv logged
+no assertions, then resumes the final save through turn 220.
+
+The canonical global historical data layer is:
+
+```text
+data/organic_history/history/earth_global_4000.json
+```
+
+It generates and checks the global starts plan and timeline:
+
+```bash
+python3 tools/organic_history/generate_history_artifacts.py --check
+```
+
+Region-claim diagnostics are logged as `organic_history_claim_pressure`. They are
+diagnostic-only and summarize each authored actor's city mix across core,
+historical, contested, colonial, cultural, respawn, and peripheral regions plus
+core-region rival pressure.
+
+Global emergence v2 is enabled in the candidate profile with
+`organic_history_emergence_conditional_enabled`. It logs
+`organic_history_emergence_condition`, classifies attempts as empty-core,
+lineage-successor, weak-holder, or foreign-core claimant, searches for relocated
+city sites near the actor's target inside the actor's core region, and delays
+saturated no-site cases instead of permanently blocking, jumping across a broad
+continent-scale region, or retrying noisily every turn.
+
+Scenario authoring uses the extended nation set so dormant actors can keep
+non-core nation slots such as Chola and Manchu. Song currently uses the unique
+Korean runtime slot to avoid conflicting with active China while retaining
+Chinese successor metadata.
+
+The first DoC-inspired global expansion wave adds dormant ancient/classical
+actors for Nubia, Assyria, Hittite, Phoenicia, Carthage, and Celts. The expanded
+global lifecycle gate remains assertion-clean.
+
+Collapse/resurrection is currently diagnostics-only. The server logs
+`organic_history_collapse` and `organic_history_collapse_candidate` to report
+collapse risk, core/peripheral mix, and candidate release cities. These logs do
+not transfer ownership, create successor players, or otherwise alter gameplay.
+
+DoC flavor is currently diagnostics-only. The server logs
+`organic_history_flavor` entries for canonical UHV-style diagnostics and policy
+hints. These entries are intended for sweep analysis before any UI, dynamic-name,
+diplomacy, contact/colonial, or objective behavior is promoted.
+
+Historical gravity safeguards live in the canonical model under
+`historicalGravity`. They define condition gates, player/AI escape routes, and
+probabilistic outcome weights. Future mechanics should use these as generic
+pressure safeguards: historical actor data defines claims/niches/flavor, while
+runtime game state determines whether pressure applies.
+
+Lifecycle archetypes also live in the canonical model under
+`lifecycleArchetypes` and `actorLifecycleTypes`. Generated Lua exposes
+`organic_history_global_lifecycle_archetypes` and
+`organic_history_global_actor_lifecycle_types`. These archetypes describe target
+city curves, bootstrap packages, successor modes, contraction rules, escape
+routes, and outcome weights; they are data only until profile-gated mechanics
+consume them.
+
+Bootstrap package v1 is command-gated by `organic_history_bootstrap_enabled`.
+The baseline `global_4000_emergence_candidate.json` profile remains
+emergence-only; use `global_4000_bootstrap_candidate.json` to test bounded
+post-spawn gold and support-unit packages. `global_4000_bootstrap_gate.sh`
+checks that early global emergences receive bootstrap support without Freeciv
+assertions.
+
+Dynastic transfer v1 is diagnostics-only and command-gated by
+`organic_history_dynastic_transfer_probe_enabled`. It evaluates condition-gated
+successor pressure for `dynastic_successor` lifecycle actors, logs protected
+escape-route cases versus candidate pressure, and always logs `applied=false`.
+It does not create players, transfer cities, rename nations, or change
+ownership. Validate it with:
+
+```bash
+tools/organic_history/dynastic_transfer_gate.sh
+```
+
+Regional expansion pressure v1 is diagnostics-only and command-gated by
+`organic_history_expansion_pressure_probe_enabled`. It compares an actor's
+current city count to its lifecycle target city curve, checks whether core or
+historical claims remain under-owned, and logs protected escape routes for
+economic trouble, collapse crisis, or being on curve. It always logs
+`applied=false` and does not create units or cities. Validate it with:
+
+```bash
+tools/organic_history/expansion_pressure_gate.sh
+```
+
+Partial contraction v1 is diagnostics-only and command-gated by
+`organic_history_partial_contraction_probe_enabled`. It consumes collapse-risk
+diagnostics plus lifecycle contraction rules, tracks sustained risk, and logs
+candidate release pressure with `applied=false`. It does not transfer cities or
+create successor players. Validate it with:
+
+```bash
+tools/organic_history/partial_contraction_gate.sh
 ```
 
 Run the current emergence candidate:
@@ -828,11 +1137,13 @@ mean max city share: 0.377
 emerged in all seeds by turn 120: Greece, Persia, Rome, Franks
 ```
 
-Global fallback secession is intentionally disabled/deferred in the global
-emergence profile. Early large-map pilots showed Freeciv nation-set crashes when
-creating successor players in mature global games. Dynamic emergence now uses
-dormant players; global successor/collapse integration should be reintroduced
-only after a safe successor nation mapping is implemented for large Earth.
+Global fallback secession, built-in civil war, and dynastic stress are
+intentionally disabled/deferred in the global emergence profile. Early large-map
+pilots showed Freeciv nation-set crashes when creating successor players in
+mature global games, and duplicate dormant-player nations can violate Freeciv's
+player/nation ownership invariant. Dynamic emergence now uses unique dormant
+players; global successor/collapse integration should be reintroduced only after
+a safe successor nation mapping is implemented for large Earth.
 
 ## Multi-Civilization Tuning
 
