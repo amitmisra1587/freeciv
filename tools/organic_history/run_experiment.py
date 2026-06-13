@@ -28,6 +28,10 @@ def main() -> int:
     parser.add_argument("--preset", choices=["mechanics_probe", "mechanics_ab_long"], default=None)
     parser.add_argument("--thresholds", type=Path, default=None)
     parser.add_argument("--profile", type=Path, default=None)
+    parser.add_argument("--baseline-profile", type=Path, default=None,
+                        help="Optional profile for the baseline arm. If given, the "
+                             "baseline runs this profile's luaCommands instead of "
+                             "mechanics-off, enabling candidate-vs-accepted-baseline A/Bs.")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "runs" / "organic_history_mechanics_ab")
     parser.add_argument("--label", default=None,
                         help="Experiment label stored in the manifest and arm labels.")
@@ -64,6 +68,8 @@ def main() -> int:
             f"lua cmd organic_history_civil_war_probability = {int(recommended.get('civilWarProbability', 8))}",
             f"lua cmd organic_history_civil_war_cooldown = {int(recommended.get('civilWarCooldown', 40))}",
         ]
+    baseline_profile = read_json(args.baseline_profile) if args.baseline_profile else {}
+    baseline_commands = baseline_profile.get("luaCommands", [])
     manifest = {
         "rulesetServ": str(args.ruleset_serv),
         "seeds": args.seeds,
@@ -77,6 +83,8 @@ def main() -> int:
         "maxLoadAverage": args.max_load_average,
         "thresholds": str(args.thresholds) if args.thresholds else None,
         "profile": str(args.profile) if args.profile else None,
+        "baselineProfile": str(args.baseline_profile) if args.baseline_profile else None,
+        "baselineCommands": baseline_commands,
         "mechanicCommands": mechanic_commands,
     }
     write_json(output_dir / "experiment_manifest.json", manifest)
@@ -89,7 +97,7 @@ def main() -> int:
     else:
         baseline_label = "baseline"
     candidate_dir = output_dir / candidate_label
-    baseline_result = run_campaign(args, baseline_dir, baseline_label, [])
+    baseline_result = run_campaign(args, baseline_dir, baseline_label, baseline_commands)
     candidate_result = run_campaign(args, candidate_dir, candidate_label, mechanic_commands)
     compare_result = subprocess.run([
         sys.executable,

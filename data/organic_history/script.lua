@@ -86,6 +86,28 @@ organic_history_partial_contraction_debt_required =
     organic_history_partial_contraction_debt_required or 6
 organic_history_partial_contraction_debt_threshold_bonus =
     organic_history_partial_contraction_debt_threshold_bonus or 0.05
+-- Wave 6 scaling-empire-stress (Phase 44): OFF by default. When an actor's
+-- city count exceeds its historical size ceiling, add size-relative stress to
+-- collapse_risk so over-persisting empires cross the existing partial-
+-- contraction gate and shed peripheral cities. Only actors present in
+-- organic_history_scaling_stress_ceilings are affected; every other actor
+-- (including every passing actor) receives zero scaling stress, so this lever
+-- cannot regress non-listed actors. The ceilings match the fit tool's
+-- medianFinalCitiesMax expectations. Outcomes stay probabilistic and avoidable
+-- (gravity-not-destiny) because the existing contraction gate/outcome weights
+-- still apply; this lever only raises the pressure input, it never forces release.
+organic_history_scaling_stress_enabled =
+    organic_history_scaling_stress_enabled or false
+organic_history_scaling_stress_weight =
+    organic_history_scaling_stress_weight or 0.8
+organic_history_scaling_stress_max =
+    organic_history_scaling_stress_max or 0.4
+if organic_history_scaling_stress_ceilings == nil then
+  organic_history_scaling_stress_ceilings = {
+    india = 18,
+    nubia = 10,
+  }
+end
 organic_history_objective_enabled =
     organic_history_objective_enabled or false
 organic_history_objective_max_gold =
@@ -6414,10 +6436,22 @@ function organic_history_collapse_risk_for(player, actor_id, claims)
   local overextension = state.overextension or 0
   local peripheral_share = peripheral / total
   local core_share = core / total
+  local scaling_ceiling = nil
+  local scaling_stress = 0
+  if organic_history_scaling_stress_enabled then
+    scaling_ceiling = organic_history_scaling_stress_ceilings[actor_id]
+    if scaling_ceiling ~= nil and scaling_ceiling > 0
+       and total > scaling_ceiling then
+      scaling_stress = organic_history_clamp(
+          organic_history_scaling_stress_weight * (total / scaling_ceiling - 1),
+          0, organic_history_scaling_stress_max)
+    end
+  end
   local collapse_risk = organic_history_clamp(crisis * 0.38
                                              + overextension * 0.24
                                              + peripheral_share * 0.22
-                                             + (1 - mandate_score) * 0.16,
+                                             + (1 - mandate_score) * 0.16
+                                             + scaling_stress,
                                              0, 1)
   local release_candidates = {}
   for _, detail in ipairs(city_details) do
@@ -6440,6 +6474,8 @@ function organic_history_collapse_risk_for(player, actor_id, claims)
     mandate = mandate_score,
     overextension = overextension,
     collapse_risk = collapse_risk,
+    scaling_stress = scaling_stress,
+    scaling_ceiling = scaling_ceiling,
     release_candidates = release_candidates
   }
 end
@@ -7122,11 +7158,12 @@ function organic_history_log_collapse_diagnostics(turn)
       if metadata ~= nil and claims ~= nil then
         local risk = organic_history_collapse_risk_for(player, actor_id, claims)
         if risk ~= nil then
-          log.normal('organic_history_collapse turn=%d player=%d actor=%q status="diagnostic" cities=%d core_cities=%d claimed_cities=%d peripheral_cities=%d core_share=%.3f peripheral_share=%.3f mandate=%.3f crisis=%.3f overextension=%.3f collapse_risk=%.3f release_candidates=%d',
+          log.normal('organic_history_collapse turn=%d player=%d actor=%q status="diagnostic" cities=%d core_cities=%d claimed_cities=%d peripheral_cities=%d core_share=%.3f peripheral_share=%.3f mandate=%.3f crisis=%.3f overextension=%.3f scaling_stress=%.3f collapse_risk=%.3f release_candidates=%d',
                      turn, organic_history_player_id(player), actor_id,
                      risk.total, risk.core, risk.claimed, risk.peripheral,
                      risk.core_share, risk.peripheral_share, risk.mandate,
-                     risk.crisis, risk.overextension, risk.collapse_risk,
+                     risk.crisis, risk.overextension, risk.scaling_stress,
+                     risk.collapse_risk,
                      #risk.release_candidates)
           organic_history_check_partial_contraction(turn, player, actor_id,
                                                     risk)

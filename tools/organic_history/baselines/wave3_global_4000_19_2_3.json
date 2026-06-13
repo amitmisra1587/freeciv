@@ -1,0 +1,158 @@
+{
+  "_note": "Fixed comparison baseline: accepted Wave 3 (claim-conversion) verdict on earth_global_4000_v1 at 100x200. Source run: runs/organic_history_phase39_wave3_100x200. Do not edit; regenerate only when the accepted baseline changes.",
+  "actors": {
+    "abbasid": {
+      "finalCitiesMedian": 4.0,
+      "maxCitiesMedian": 4.0,
+      "survivalRate": 0.99,
+      "verdict": "pass"
+    },
+    "assyria": {
+      "finalCitiesMedian": 5.0,
+      "maxCitiesMedian": 6.0,
+      "survivalRate": 1.0,
+      "verdict": "pass"
+    },
+    "aztec": {
+      "finalCitiesMedian": 6.0,
+      "maxCitiesMedian": 6.0,
+      "survivalRate": 0.87,
+      "verdict": "pass"
+    },
+    "carthage": {
+      "finalCitiesMedian": 11.0,
+      "maxCitiesMedian": 13.0,
+      "survivalRate": 1.0,
+      "verdict": "pass"
+    },
+    "castile": {
+      "finalCitiesMedian": 2.0,
+      "maxCitiesMedian": 2.0,
+      "survivalRate": 0.91,
+      "verdict": "fail"
+    },
+    "celts": {
+      "finalCitiesMedian": 0.5,
+      "maxCitiesMedian": 2.0,
+      "survivalRate": 0.5,
+      "verdict": "pass"
+    },
+    "china": {
+      "finalCitiesMedian": 19.5,
+      "maxCitiesMedian": 26.0,
+      "survivalRate": 1.0,
+      "verdict": "pass"
+    },
+    "chola": {
+      "finalCitiesMedian": 3.5,
+      "maxCitiesMedian": 4.0,
+      "survivalRate": 0.74,
+      "verdict": "pass"
+    },
+    "egypt": {
+      "finalCitiesMedian": 15.0,
+      "maxCitiesMedian": 17.0,
+      "survivalRate": 1.0,
+      "verdict": "pass"
+    },
+    "franks": {
+      "finalCitiesMedian": 4.0,
+      "maxCitiesMedian": 5.0,
+      "survivalRate": 1.0,
+      "verdict": "pass"
+    },
+    "greece": {
+      "finalCitiesMedian": 3.0,
+      "maxCitiesMedian": 5.0,
+      "survivalRate": 0.94,
+      "verdict": "pass"
+    },
+    "hittite": {
+      "finalCitiesMedian": 6.0,
+      "maxCitiesMedian": 7.0,
+      "survivalRate": 0.98,
+      "verdict": "pass"
+    },
+    "inca": {
+      "finalCitiesMedian": 7.0,
+      "maxCitiesMedian": 7.0,
+      "survivalRate": 0.96,
+      "verdict": "pass"
+    },
+    "india": {
+      "finalCitiesMedian": 19.0,
+      "maxCitiesMedian": 23.0,
+      "survivalRate": 1.0,
+      "verdict": "warn"
+    },
+    "japan": {
+      "finalCitiesMedian": 2.0,
+      "maxCitiesMedian": 2.0,
+      "survivalRate": 0.91,
+      "verdict": "pass"
+    },
+    "ming": {
+      "finalCitiesMedian": 3.0,
+      "maxCitiesMedian": 3.0,
+      "survivalRate": 0.99,
+      "verdict": "fail"
+    },
+    "nubia": {
+      "finalCitiesMedian": 18.0,
+      "maxCitiesMedian": 24.5,
+      "survivalRate": 1.0,
+      "verdict": "warn"
+    },
+    "persia": {
+      "finalCitiesMedian": 9.5,
+      "maxCitiesMedian": 11.0,
+      "survivalRate": 1.0,
+      "verdict": "pass"
+    },
+    "phoenicia": {
+      "finalCitiesMedian": 2.0,
+      "maxCitiesMedian": 3.0,
+      "survivalRate": 0.91,
+      "verdict": "pass"
+    },
+    "portugal": {
+      "finalCitiesMedian": 2.0,
+      "maxCitiesMedian": 2.0,
+      "survivalRate": 0.96,
+      "verdict": "pass"
+    },
+    "rome": {
+      "finalCitiesMedian": 6.0,
+      "maxCitiesMedian": 8.0,
+      "survivalRate": 1.0,
+      "verdict": "fail"
+    },
+    "song": {
+      "finalCitiesMedian": 4.0,
+      "maxCitiesMedian": 6.0,
+      "survivalRate": 0.99,
+      "verdict": "pass"
+    },
+    "steppe": {
+      "finalCitiesMedian": 4.0,
+      "maxCitiesMedian": 5.0,
+      "survivalRate": 0.87,
+      "verdict": "pass"
+    },
+    "sumer": {
+      "finalCitiesMedian": 3.0,
+      "maxCitiesMedian": 4.0,
+      "survivalRate": 0.99,
+      "verdict": "pass"
+    }
+  },
+  "profile": "wave3_baseline_candidate",
+  "scenario": "earth_global_4000_v1",
+  "seeds": "100x200",
+  "summary": {
+    "actorCount": 24,
+    "failedActors": 3,
+    "passedActors": 19,
+    "warnedActors": 2
+  }
+}

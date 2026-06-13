@@ -331,6 +331,7 @@ COLLAPSE_FIELDS = [
     "mandate",
     "crisis",
     "overextension",
+    "scaling_stress",
     "collapse_risk",
     "release_candidates",
 ]
