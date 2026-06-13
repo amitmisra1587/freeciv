@@ -108,6 +108,37 @@ if organic_history_scaling_stress_ceilings == nil then
     nubia = 10,
   }
 end
+-- Phase 45 settlement containment (OFF by default; CONCLUDED NEGATIVE).
+-- Experiment: for listed over-expander actors, cap how many cities they may hold
+-- in explicitly-foreign regions (deep in another power's space, far outside their
+-- own claims); over-cap foundings are REMOVED at the next turn_begin so the
+-- over-expansion never accumulates and nothing is fed to a rival.
+-- RESULT (india, 20-seed): net negative. Containment cut india's far-east
+-- (peripheral 11->7) but india redirected its surplus settler economy into its
+-- CLAIMED regions (9->12) and ended up BIGGER (18->19.5), flipping pass->warn and
+-- regressing neighbors (assyria/chola/persia). India is at structural capacity;
+-- post-hoc removal cannot shrink it. Kept flag-off for the reusable deferred-
+-- removal pattern (queue in city_built, edit.remove_city in turn_begin -- direct
+-- removal inside the city_built signal is re-entrant and crashes the server).
+organic_history_containment_enabled =
+    organic_history_containment_enabled or false
+organic_history_containment_removal_queue =
+    organic_history_containment_removal_queue or {}
+if organic_history_containment_actors == nil then
+  organic_history_containment_actors = {
+    india = {
+      maxForeignCities = 1,
+      regions = {
+        steppe = true,
+        steppe_mongolia = true,
+        south_china = true,
+        north_china = true,
+        japan_korea = true,
+        east_asia = true,
+      },
+    },
+  }
+end
 organic_history_objective_enabled =
     organic_history_objective_enabled or false
 organic_history_objective_max_gold =
@@ -719,6 +750,7 @@ function organic_history_turn_begin(turn, year)
   organic_history_homeland_defense_spawns_this_turn = 0
   organic_history_map_dimensions_cache = nil
   organic_history_global_scenario_metadata_active_cache = nil
+  organic_history_process_containment_queue(turn)
   log.normal("organic_history turn_begin turn=%d year=%d", turn, year)
   organic_history_log_scenario_metadata_status(turn)
   organic_history_check_emergence(turn)
@@ -8543,6 +8575,79 @@ end
 function organic_history_city_built(city)
   log.normal('organic_history_event type=city_built turn=%d city=%q player=%d',
              game.current_turn(), city.name, organic_history_player_id(city.owner))
+  organic_history_check_containment(city)
+end
+
+function organic_history_check_containment(city)
+  if not organic_history_containment_enabled then
+    return
+  end
+  if city == nil or city.owner == nil then
+    return
+  end
+  local _, actor_id = organic_history_actor_metadata_for(city.owner)
+  if actor_id == nil then
+    return
+  end
+  local rule = organic_history_containment_actors[actor_id]
+  if rule == nil or rule.regions == nil then
+    return
+  end
+  local region_id = organic_history_region_for_city(city)
+  if region_id == nil or not rule.regions[region_id] then
+    return
+  end
+
+  local foreign_held = 0
+  for held in city.owner:cities_iterate() do
+    if held.id ~= city.id then
+      local held_region = organic_history_region_for_city(held)
+      if held_region ~= nil and rule.regions[held_region] then
+        foreign_held = foreign_held + 1
+      end
+    end
+  end
+
+  local max_foreign = rule.maxForeignCities or 3
+  if foreign_held >= max_foreign then
+    -- Defer removal to the next turn_begin: edit.remove_city() is unsafe inside
+    -- the city_built signal callback (re-entrant, crashes the server), but safe
+    -- in turn-based processing.
+    table.insert(organic_history_containment_removal_queue, {
+      city = city,
+      owner_id = organic_history_player_id(city.owner),
+      actor_id = actor_id,
+      region = region_id,
+      name = city.name,
+    })
+    log.normal('organic_history_containment turn=%d actor=%q action="queued_removal" city=%q region=%q foreign_held=%d max_foreign=%d',
+               game.current_turn(), actor_id, city.name, region_id,
+               foreign_held, max_foreign)
+  else
+    log.normal('organic_history_containment turn=%d actor=%q action="allowed" city=%q region=%q foreign_held=%d max_foreign=%d',
+               game.current_turn(), actor_id, city.name, region_id,
+               foreign_held, max_foreign)
+  end
+end
+
+function organic_history_process_containment_queue(turn)
+  if #organic_history_containment_removal_queue == 0 then
+    return
+  end
+  local queue = organic_history_containment_removal_queue
+  organic_history_containment_removal_queue = {}
+  for _, entry in ipairs(queue) do
+    local city = entry.city
+    if city ~= nil and city.owner ~= nil
+       and organic_history_player_id(city.owner) == entry.owner_id then
+      log.normal('organic_history_containment turn=%d actor=%q action="removed" city=%q region=%q',
+                 turn, entry.actor_id, entry.name or "?", entry.region or "?")
+      edit.remove_city(city)
+    else
+      log.normal('organic_history_containment turn=%d actor=%q action="skipped_removal" city=%q region=%q reason="lost_or_changed"',
+                 turn, entry.actor_id, entry.name or "?", entry.region or "?")
+    end
+  end
 end
 
 function organic_history_claim_class_for(claims, region_id)

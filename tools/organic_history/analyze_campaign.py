@@ -471,6 +471,7 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
         "stateCapacity": log_metrics["stateCapacity"],
         "claimPressure": log_metrics["claimPressure"],
         "collapse": log_metrics["collapse"],
+        "containment": log_metrics["containment"],
         "dynasticProbe": log_metrics["dynasticProbe"],
         "dynasticTransfer": log_metrics["dynasticTransfer"],
         "lineageHandoff": log_metrics["lineageHandoff"],
@@ -530,6 +531,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         "claimPressure": 0,
         "collapse": 0,
         "collapseCandidate": 0,
+        "containment": 0,
         "bootstrap": 0,
         "urbanization": 0,
         "burst": 0,
@@ -605,6 +607,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
     burst_reasons: dict[str, int] = {}
     burst_actor_actions: dict[str, int] = {}
     burst_actor_reasons: dict[str, int] = {}
+    containment_actor_actions: dict[str, int] = {}
     near_east_handoff_values: dict[str, list[float]] = {
         field: [] for field in NEAR_EAST_HANDOFF_FIELDS
     }
@@ -743,6 +746,13 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
                 collect_float_fields(line, COLLAPSE_FIELDS, collapse_values)
             if "organic_history_collapse_candidate" in line:
                 counts["collapseCandidate"] += 1
+            if "organic_history_containment " in line:
+                counts["containment"] += 1
+                action_match = ACTION_RE.search(line)
+                action = action_match.group("action") if action_match else "unknown"
+                fields = parse_line_fields(line, ["actor"])
+                actor = str(fields.get("actor", "unknown"))
+                increment_count(containment_actor_actions, f"{actor}:{action}")
             if "organic_history_bootstrap" in line:
                 counts["bootstrap"] += 1
             if "organic_history_urbanization" in line:
@@ -1124,6 +1134,9 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         "stateCapacity": summarize_float_fields(state_capacity_values),
         "claimPressure": summarize_float_fields(claim_pressure_values),
         "collapse": summarize_float_fields(collapse_values),
+        "containment": {
+            "actorActions": dict(sorted(containment_actor_actions.items())),
+        },
         "dynasticProbe": {
             "fields": summarize_float_fields(dynastic_probe_values),
             "actions": dict(sorted(dynastic_actions.items())),
