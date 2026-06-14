@@ -1153,19 +1153,15 @@ static void warnfon (void *ud, const char *message, int tocont) {
 
 
 static unsigned int luai_makeseed (void) {
-  unsigned int buff[BUFSEED];
-  unsigned int res;
-  unsigned int i;
-  time_t t = time(NULL);
-  char *b = (char*)buff;
-  addbuff(b, b);  /* local variable's address */
-  addbuff(b, t);  /* time */
-  /* fill (rare but possible) remain of the buffer with zeros */
-  memset(b, 0, sizeof(buff) - BUFSEEDB);
-  res = buff[0];
-  for (i = 1; i < BUFSEED; i++)
-    res ^= (res >> 3) + (res << 7) + buff[i];
-  return res;
+  /* organic_history fork: return a FIXED seed so Lua string hashing -- and thus
+     pairs() iteration order over string-keyed tables -- is identical on every
+     process run. The upstream default seeds from a stack address (ASLR) and
+     time(NULL), which randomizes pairs() order per process and makes the
+     organic_history simulation nondeterministic run-to-run even with the same
+     game --seed. Hash-seed randomization is only a hash-collision DoS defense
+     for servers facing untrusted input; these offline AI campaigns need
+     reproducibility instead. */
+  return 0x9e3779b9u;  /* golden-ratio constant; any fixed value works */
 }
 
 #endif

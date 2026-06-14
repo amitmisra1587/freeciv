@@ -339,40 +339,65 @@ def gravity_assessment(
     }
 
 
-def check_min(metric: str, observed: float | None, threshold: float) -> dict[str, Any]:
-    if observed is None:
+# Verdict tolerance bands. Per-actor city medians come from ~100 stochastic
+# seeds and are not meaningful to finer than ~half a city (medians of integer
+# counts are frequently half-integers, e.g. india 18.5). So a near-miss within
+# NOISE of the target is a pass rather than thrashing the gate on sampling
+# noise; a miss beyond HARD is a real regression (fail); in between is a warn.
+# Floors (check_min) and caps (check_max) use the SAME graded logic so
+# over-cap and under-floor are judged symmetrically -- previously caps could
+# only ever warn (never fail) while any floor miss was an immediate hard fail.
+def noise_band(threshold: float) -> float:
+    return max(0.5, 0.05 * abs(threshold))
+
+
+def hard_band(threshold: float) -> float:
+    return max(1.5, 0.25 * abs(threshold))
+
+
+def graded_check(
+    metric: str, observed: float | None, threshold: float, miss: float | None,
+    message: str,
+) -> dict[str, Any]:
+    """Grade a one-sided check. `miss` is how far observed is on the wrong side
+    of the threshold (<=0 means the threshold is satisfied)."""
+    if observed is None or miss is None:
         return {
             "metric": metric,
-            "observed": None,
+            "observed": observed,
             "threshold": threshold,
             "verdict": "fail",
             "message": "Missing metric.",
         }
+    noise = noise_band(threshold)
+    hard = hard_band(threshold)
+    if miss <= noise:
+        verdict = "pass"
+    elif miss <= hard:
+        verdict = "warn"
+    else:
+        verdict = "fail"
     return {
         "metric": metric,
         "observed": observed,
         "threshold": threshold,
-        "verdict": "pass" if observed >= threshold else "fail",
-        "message": f"Expected at least {threshold}.",
+        "verdict": verdict,
+        "message": message,
+        "tolerance": round(noise, 3),
+        "hardMargin": round(hard, 3),
     }
+
+
+def check_min(metric: str, observed: float | None, threshold: float) -> dict[str, Any]:
+    miss = None if observed is None else threshold - observed
+    return graded_check(metric, observed, threshold, miss,
+                        f"Expected at least {threshold}.")
 
 
 def check_max(metric: str, observed: float | None, threshold: float) -> dict[str, Any]:
-    if observed is None:
-        return {
-            "metric": metric,
-            "observed": None,
-            "threshold": threshold,
-            "verdict": "fail",
-            "message": "Missing metric.",
-        }
-    return {
-        "metric": metric,
-        "observed": observed,
-        "threshold": threshold,
-        "verdict": "pass" if observed <= threshold else "warn",
-        "message": f"Expected no more than {threshold}.",
-    }
+    miss = None if observed is None else observed - threshold
+    return graded_check(metric, observed, threshold, miss,
+                        f"Expected no more than {threshold}.")
 
 
 def collapse_verdict(checks: list[dict[str, Any]]) -> str:
