@@ -755,6 +755,7 @@ function organic_history_turn_begin(turn, year)
   organic_history_log_scenario_metadata_status(turn)
   organic_history_check_emergence(turn)
   organic_history_log_player_metrics(turn, year)
+  organic_history_check_hinterland_withering(turn)
   organic_history_log_regional_hegemony(turn)
   organic_history_log_contact_diagnostics(turn)
   organic_history_log_claim_pressure(turn)
@@ -5936,6 +5937,153 @@ function organic_history_update_city_pressure(city, player, turn, stress, wars,
     garrison_pressure = garrison_pressure,
     region_id = region_id
   }
+end
+
+-- Phase 48: Hinterland friction via demographic withering (OFF by default).
+-- Models that genuinely marginal, undeveloped land cannot sustain dense
+-- settlement: an actor's PERIPHERAL cities in marginal regions that stay
+-- unsustainable (high unrest + out-migration + low development) lose population
+-- over time and eventually disperse. Gradual and causal (driven by the existing
+-- per-city pressure metrics that were diagnostic-only until now), uniform across
+-- actors, with core/capital/developed cities protected. No recipient required
+-- (unlike partial-contraction), so it can keep pace with re-founding. Targets
+-- over-expanders implicitly -- they are the ones holding many marginal
+-- peripheral cities.
+organic_history_hinterland_withering_enabled =
+    organic_history_hinterland_withering_enabled or false
+if organic_history_hinterland_marginal_regions == nil then
+  organic_history_hinterland_marginal_regions = {
+    steppe = true,
+    steppe_mongolia = true,
+    africa = true,
+    maghreb_punic_west = true,
+  }
+end
+organic_history_hinterland_unrest_threshold =
+    organic_history_hinterland_unrest_threshold or 0.35
+organic_history_hinterland_migration_threshold =
+    organic_history_hinterland_migration_threshold or 0.25
+organic_history_hinterland_development_floor =
+    organic_history_hinterland_development_floor or 0.45
+organic_history_hinterland_sustained_turns =
+    organic_history_hinterland_sustained_turns or 6
+organic_history_hinterland_shrink_interval =
+    organic_history_hinterland_shrink_interval or 4
+organic_history_hinterland_min_size =
+    organic_history_hinterland_min_size or 1
+organic_history_hinterland_max_per_turn =
+    organic_history_hinterland_max_per_turn or 20
+-- An actor may hold up to this many marginal non-core cities before any
+-- withering applies; only the EXCESS of mass-sprawlers is trimmed, so
+-- modest-periphery actors are untouched.
+organic_history_hinterland_marginal_allowance =
+    organic_history_hinterland_marginal_allowance or 4
+organic_history_hinterland_streak =
+    organic_history_hinterland_streak or {}
+organic_history_hinterland_last_wither_turn =
+    organic_history_hinterland_last_wither_turn or {}
+
+function organic_history_check_hinterland_withering(turn)
+  if not organic_history_hinterland_withering_enabled then
+    return
+  end
+
+  local shrink = {}
+  local disperse = {}
+
+  for player in players_iterate() do
+    local _, actor_id = organic_history_actor_metadata_for(player)
+    local claims = actor_id ~= nil
+        and organic_history_active_actor_region_claims()[actor_id]
+        or nil
+    if player.is_alive and claims ~= nil then
+      -- Count this actor's cities in marginal, non-core regions. Only mass
+      -- sprawlers (over the allowance) wither; modest-periphery actors (e.g.
+      -- Persia with a couple of frontier cities) are left untouched.
+      local marginal_noncore = 0
+      for city in player:cities_iterate() do
+        local region_id = organic_history_region_for_city(city)
+        if region_id ~= nil
+           and organic_history_hinterland_marginal_regions[region_id]
+           and organic_history_region_claim_type(claims, region_id) ~= "core"
+           and not (city:is_primary_capital() or city:is_capital()
+                    or city:is_gov_center()) then
+          marginal_noncore = marginal_noncore + 1
+        end
+      end
+      if marginal_noncore > organic_history_hinterland_marginal_allowance then
+      for city in player:cities_iterate() do
+        local key = organic_history_city_key(city)
+        local region_id = organic_history_region_for_city(city)
+        local pressure = organic_history_city_pressure[key]
+        local marginal = region_id ~= nil
+            and organic_history_hinterland_marginal_regions[region_id]
+        local protected_center = city:is_primary_capital()
+            or city:is_capital() or city:is_gov_center()
+        local claim_type =
+            organic_history_region_claim_type(claims, region_id)
+
+        -- Protect only the owner's actual homeland (core); a broad *historical*
+        -- claim does not make marginal sprawl sustainable. This withers e.g.
+        -- Nubia's African cities (core=nile, so africa is not protected) while
+        -- leaving each actor's real core region intact.
+        local unsustainable = marginal
+            and claim_type ~= "core"
+            and not protected_center
+            and pressure ~= nil
+            and (pressure.development or 1)
+                < organic_history_hinterland_development_floor
+            and (pressure.unrest or 0)
+                >= organic_history_hinterland_unrest_threshold
+            and (pressure.migration_pressure or 0)
+                >= organic_history_hinterland_migration_threshold
+
+        if unsustainable then
+          organic_history_hinterland_streak[key] =
+              (organic_history_hinterland_streak[key] or 0) + 1
+        else
+          organic_history_hinterland_streak[key] = 0
+        end
+
+        if (organic_history_hinterland_streak[key] or 0)
+            >= organic_history_hinterland_sustained_turns then
+          local last = organic_history_hinterland_last_wither_turn[key]
+              or -999999
+          if turn >= last + organic_history_hinterland_shrink_interval then
+            local size = city.size or 1
+            local bucket = (size <= organic_history_hinterland_min_size)
+                and disperse or shrink
+            table.insert(bucket, {city = city, key = key,
+                actor_id = actor_id, region = region_id, name = city.name,
+                size = size})
+          end
+        end
+      end
+      end
+    end
+  end
+
+  -- Apply after iteration (never mutate city lists mid-iterate); throttle total.
+  local applied = 0
+  for _, entry in ipairs(shrink) do
+    if applied >= organic_history_hinterland_max_per_turn then break end
+    organic_history_hinterland_last_wither_turn[entry.key] = turn
+    log.normal('organic_history_hinterland_withering turn=%d actor=%q action="shrink" city=%q region=%q size_from=%d',
+               turn, entry.actor_id or "none", entry.name or "?",
+               entry.region or "?", entry.size or 0)
+    edit.change_city_size(entry.city, -1, nil)
+    applied = applied + 1
+  end
+  for _, entry in ipairs(disperse) do
+    if applied >= organic_history_hinterland_max_per_turn then break end
+    organic_history_hinterland_last_wither_turn[entry.key] = nil
+    organic_history_hinterland_streak[entry.key] = nil
+    log.normal('organic_history_hinterland_withering turn=%d actor=%q action="disperse" city=%q region=%q',
+               turn, entry.actor_id or "none", entry.name or "?",
+               entry.region or "?")
+    edit.remove_city(entry.city)
+    applied = applied + 1
+  end
 end
 
 function organic_history_pressure_summary_init()
