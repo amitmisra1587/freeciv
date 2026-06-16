@@ -1,6 +1,6 @@
 {
   "baseline": "wave3_baseline_candidate",
-  "description": "Phase 48 hinterland friction MVP: wave3 baseline + organic_history_hinterland_withering_enabled. Cities an actor holds as PERIPHERAL in marginal regions (steppe/steppe_mongolia/africa/maghreb), that stay unsustainable (high unrest+migration, low development), lose population over time and disperse at min size. Driven by existing per-city pressure metrics; core/capital/developed cities protected; no recipient needed. Tests whether making marginal land unsustainable bounds over-expanders (Nubia in Africa, anyone in the steppe).",
+  "description": "Phase 48 hinterland friction MVP: wave3 baseline + organic_history_hinterland_withering_enabled. Cities an actor holds as PERIPHERAL in marginal regions (steppe/steppe_mongolia/africa/maghreb), that stay unsustainable (high unrest+migration, low development), lose population over time and disperse at min size. Driven by existing per-city pressure metrics; core/capital/developed cities protected; no recipient needed. Tests whether making marginal land unsustainable bounds over-expanders (Nubia in Africa, anyone in the steppe). Default marginal allowance=5 (validated: spares modest-periphery actors like Assyria while still trimming mass-sprawlers like Nubia).",
   "luaCommands": [
     "lua cmd organic_history_mechanics_enabled = true",
     "lua cmd organic_history_civil_war_enabled = false",

@@ -5977,7 +5977,7 @@ organic_history_hinterland_max_per_turn =
 -- withering applies; only the EXCESS of mass-sprawlers is trimmed, so
 -- modest-periphery actors are untouched.
 organic_history_hinterland_marginal_allowance =
-    organic_history_hinterland_marginal_allowance or 4
+    organic_history_hinterland_marginal_allowance or 5
 organic_history_hinterland_streak =
     organic_history_hinterland_streak or {}
 organic_history_hinterland_last_wither_turn =
