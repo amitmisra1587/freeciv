@@ -32,7 +32,7 @@ DEFAULT_EXPECTATIONS: dict[str, dict[str, Any]] = {
     "abbasid": {"spawnRateMin": 0.80, "survivalRateMin": 0.50, "medianMaxCitiesMin": 4, "note": "Needs Near East transfer/conquest support."},
     "chola": {"spawnRateMin": 0.70, "survivalRateMin": 0.50, "medianMaxCitiesMin": 3, "note": "Needs South Indian/maritime bootstrap."},
     "song": {"spawnRateMin": 0.70, "survivalRateMin": 0.50, "medianMaxCitiesMin": 5, "note": "Should inherit/transform China instead of microstate."},
-    "steppe": {"spawnRateMin": 0.70, "survivalRateMin": 0.35, "medianMaxCitiesMin": 5, "note": "Needs mobile conquest burst, not one-city spawn."},
+    "steppe": {"spawnRateMin": 0.70, "survivalRateMin": 0.50, "medianMaxCitiesMin": 1, "medianFinalCitiesMax": 7, "note": "Roving pastoralist confederation: persists with a few camps and raids that contest the steppe, not a settled city-empire."},
     "castile": {"spawnRateMin": 0.60, "survivalRateMin": 0.50, "medianMaxCitiesMin": 3, "note": "Needs Iberian consolidation."},
     "portugal": {"spawnRateMin": 0.60, "survivalRateMin": 0.50, "medianMaxCitiesMin": 2, "note": "Needs Lisbon survival and maritime bootstrap."},
     "ming": {"spawnRateMin": 0.70, "survivalRateMin": 0.50, "medianMaxCitiesMin": 5, "note": "Should be dynastic successor/reunifier."},

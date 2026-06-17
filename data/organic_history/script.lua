@@ -754,7 +754,9 @@ function organic_history_turn_begin(turn, year)
   log.normal("organic_history turn_begin turn=%d year=%d", turn, year)
   organic_history_log_scenario_metadata_status(turn)
   organic_history_check_emergence(turn)
+  organic_history_check_steppe_nomad_presence(turn)
   organic_history_log_player_metrics(turn, year)
+  organic_history_check_steppe_friction(turn)
   organic_history_check_hinterland_withering(turn)
   organic_history_log_regional_hegemony(turn)
   organic_history_log_contact_diagnostics(turn)
@@ -5983,6 +5985,55 @@ organic_history_hinterland_streak =
 organic_history_hinterland_last_wither_turn =
     organic_history_hinterland_last_wither_turn or {}
 
+-- Distance-from-core friction (OFF by default). Models imperial overreach:
+-- cities founded far from an actor's homeland suffer administrative/supply
+-- strain, so a far-flung, non-core, restive city is treated as over-extended
+-- and becomes withering-eligible just like marginal-land sprawl -- even on
+-- fertile ground. This bounds frontier over-expanders (e.g. India settling
+-- "unknown"/SE-Asia and south_china far from its core) without touching an
+-- actor's homeland or its compact periphery. Reuses the hinterland withering
+-- machinery; the threshold is a SQUARED tile distance (tile:sq_distance).
+organic_history_overextension_distance_enabled =
+    organic_history_overextension_distance_enabled or false
+-- ~25 tiles from core center (25^2 = 625). Cities beyond this are "far".
+organic_history_overextension_distance_threshold_sq =
+    organic_history_overextension_distance_threshold_sq or 625
+-- Cached core-center tile per actor core_region id (built lazily per run).
+organic_history_overextension_core_tile_cache =
+    organic_history_overextension_core_tile_cache or {}
+
+-- Return the center tile of an actor's core region (for distance-from-core
+-- measurement), or nil if it can't be resolved. Cached by core_region id.
+function organic_history_actor_core_tile(actor_meta)
+  if actor_meta == nil then return nil end
+  local region_id = actor_meta.core_region
+  if region_id == nil then return nil end
+  local cached = organic_history_overextension_core_tile_cache[region_id]
+  if cached ~= nil then
+    if cached == false then return nil end
+    return cached
+  end
+  local region = organic_history_active_regions()[region_id]
+  if region == nil or region.x_min == nil then
+    organic_history_overextension_core_tile_cache[region_id] = false
+    return nil
+  end
+  local cx = math.floor((region.x_min + region.x_max) / 2)
+  local cy = math.floor((region.y_min + region.y_max) / 2)
+  local tile = find.tile(cx, cy)
+  organic_history_overextension_core_tile_cache[region_id] =
+      (tile ~= nil) and tile or false
+  return tile
+end
+
+-- True if a city sits beyond the over-extension distance from its actor's core.
+function organic_history_city_is_overextended(city, core_tile)
+  if not organic_history_overextension_distance_enabled then return false end
+  if core_tile == nil or city == nil or city.tile == nil then return false end
+  return city.tile:sq_distance(core_tile)
+      > organic_history_overextension_distance_threshold_sq
+end
+
 function organic_history_check_hinterland_withering(turn)
   if not organic_history_hinterland_withering_enabled then
     return
@@ -5992,10 +6043,13 @@ function organic_history_check_hinterland_withering(turn)
   local disperse = {}
 
   for player in players_iterate() do
-    local _, actor_id = organic_history_actor_metadata_for(player)
+    local actor_meta, actor_id = organic_history_actor_metadata_for(player)
     local claims = actor_id ~= nil
         and organic_history_active_actor_region_claims()[actor_id]
         or nil
+    -- Core-center tile for distance-from-core friction (nil disables the
+    -- far-flung path for this actor, leaving marginal-land withering intact).
+    local core_tile = organic_history_actor_core_tile(actor_meta)
     if player.is_alive and claims ~= nil then
       -- Count this actor's cities in marginal, non-core regions. Only mass
       -- sprawlers (over the allowance) wither; modest-periphery actors (e.g.
@@ -6003,8 +6057,11 @@ function organic_history_check_hinterland_withering(turn)
       local marginal_noncore = 0
       for city in player:cities_iterate() do
         local region_id = organic_history_region_for_city(city)
-        if region_id ~= nil
-           and organic_history_hinterland_marginal_regions[region_id]
+        local over_extended =
+            (region_id ~= nil
+             and organic_history_hinterland_marginal_regions[region_id])
+            or organic_history_city_is_overextended(city, core_tile)
+        if over_extended
            and organic_history_region_claim_type(claims, region_id) ~= "core"
            and not (city:is_primary_capital() or city:is_capital()
                     or city:is_gov_center()) then
@@ -6018,16 +6075,18 @@ function organic_history_check_hinterland_withering(turn)
         local pressure = organic_history_city_pressure[key]
         local marginal = region_id ~= nil
             and organic_history_hinterland_marginal_regions[region_id]
+        local far = organic_history_city_is_overextended(city, core_tile)
         local protected_center = city:is_primary_capital()
             or city:is_capital() or city:is_gov_center()
         local claim_type =
             organic_history_region_claim_type(claims, region_id)
+        local reason = nil
 
         -- Protect only the owner's actual homeland (core); a broad *historical*
         -- claim does not make marginal sprawl sustainable. This withers e.g.
         -- Nubia's African cities (core=nile, so africa is not protected) while
         -- leaving each actor's real core region intact.
-        local unsustainable = marginal
+        local unsustainable_marginal = marginal
             and claim_type ~= "core"
             and not protected_center
             and pressure ~= nil
@@ -6037,6 +6096,27 @@ function organic_history_check_hinterland_withering(turn)
                 >= organic_history_hinterland_unrest_threshold
             and (pressure.migration_pressure or 0)
                 >= organic_history_hinterland_migration_threshold
+
+        -- Over-extension strain: a city far from the actor's core that is
+        -- non-core and restive is unsustainable even on fertile land and even
+        -- if locally developed (distance = administrative/supply cost). Still
+        -- requires an instability signal (unrest OR migration) so a stable,
+        -- well-integrated far city survives -- avoids arbitrary deletion.
+        local unsustainable_far = far
+            and claim_type ~= "core"
+            and not protected_center
+            and pressure ~= nil
+            and ((pressure.unrest or 0)
+                    >= organic_history_hinterland_unrest_threshold
+                 or (pressure.migration_pressure or 0)
+                    >= organic_history_hinterland_migration_threshold)
+
+        local unsustainable = unsustainable_marginal or unsustainable_far
+        if unsustainable_marginal then
+          reason = "marginal"
+        elseif unsustainable_far then
+          reason = "distance"
+        end
 
         if unsustainable then
           organic_history_hinterland_streak[key] =
@@ -6055,7 +6135,7 @@ function organic_history_check_hinterland_withering(turn)
                 and disperse or shrink
             table.insert(bucket, {city = city, key = key,
                 actor_id = actor_id, region = region_id, name = city.name,
-                size = size})
+                size = size, reason = reason or "marginal"})
           end
         end
       end
@@ -6068,9 +6148,9 @@ function organic_history_check_hinterland_withering(turn)
   for _, entry in ipairs(shrink) do
     if applied >= organic_history_hinterland_max_per_turn then break end
     organic_history_hinterland_last_wither_turn[entry.key] = turn
-    log.normal('organic_history_hinterland_withering turn=%d actor=%q action="shrink" city=%q region=%q size_from=%d',
+    log.normal('organic_history_hinterland_withering turn=%d actor=%q action="shrink" city=%q region=%q size_from=%d reason=%q',
                turn, entry.actor_id or "none", entry.name or "?",
-               entry.region or "?", entry.size or 0)
+               entry.region or "?", entry.size or 0, entry.reason or "marginal")
     edit.change_city_size(entry.city, -1, nil)
     applied = applied + 1
   end
@@ -6078,11 +6158,398 @@ function organic_history_check_hinterland_withering(turn)
     if applied >= organic_history_hinterland_max_per_turn then break end
     organic_history_hinterland_last_wither_turn[entry.key] = nil
     organic_history_hinterland_streak[entry.key] = nil
-    log.normal('organic_history_hinterland_withering turn=%d actor=%q action="disperse" city=%q region=%q',
+    log.normal('organic_history_hinterland_withering turn=%d actor=%q action="disperse" city=%q region=%q reason=%q',
                turn, entry.actor_id or "none", entry.name or "?",
-               entry.region or "?")
+               entry.region or "?", entry.reason or "marginal")
     edit.remove_city(entry.city)
     applied = applied + 1
+  end
+end
+
+-- Phase C: Steppe nomad confederation (OFF by default). Makes the steppe
+-- contested from early game. The steppe actor (Mongols) is spawned early as a
+-- persistent confederation -- its emergence city (Karakorum) is a camp that
+-- keeps the player alive -- and it raids any civ that settles its steppe
+-- regions. The freeciv AI drives the raids once the nomad is at war; we only
+-- spawn era-scaled cavalry near encroaching cities. Intensity follows the
+-- historical arc: light early harassment, a Mongol-conquest peak, then waning
+-- as gunpowder empires rise. Complements hinterland friction (a passive cost)
+-- with an active, physical deterrent the AI responds to.
+organic_history_steppe_nomad_enabled =
+    organic_history_steppe_nomad_enabled or false
+organic_history_steppe_nomad_actor =
+    organic_history_steppe_nomad_actor or "steppe"
+organic_history_steppe_nomad_spawn_turn =
+    organic_history_steppe_nomad_spawn_turn or 15
+if organic_history_steppe_nomad_raid_regions == nil then
+  organic_history_steppe_nomad_raid_regions = {
+    steppe = true,
+    steppe_mongolia = true,
+  }
+end
+organic_history_steppe_nomad_raid_cooldown =
+    organic_history_steppe_nomad_raid_cooldown or 12
+organic_history_steppe_nomad_max_raids_per_turn =
+    organic_history_steppe_nomad_max_raids_per_turn or 1
+organic_history_steppe_nomad_camp_min_defenders =
+    organic_history_steppe_nomad_camp_min_defenders or 2
+-- Keep the confederation ROVING, not a settled empire: cap it at this many
+-- camps; cities beyond the cap (founded or conquered) are razed -- nomads sack
+-- and abandon cities rather than hold them. Without this the freeciv AI grows
+-- the steppe actor into a normal city-empire.
+organic_history_steppe_nomad_max_camps =
+    organic_history_steppe_nomad_max_camps or 3
+-- Era-scaled standing-army cap. Weak early (a harasser the empires repel),
+-- strong only at the Mongol-conquest peak. Without this the early horde
+-- conquers and razes empires, cratering the map.
+organic_history_steppe_nomad_max_units_early =
+    organic_history_steppe_nomad_max_units_early or 3
+organic_history_steppe_nomad_max_units_peak =
+    organic_history_steppe_nomad_max_units_peak or 8
+organic_history_steppe_nomad_max_units_late =
+    organic_history_steppe_nomad_max_units_late or 3
+organic_history_steppe_nomad_raid_units_early =
+    organic_history_steppe_nomad_raid_units_early or 1
+organic_history_steppe_nomad_raid_units_peak =
+    organic_history_steppe_nomad_raid_units_peak or 3
+organic_history_steppe_nomad_raid_units_late =
+    organic_history_steppe_nomad_raid_units_late or 1
+organic_history_steppe_nomad_peak_turn_lo =
+    organic_history_steppe_nomad_peak_turn_lo or 110
+organic_history_steppe_nomad_peak_turn_hi =
+    organic_history_steppe_nomad_peak_turn_hi or 145
+organic_history_steppe_nomad_late_turn =
+    organic_history_steppe_nomad_late_turn or 160
+organic_history_steppe_nomad_raid_last_turn =
+    organic_history_steppe_nomad_raid_last_turn or {}
+
+-- Confederacy graduated friction (Tier A). Instead of a monolithic war on
+-- everyone in the steppe (which ground down legitimate frontier holders like
+-- Persia), the confederation imposes a per-city PRESSURE TAX on cities settled
+-- in its land, scaled by a confederacy power level P and by how LEGITIMATE the
+-- holder's claim is. Light, survivable friction on a historical frontier
+-- (Persia's steppe cities); heavy, withering friction on raw over-extension.
+-- The tax feeds the existing hinterland withering pipeline -- no war, no
+-- barbarians, no indiscriminate grind.
+organic_history_steppe_confederacy_enabled =
+    organic_history_steppe_confederacy_enabled or false
+-- Power formula: "A" = window x neighbor-weakness; "B" = window x
+-- max(neighbor-weakness, steppe-consolidation). Default B.
+organic_history_steppe_confederacy_power_formula =
+    organic_history_steppe_confederacy_power_formula or "B"
+-- Susceptibility window(turn): a smooth bump, NOT a switch. Floor before/after,
+-- ramping to 1.0 across the Mongol-era peak. Makes a surge LIKELY mid-game but
+-- neither forced nor sufficient -- emergent state decides whether it fires.
+organic_history_steppe_confederacy_window_rise_start =
+    organic_history_steppe_confederacy_window_rise_start or 50
+organic_history_steppe_confederacy_window_peak_lo =
+    organic_history_steppe_confederacy_window_peak_lo or 110
+organic_history_steppe_confederacy_window_peak_hi =
+    organic_history_steppe_confederacy_window_peak_hi or 145
+organic_history_steppe_confederacy_window_fall_end =
+    organic_history_steppe_confederacy_window_fall_end or 185
+-- Floor keeps SOME friction in every era ("one tribe out of many").
+organic_history_steppe_confederacy_window_floor =
+    organic_history_steppe_confederacy_window_floor or 0.15
+-- Baseline keeps friction non-zero even when emergent state is calm; the rest
+-- scales with emergent neighbor-weakness / steppe-consolidation.
+organic_history_steppe_confederacy_power_baseline =
+    organic_history_steppe_confederacy_power_baseline or 0.30
+-- Adjacent settled regions whose fragility invites a surge.
+if organic_history_steppe_confederacy_adjacent_regions == nil then
+  organic_history_steppe_confederacy_adjacent_regions = {
+    "china", "north_china", "iran", "india",
+  }
+end
+-- Per-turn unrest tax at P=1 for an illegitimate (peripheral) holder. Kept
+-- small: per-city pressure self-amplifies ~10x at steady state (unrest decays
+-- only ~10%/turn), so a small per-turn tax produces a large but UNSATURATED
+-- elevation that preserves the legitimacy differentiation in the outcome.
+organic_history_steppe_confederacy_friction_base =
+    organic_history_steppe_confederacy_friction_base or 0.06
+-- Migration tax = unrest tax x this ratio (feeds the migration threshold too).
+organic_history_steppe_confederacy_friction_migration_ratio =
+    organic_history_steppe_confederacy_friction_migration_ratio or 0.6
+-- Legitimacy multipliers on the tax by the holder's claim type for the region.
+organic_history_steppe_confederacy_legit_factor_core =
+    organic_history_steppe_confederacy_legit_factor_core or 0.0
+organic_history_steppe_confederacy_legit_factor_historical =
+    organic_history_steppe_confederacy_legit_factor_historical or 0.25
+organic_history_steppe_confederacy_legit_factor_peripheral =
+    organic_history_steppe_confederacy_legit_factor_peripheral or 1.0
+
+-- Era-scaled raid size: light early, heavier at the Mongol peak, waning late.
+function organic_history_steppe_nomad_raid_units(turn)
+  if turn >= organic_history_steppe_nomad_peak_turn_lo
+     and turn <= organic_history_steppe_nomad_peak_turn_hi then
+    return organic_history_steppe_nomad_raid_units_peak
+  elseif turn > organic_history_steppe_nomad_late_turn then
+    return organic_history_steppe_nomad_raid_units_late
+  end
+  return organic_history_steppe_nomad_raid_units_early
+end
+
+-- Era-scaled standing-army cap (same arc as raid size).
+function organic_history_steppe_nomad_max_units(turn)
+  if turn >= organic_history_steppe_nomad_peak_turn_lo
+     and turn <= organic_history_steppe_nomad_peak_turn_hi then
+    return organic_history_steppe_nomad_max_units_peak
+  elseif turn > organic_history_steppe_nomad_late_turn then
+    return organic_history_steppe_nomad_max_units_late
+  end
+  return organic_history_steppe_nomad_max_units_early
+end
+
+-- The nomad's persistent camp = a steppe-region city if any, else its first.
+function organic_history_steppe_nomad_camp(nomad)
+  if nomad == nil then
+    return nil
+  end
+  local fallback = nil
+  for city in nomad:cities_iterate() do
+    if fallback == nil then
+      fallback = city
+    end
+    local region_id = organic_history_region_for_city(city)
+    if region_id ~= nil
+       and organic_history_steppe_nomad_raid_regions[region_id] then
+      return city
+    end
+  end
+  return fallback
+end
+
+-- Activate the steppe actor early (well before its earliest_turn) so the steppe
+-- is never empty. Reuses the emergence override pattern (earliest_turn=0,
+-- probability=100) -> activates the dormant steppe player already in the scenario.
+function organic_history_try_early_steppe_nomad_spawn(turn)
+  local actor_id = organic_history_steppe_nomad_actor
+  if organic_history_emergence_spawned[actor_id] then
+    return
+  end
+  if turn < organic_history_steppe_nomad_spawn_turn then
+    return
+  end
+  if not organic_history_large_earth_active() then
+    return
+  end
+  local actor = organic_history_active_emergence_actors()[actor_id]
+  if actor == nil then
+    return
+  end
+  if organic_history_actor_exists(actor) then
+    organic_history_emergence_spawned[actor_id] = true
+    return
+  end
+  local saved_e = actor.earliest_turn
+  local saved_p = actor.probability
+  actor.earliest_turn = 0
+  actor.probability = 100
+  local outcome = organic_history_try_emergence(actor_id, actor, turn)
+  actor.earliest_turn = saved_e
+  actor.probability = saved_p
+  log.normal('organic_history_steppe_nomad turn=%d actor=%q action="early_spawn" outcome=%q',
+             turn, actor_id, outcome or "unknown")
+end
+
+-- Spawn the steppe confederation early and keep it roving (camp + garrison,
+-- raze excess, era-scaled army cap). The active resistance is applied later in
+-- the turn by organic_history_check_steppe_friction, after pressure is updated.
+function organic_history_check_steppe_nomad_presence(turn)
+  if not (organic_history_steppe_nomad_enabled
+          or organic_history_steppe_confederacy_enabled) then
+    return
+  end
+  organic_history_try_early_steppe_nomad_spawn(turn)
+
+  local actor_id = organic_history_steppe_nomad_actor
+  local nomad = organic_history_player_for_actor_id(actor_id)
+  if nomad == nil or not nomad.is_alive then
+    return
+  end
+  local nomad_id = organic_history_player_id(nomad)
+
+  -- Keep the nomad roving: cap it at max_camps cities, razing the excess
+  -- (newest/smallest first; the capital is never razed so the player persists).
+  -- Collect first, then mutate -- never remove cities mid-iterate.
+  if nomad:num_cities() > organic_history_steppe_nomad_max_camps then
+    local cities = {}
+    for city in nomad:cities_iterate() do
+      table.insert(cities, city)
+    end
+    table.sort(cities, function(a, b)
+      local sa = a.size or 0
+      local sb = b.size or 0
+      if sa ~= sb then
+        return sa > sb
+      end
+      return (a.id or 0) < (b.id or 0)
+    end)
+    for i = organic_history_steppe_nomad_max_camps + 1, #cities do
+      local c = cities[i]
+      if not c:is_primary_capital() then
+        log.normal('organic_history_steppe_nomad turn=%d actor=%q action="raze" city=%q',
+                   turn, actor_id, c.name)
+        edit.remove_city(c)
+      end
+    end
+  end
+
+  -- Era-scaled army cap: keep the horde weak early (harasses but is repelled),
+  -- conquest-capable only at the Mongol peak. Disband the oldest excess units.
+  local unit_cap = organic_history_steppe_nomad_max_units(turn)
+  if nomad:num_units() > unit_cap then
+    local units = {}
+    for u in nomad:units_iterate() do
+      table.insert(units, u)
+    end
+    table.sort(units, function(a, b)
+      return (a.id or 0) > (b.id or 0)
+    end)
+    for i = unit_cap + 1, #units do
+      pcall(function() edit.unit_kill(units[i], "retired", nil) end)
+    end
+  end
+
+  local camp = organic_history_steppe_nomad_camp(nomad)
+  if camp == nil then
+    return
+  end
+  -- Keep the camp defended so the nomad persists while at war.
+  if camp.tile ~= nil
+     and camp.tile:num_units()
+         < organic_history_steppe_nomad_camp_min_defenders then
+    organic_history_homeland_defense_create_garrison(nomad, camp.tile)
+  end
+end
+
+-- Susceptibility window(turn) in [floor, 1]: a smooth piecewise-linear bump that
+-- peaks across the Mongol era. This is the DETERMINISTIC anchor; it makes a surge
+-- likely mid-game but does not force one -- emergent state (below) decides.
+function organic_history_steppe_confederacy_window(turn)
+  local floor = organic_history_steppe_confederacy_window_floor
+  local rise = organic_history_steppe_confederacy_window_rise_start
+  local lo = organic_history_steppe_confederacy_window_peak_lo
+  local hi = organic_history_steppe_confederacy_window_peak_hi
+  local fall = organic_history_steppe_confederacy_window_fall_end
+  if turn <= rise or turn >= fall then
+    return floor
+  elseif turn < lo then
+    return floor + (1 - floor) * (turn - rise) / math.max(1, lo - rise)
+  elseif turn <= hi then
+    return 1.0
+  else
+    return floor + (1 - floor) * (fall - turn) / math.max(1, fall - hi)
+  end
+end
+
+-- Confederacy power P in [0,1]: window(turn) modulating emergent state. The
+-- emergent term is how WEAK/FRAGMENTED the steppe's settled neighbors are (a rich,
+-- divided neighbor invites unification) and -- formula B -- how consolidated the
+-- steppe itself is. So P rises in the Mongol era AND when the game state actually
+-- favours a surge; a strong, unified China suppresses it even at the peak.
+function organic_history_steppe_confederacy_power(turn, nomad_id)
+  local window = organic_history_steppe_confederacy_window(turn)
+
+  -- Neighbor fragility: mean over adjacent settled regions of how fragile the
+  -- region's leader is (its crisis) or how divided the region is (no hegemon).
+  local sum, count = 0, 0
+  for _, region_id in ipairs(organic_history_steppe_confederacy_adjacent_regions) do
+    local rs = organic_history_region_status[region_id]
+    if rs ~= nil and (rs.total_cities or 0) > 0 then
+      local division = 1 - (rs.leader_share or 0)
+      local crisis = 0
+      if rs.leader ~= nil then
+        local sc = organic_history_state_capacity[rs.leader]
+        crisis = (sc ~= nil and sc.crisis) or 0
+      end
+      -- A neighbor in real crisis invites a surge; a merely divided region
+      -- contributes at most half (an empty frontier is not a rich target).
+      local frag = math.max(crisis, 0.5 * division)
+      sum = sum + frag
+      count = count + 1
+    end
+  end
+  local neighbor_fragility = (count > 0) and (sum / count) or 0
+
+  local emergent = neighbor_fragility
+  if organic_history_steppe_confederacy_power_formula == "B" then
+    -- Steppe consolidation: the nomad's own dominance of its core region.
+    local sm = organic_history_region_status["steppe_mongolia"]
+    local steppe_consol = 0
+    if sm ~= nil and nomad_id ~= nil and sm.leader == nomad_id then
+      steppe_consol = sm.leader_share or 0
+    end
+    emergent = math.max(neighbor_fragility, steppe_consol)
+  end
+
+  local baseline = organic_history_steppe_confederacy_power_baseline
+  local p = window * (baseline + (1 - baseline) * emergent)
+  return organic_history_clamp(p, 0, 1), window, neighbor_fragility
+end
+
+-- Tier A active resistance: a per-city pressure TAX on cities settled in the
+-- steppe by non-nomad actors, scaled by confederacy power P and the holder's
+-- claim legitimacy. Runs AFTER pressure is updated and BEFORE withering, so the
+-- elevated unrest/migration feeds the existing withering pipeline THIS turn.
+function organic_history_check_steppe_friction(turn)
+  if not organic_history_steppe_confederacy_enabled then
+    return
+  end
+  local actor_id = organic_history_steppe_nomad_actor
+  local nomad = organic_history_player_for_actor_id(actor_id)
+  local nomad_id = (nomad ~= nil) and organic_history_player_id(nomad) or nil
+
+  local p, window, fragility =
+      organic_history_steppe_confederacy_power(turn, nomad_id)
+  log.normal('organic_history_steppe_confederacy turn=%d actor=%q power=%.3f window=%.3f neighbor_fragility=%.3f formula=%q',
+             turn, actor_id, p, window, fragility,
+             organic_history_steppe_confederacy_power_formula)
+  if p <= 0 then
+    return
+  end
+
+  local base = organic_history_steppe_confederacy_friction_base
+  local mig_ratio = organic_history_steppe_confederacy_friction_migration_ratio
+  for player in players_iterate() do
+    if player.is_alive
+       and (nomad_id == nil or organic_history_player_id(player) ~= nomad_id) then
+      local _, owner_actor_id = organic_history_actor_metadata_for(player)
+      local claims = owner_actor_id ~= nil
+          and organic_history_active_actor_region_claims()[owner_actor_id]
+          or nil
+      for city in player:cities_iterate() do
+        local region_id = organic_history_region_for_city(city)
+        if region_id ~= nil
+           and organic_history_steppe_nomad_raid_regions[region_id] then
+          local claim_type =
+              organic_history_region_claim_type(claims, region_id)
+          local legit
+          if claim_type == "core" then
+            legit = organic_history_steppe_confederacy_legit_factor_core
+          elseif claim_type == "historical" or claim_type == "contested"
+                 or claim_type == "cultural" then
+            legit = organic_history_steppe_confederacy_legit_factor_historical
+          else
+            legit = organic_history_steppe_confederacy_legit_factor_peripheral
+          end
+          local tax = base * p * legit
+          if tax > 0 then
+            local key = organic_history_city_key(city)
+            local state = organic_history_city_pressure[key]
+            if state ~= nil then
+              state.unrest = organic_history_clamp(
+                  (state.unrest or 0) + tax, 0, 1)
+              state.migration_pressure = organic_history_clamp(
+                  (state.migration_pressure or 0) + tax * mig_ratio, 0, 1)
+              log.normal('organic_history_steppe_friction turn=%d actor=%q target_owner=%d city=%q region=%q claim_type=%q power=%.3f tax=%.3f unrest=%.3f',
+                         turn, actor_id, organic_history_player_id(player),
+                         city.name, region_id, claim_type, p, tax, state.unrest)
+            end
+          end
+        end
+      end
+    end
   end
 end
 
