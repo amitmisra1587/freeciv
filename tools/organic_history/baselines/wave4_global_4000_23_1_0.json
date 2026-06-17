@@ -1,0 +1,6907 @@
+{
+  "actors": {
+    "abbasid": {
+      "actor": "abbasid",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.8.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.8,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.5.",
+          "metric": "survivalRate",
+          "observed": 1.0,
+          "threshold": 0.5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 4.",
+          "metric": "medianMaxCities",
+          "observed": 4.5,
+          "threshold": 4,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension",
+          "rival_pressure"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 155,
+        "offensiveUnits": 2,
+        "settlers": 2,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "predecessor_high_mandate",
+        "predecessor_high_core_control",
+        "peaceful_reform",
+        "strong_defense"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_spawn": 15,
+        "continuity": 25,
+        "core_inheritance": 20,
+        "delay": 5,
+        "reform_or_rename": 25,
+        "regional_split": 10
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          9
+        ],
+        "turnsAfterBirth60": [
+          5,
+          15
+        ]
+      },
+      "lifecycleType": "dynastic_successor",
+      "note": "Needs Near East transfer/conquest support.",
+      "observed": {
+        "collapseRiskMax": 0.513,
+        "collapseRiskMedian": 0.141,
+        "dynasticTransferActions": {
+          "inherited": 10,
+          "protected": 33,
+          "skip": 4733
+        },
+        "dynasticTransferReasons": {
+          "bounded_cluster_inheritance": 10,
+          "escape_route": 33,
+          "successor_exists": 2141,
+          "too_early": 2592
+        },
+        "finalCitiesGivenSpawnMean": 4.167,
+        "finalCitiesGivenSpawnMedian": 4.0,
+        "finalCitiesMean": 4.167,
+        "finalCitiesMedian": 4.0,
+        "finalCitiesP10": 2.3,
+        "finalCitiesP90": 6.0,
+        "latestClaimMedian": {
+          "claimedShare": 0.8,
+          "coreShare": 0.333,
+          "overextension": 0.2,
+          "rivalPressure": 0.4
+        },
+        "maxCitiesGivenSpawnMean": 4.833,
+        "maxCitiesGivenSpawnMedian": 4.5,
+        "maxCitiesMean": 4.833,
+        "maxCitiesMedian": 4.5,
+        "peakToFinalDropGivenSpawnMean": 0.667,
+        "peakToFinalDropGivenSpawnMedian": 0.0,
+        "peakToFinalDropMean": 0.667,
+        "peakToFinalDropMedian": 0.0,
+        "peakTurnMedian": 141.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 110.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "healthy_continuity_escape": 4,
+          "inherited": 10,
+          "lineage_spawn": 14,
+          "no_spawn": 0,
+          "probability_skip": 1,
+          "spawned": 24,
+          "successor_exists": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Baghdad",
+          "core_region": "mesopotamia",
+          "leader": "Harun al-Rashid",
+          "mode": "lineage_successor",
+          "nation": "Arab",
+          "placement": "relocated_tile",
+          "player": 14,
+          "seed": 1,
+          "turn": 111,
+          "x": 56,
+          "y": 41
+        },
+        {
+          "city": "Baghdad",
+          "core_region": "mesopotamia",
+          "leader": "Harun al-Rashid",
+          "mode": "lineage_successor",
+          "nation": "Arab",
+          "placement": "relocated_tile",
+          "player": 14,
+          "seed": 2,
+          "turn": 110,
+          "x": 53,
+          "y": 40
+        },
+        {
+          "city": "Baghdad",
+          "core_region": "mesopotamia",
+          "leader": "Harun al-Rashid",
+          "mode": "lineage_successor",
+          "nation": "Arab",
+          "placement": "relocated_tile",
+          "player": 14,
+          "seed": 3,
+          "turn": 110,
+          "x": 53,
+          "y": 40
+        },
+        {
+          "city": "Baghdad",
+          "core_region": "mesopotamia",
+          "leader": "Harun al-Rashid",
+          "mode": "lineage_successor",
+          "nation": "Arab",
+          "placement": "relocated_tile",
+          "player": 14,
+          "seed": 4,
+          "turn": 110,
+          "x": 53,
+          "y": 40
+        },
+        {
+          "city": "Baghdad",
+          "core_region": "mesopotamia",
+          "leader": "Harun al-Rashid",
+          "mode": "dynastic_transfer",
+          "nation": "Arab",
+          "placement": "relocated_tile",
+          "player": 14,
+          "seed": 5,
+          "turn": 124,
+          "x": 53,
+          "y": 40
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "healthy_continuity_escape": 4,
+          "inherited": 10,
+          "lineage_spawn": 14,
+          "no_spawn": 0,
+          "probability_skip": 1,
+          "spawned": 24,
+          "successor_exists": 24
+        },
+        "interpretation": "inheritance_active",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.167,
+          "inherited": 0.417,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Makka",
+          "claimType": "peripheral",
+          "count": 157,
+          "region": "near_east"
+        },
+        {
+          "city": "Makka",
+          "claimType": "peripheral",
+          "count": 89,
+          "region": "steppe"
+        },
+        {
+          "city": "Megalopolis",
+          "claimType": "peripheral",
+          "count": 50,
+          "region": "steppe"
+        },
+        {
+          "city": "Ar-Riyadh",
+          "claimType": "peripheral",
+          "count": 25,
+          "region": "steppe"
+        },
+        {
+          "city": "Raga",
+          "claimType": "peripheral",
+          "count": 23,
+          "region": "steppe"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "assyria": {
+      "actor": "assyria",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.8.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.8,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 6.",
+          "metric": "medianMaxCities",
+          "observed": 6.0,
+          "threshold": 6,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension",
+          "rival_pressure"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 150,
+        "offensiveUnits": 4,
+        "settlers": 2,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "core_consolidation",
+        "successful_reform",
+        "high_garrison_ratio",
+        "positive_economy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_pressure": 20,
+        "defensive_support": 20,
+        "delay": 15,
+        "expansion_support": 35,
+        "no_event": 10
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          4,
+          8
+        ],
+        "turnsAfterBirth60": [
+          6,
+          14
+        ]
+      },
+      "lifecycleType": "imperial_claimant",
+      "note": "Needs imperial expansion phase.",
+      "observed": {
+        "collapseRiskMax": 0.568,
+        "collapseRiskMedian": 0.26,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 5.167,
+        "finalCitiesGivenSpawnMedian": 5.0,
+        "finalCitiesMean": 5.167,
+        "finalCitiesMedian": 5.0,
+        "finalCitiesP10": 1.3,
+        "finalCitiesP90": 9.0,
+        "latestClaimMedian": {
+          "claimedShare": 0.5,
+          "coreShare": 0.183,
+          "overextension": 0.5,
+          "rivalPressure": 0.4
+        },
+        "maxCitiesGivenSpawnMean": 5.917,
+        "maxCitiesGivenSpawnMedian": 6.0,
+        "maxCitiesMean": 5.917,
+        "maxCitiesMedian": 6.0,
+        "peakToFinalDropGivenSpawnMean": 0.75,
+        "peakToFinalDropGivenSpawnMedian": 1.0,
+        "peakToFinalDropMean": 0.75,
+        "peakToFinalDropMedian": 1.0,
+        "peakTurnMedian": 141.5,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 38.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "lineage_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 10,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Ashur",
+          "core_region": "mesopotamia",
+          "leader": "Ashurbanipal",
+          "mode": "lineage_successor",
+          "nation": "Assyrian",
+          "placement": "relocated_tile",
+          "player": 5,
+          "seed": 1,
+          "turn": 38,
+          "x": 53,
+          "y": 37
+        },
+        {
+          "city": "Ashur",
+          "core_region": "mesopotamia",
+          "leader": "Ashurbanipal",
+          "mode": "lineage_successor",
+          "nation": "Assyrian",
+          "placement": "relocated_tile",
+          "player": 5,
+          "seed": 2,
+          "turn": 39,
+          "x": 53,
+          "y": 37
+        },
+        {
+          "city": "Ashur",
+          "core_region": "mesopotamia",
+          "leader": "Ashurbanipal",
+          "mode": "lineage_successor",
+          "nation": "Assyrian",
+          "placement": "relocated_tile",
+          "player": 5,
+          "seed": 3,
+          "turn": 40,
+          "x": 53,
+          "y": 37
+        },
+        {
+          "city": "Ashur",
+          "core_region": "mesopotamia",
+          "leader": "Ashurbanipal",
+          "mode": "lineage_successor",
+          "nation": "Assyrian",
+          "placement": "relocated_tile",
+          "player": 5,
+          "seed": 4,
+          "turn": 38,
+          "x": 53,
+          "y": 37
+        },
+        {
+          "city": "Ashur",
+          "core_region": "mesopotamia",
+          "leader": "Ashurbanipal",
+          "mode": "lineage_successor",
+          "nation": "Assyrian",
+          "placement": "relocated_tile",
+          "player": 5,
+          "seed": 5,
+          "turn": 41,
+          "x": 53,
+          "y": 37
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "lineage_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 10,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Mumbai",
+          "claimType": "peripheral",
+          "count": 238,
+          "region": "india"
+        },
+        {
+          "city": "Varanasi",
+          "claimType": "peripheral",
+          "count": 145,
+          "region": "south_china"
+        },
+        {
+          "city": "Bangalore",
+          "claimType": "peripheral",
+          "count": 138,
+          "region": "deccan_south_india"
+        },
+        {
+          "city": "Nesa",
+          "claimType": "peripheral",
+          "count": 137,
+          "region": "balkans_aegean"
+        },
+        {
+          "city": "Kolkata",
+          "claimType": "peripheral",
+          "count": 129,
+          "region": "deccan_south_india"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "aztec": {
+      "actor": "aztec",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.9.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.9,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 5.",
+          "metric": "medianMaxCities",
+          "observed": 7.0,
+          "threshold": 5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "strong_core_control",
+          "restrained_expansion",
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "historical_pressure_avoidable",
+        "pressureReasonsObserved": []
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 1,
+        "gold": 85,
+        "offensiveUnits": 1,
+        "settlers": 1,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "core_consolidation",
+        "defensive_investment",
+        "good_diplomacy",
+        "positive_economy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "defensive_support": 25,
+        "delay": 15,
+        "no_event": 10,
+        "regional_pressure": 20,
+        "settlement_support": 30
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          3
+        ],
+        "turnsAfterBirth30": [
+          2,
+          6
+        ],
+        "turnsAfterBirth60": [
+          3,
+          9
+        ]
+      },
+      "lifecycleType": "regional_kingdom",
+      "note": "Needs Mesoamerican consolidation.",
+      "observed": {
+        "collapseRiskMax": 0.156,
+        "collapseRiskMedian": 0.085,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 6.083,
+        "finalCitiesGivenSpawnMedian": 7.0,
+        "finalCitiesMean": 6.083,
+        "finalCitiesMedian": 7.0,
+        "finalCitiesP10": 4.3,
+        "finalCitiesP90": 7.0,
+        "latestClaimMedian": {
+          "claimedShare": 1.0,
+          "coreShare": 0.833,
+          "overextension": 0,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": 6.292,
+        "maxCitiesGivenSpawnMedian": 7.0,
+        "maxCitiesMean": 6.292,
+        "maxCitiesMedian": 7.0,
+        "peakToFinalDropGivenSpawnMean": 0.208,
+        "peakToFinalDropGivenSpawnMedian": 0.0,
+        "peakToFinalDropMean": 0.208,
+        "peakToFinalDropMedian": 0.0,
+        "peakTurnMedian": 200.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 160.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "empty_core_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 10,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 0.958,
+        "survivalGivenSpawnWilsonLower95": 0.798,
+        "survivalRate": 0.958,
+        "survivalRateWilsonLower95": 0.798,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Tenochtitlan",
+          "core_region": "mesoamerica",
+          "leader": "Moctezuma I",
+          "mode": "empty_core",
+          "nation": "Aztec",
+          "placement": "target_tile",
+          "player": 22,
+          "seed": 1,
+          "turn": 160,
+          "x": 142,
+          "y": 44
+        },
+        {
+          "city": "Tenochtitlan",
+          "core_region": "mesoamerica",
+          "leader": "Moctezuma I",
+          "mode": "empty_core",
+          "nation": "Aztec",
+          "placement": "target_tile",
+          "player": 22,
+          "seed": 2,
+          "turn": 162,
+          "x": 142,
+          "y": 44
+        },
+        {
+          "city": "Tenochtitlan",
+          "core_region": "mesoamerica",
+          "leader": "Moctezuma I",
+          "mode": "empty_core",
+          "nation": "Aztec",
+          "placement": "target_tile",
+          "player": 22,
+          "seed": 3,
+          "turn": 161,
+          "x": 142,
+          "y": 44
+        },
+        {
+          "city": "Tenochtitlan",
+          "core_region": "mesoamerica",
+          "leader": "Moctezuma I",
+          "mode": "empty_core",
+          "nation": "Aztec",
+          "placement": "target_tile",
+          "player": 22,
+          "seed": 4,
+          "turn": 160,
+          "x": 142,
+          "y": 44
+        },
+        {
+          "city": "Tenochtitlan",
+          "core_region": "mesoamerica",
+          "leader": "Moctezuma I",
+          "mode": "empty_core",
+          "nation": "Aztec",
+          "placement": "target_tile",
+          "player": 22,
+          "seed": 5,
+          "turn": 160,
+          "x": 142,
+          "y": 44
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "empty_core_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 10,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [],
+      "verdict": "pass"
+    },
+    "carthage": {
+      "actor": "carthage",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.8.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.8,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 4.",
+          "metric": "medianMaxCities",
+          "observed": 14.0,
+          "threshold": 4,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_rival_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension",
+          "episodic_high_collapse_risk"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 175,
+        "offensiveUnits": 1,
+        "settlers": 3,
+        "ships": 2,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "naval_security",
+        "coastal_core_control",
+        "positive_economy",
+        "good_diplomacy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_pressure": 15,
+        "defensive_support": 15,
+        "no_event": 10,
+        "ship_settler_support": 35,
+        "trade_support": 25
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          7
+        ],
+        "turnsAfterBirth60": [
+          4,
+          12
+        ]
+      },
+      "lifecycleType": "maritime_trader",
+      "note": "Needs western Mediterranean maritime expansion.",
+      "observed": {
+        "collapseRiskMax": 0.694,
+        "collapseRiskMedian": 0.207,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 11.667,
+        "finalCitiesGivenSpawnMedian": 12.5,
+        "finalCitiesMean": 11.667,
+        "finalCitiesMedian": 12.5,
+        "finalCitiesP10": 4.3,
+        "finalCitiesP90": 16.4,
+        "latestClaimMedian": {
+          "claimedShare": 0.276,
+          "coreShare": 0.194,
+          "overextension": 0.724,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": 13.25,
+        "maxCitiesGivenSpawnMedian": 14.0,
+        "maxCitiesMean": 13.25,
+        "maxCitiesMedian": 14.0,
+        "peakToFinalDropGivenSpawnMean": 1.583,
+        "peakToFinalDropGivenSpawnMedian": 1.0,
+        "peakToFinalDropMean": 1.583,
+        "peakToFinalDropMedian": 1.0,
+        "peakTurnMedian": 160.5,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 71.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 13,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Carthage",
+          "core_region": "maghreb_punic_west",
+          "leader": "Hannibal",
+          "mode": "foreign_core_claimant",
+          "nation": "Carthaginian",
+          "placement": "relocated_tile",
+          "player": 8,
+          "seed": 1,
+          "turn": 71,
+          "x": 32,
+          "y": 39
+        },
+        {
+          "city": "Carthage",
+          "core_region": "maghreb_punic_west",
+          "leader": "Hannibal",
+          "mode": "foreign_core_claimant",
+          "nation": "Carthaginian",
+          "placement": "relocated_tile",
+          "player": 8,
+          "seed": 2,
+          "turn": 71,
+          "x": 35,
+          "y": 41
+        },
+        {
+          "city": "Carthage",
+          "core_region": "maghreb_punic_west",
+          "leader": "Hannibal",
+          "mode": "foreign_core_claimant",
+          "nation": "Carthaginian",
+          "placement": "relocated_tile",
+          "player": 8,
+          "seed": 3,
+          "turn": 70,
+          "x": 35,
+          "y": 41
+        },
+        {
+          "city": "Carthage",
+          "core_region": "maghreb_punic_west",
+          "leader": "Hannibal",
+          "mode": "foreign_core_claimant",
+          "nation": "Carthaginian",
+          "placement": "relocated_tile",
+          "player": 8,
+          "seed": 4,
+          "turn": 70,
+          "x": 35,
+          "y": 41
+        },
+        {
+          "city": "Carthage",
+          "core_region": "maghreb_punic_west",
+          "leader": "Hannibal",
+          "mode": "foreign_core_claimant",
+          "nation": "Carthaginian",
+          "placement": "relocated_tile",
+          "player": 8,
+          "seed": 5,
+          "turn": 70,
+          "x": 32,
+          "y": 40
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 13,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Leptis Magna",
+          "claimType": "peripheral",
+          "count": 1505,
+          "region": "europe"
+        },
+        {
+          "city": "Carthago",
+          "claimType": "peripheral",
+          "count": 1499,
+          "region": "europe"
+        },
+        {
+          "city": "Cirta",
+          "claimType": "peripheral",
+          "count": 1258,
+          "region": "africa"
+        },
+        {
+          "city": "Aspis",
+          "claimType": "peripheral",
+          "count": 290,
+          "region": "africa"
+        },
+        {
+          "city": "Cartenna",
+          "claimType": "peripheral",
+          "count": 289,
+          "region": "africa"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "castile": {
+      "actor": "castile",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.6.",
+          "metric": "spawnRate",
+          "observed": 0.958,
+          "threshold": 0.6,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.5.",
+          "metric": "survivalRate",
+          "observed": 0.958,
+          "threshold": 0.5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 3.",
+          "metric": "medianMaxCities",
+          "observed": 2.5,
+          "threshold": 3,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "strong_core_control",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "overextension",
+          "rival_pressure"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 175,
+        "offensiveUnits": 1,
+        "settlers": 3,
+        "ships": 2,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "naval_security",
+        "coastal_core_control",
+        "positive_economy",
+        "good_diplomacy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_pressure": 15,
+        "defensive_support": 15,
+        "no_event": 10,
+        "ship_settler_support": 35,
+        "trade_support": 25
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          7
+        ],
+        "turnsAfterBirth60": [
+          4,
+          12
+        ]
+      },
+      "lifecycleType": "maritime_trader",
+      "note": "Needs Iberian consolidation.",
+      "observed": {
+        "collapseRiskMax": 0.484,
+        "collapseRiskMedian": 0.148,
+        "dynasticTransferActions": {
+          "inherited": 18,
+          "noop": 2,
+          "skip": 4756
+        },
+        "dynasticTransferReasons": {
+          "bounded_cluster_inheritance": 18,
+          "delayed": 40,
+          "missing_transfer_city": 1,
+          "successor_activation_failed": 1,
+          "successor_exists": 924,
+          "too_early": 3792
+        },
+        "finalCitiesGivenSpawnMean": 2.609,
+        "finalCitiesGivenSpawnMedian": 3.0,
+        "finalCitiesMean": 2.5,
+        "finalCitiesMedian": 2.5,
+        "finalCitiesP10": 1.0,
+        "finalCitiesP90": 4.0,
+        "latestClaimMedian": {
+          "claimedShare": 0.75,
+          "coreShare": 0.75,
+          "overextension": 0.25,
+          "rivalPressure": 0.333
+        },
+        "maxCitiesGivenSpawnMean": 2.696,
+        "maxCitiesGivenSpawnMedian": 3.0,
+        "maxCitiesMean": 2.583,
+        "maxCitiesMedian": 2.5,
+        "peakToFinalDropGivenSpawnMean": 0.087,
+        "peakToFinalDropGivenSpawnMedian": 0.0,
+        "peakToFinalDropMean": 0.083,
+        "peakToFinalDropMedian": 0.0,
+        "peakTurnMedian": 160.0,
+        "spawnRate": 0.958,
+        "spawnRateWilsonLower95": 0.798,
+        "spawnTurnMedian": 160.0,
+        "spawnedSeedCount": 23,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 5,
+          "delayed": 1,
+          "delayed_no_site": 1,
+          "failed_activation": 2,
+          "inherited": 18,
+          "no_spawn": 1,
+          "probability_skip": 1,
+          "spawned": 23,
+          "successor_exists": 23
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.857,
+        "survivalRate": 0.958,
+        "survivalRateWilsonLower95": 0.798,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Toledo",
+          "core_region": "iberia",
+          "leader": "Isabella",
+          "mode": "dynastic_transfer",
+          "nation": "Spanish",
+          "placement": "relocated_tile",
+          "player": 18,
+          "seed": 1,
+          "turn": 160,
+          "x": 35,
+          "y": 38
+        },
+        {
+          "city": "Toledo",
+          "core_region": "iberia",
+          "leader": "Isabella",
+          "mode": "dynastic_transfer",
+          "nation": "Spanish",
+          "placement": "relocated_tile",
+          "player": 18,
+          "seed": 2,
+          "turn": 160,
+          "x": 26,
+          "y": 34
+        },
+        {
+          "city": "Toledo",
+          "core_region": "iberia",
+          "leader": "Isabella",
+          "mode": "dynastic_transfer",
+          "nation": "Spanish",
+          "placement": "relocated_tile",
+          "player": 18,
+          "seed": 4,
+          "turn": 160,
+          "x": 25,
+          "y": 31
+        },
+        {
+          "city": "Toledo",
+          "core_region": "iberia",
+          "leader": "Isabella",
+          "mode": "dynastic_transfer",
+          "nation": "Spanish",
+          "placement": "relocated_tile",
+          "player": 18,
+          "seed": 5,
+          "turn": 160,
+          "x": 26,
+          "y": 32
+        },
+        {
+          "city": "Toledo",
+          "core_region": "iberia",
+          "leader": "Isabella",
+          "mode": "dynastic_transfer",
+          "nation": "Spanish",
+          "placement": "relocated_tile",
+          "player": 18,
+          "seed": 6,
+          "turn": 160,
+          "x": 32,
+          "y": 40
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 5,
+          "delayed": 1,
+          "delayed_no_site": 1,
+          "failed_activation": 2,
+          "inherited": 18,
+          "no_spawn": 1,
+          "probability_skip": 1,
+          "spawned": 23,
+          "successor_exists": 23
+        },
+        "interpretation": "activation_limited",
+        "rates": {
+          "delayedNoSite": 0.042,
+          "failedActivation": 0.083,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.75,
+          "noSpawn": 0.042,
+          "spawned": 0.958
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Bibracte",
+          "claimType": "peripheral",
+          "count": 120,
+          "region": "gaul"
+        },
+        {
+          "city": "Capua",
+          "claimType": "peripheral",
+          "count": 120,
+          "region": "gaul"
+        },
+        {
+          "city": "Aachen",
+          "claimType": "peripheral",
+          "count": 80,
+          "region": "gaul"
+        },
+        {
+          "city": "Veii",
+          "claimType": "peripheral",
+          "count": 80,
+          "region": "gaul"
+        },
+        {
+          "city": "Beneventum",
+          "claimType": "peripheral",
+          "count": 40,
+          "region": "gaul"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "celts": {
+      "actor": "celts",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.8.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.8,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 2.0,
+          "message": "Expected no more than 8.",
+          "metric": "medianFinalCities",
+          "observed": 0.0,
+          "threshold": 8,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "strong_core_control",
+          "restrained_expansion",
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "historical_pressure_avoidable",
+        "pressureReasonsObserved": []
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 1,
+        "gold": 70,
+        "offensiveUnits": 1,
+        "settlers": 1,
+        "ships": 0,
+        "workers": 0
+      },
+      "lifecycleEscapeRoutes": [
+        "regional_autonomy",
+        "good_relations_with_empires",
+        "defensive_terrain"
+      ],
+      "lifecycleOutcomeWeights": {
+        "absorption": 20,
+        "autonomy": 25,
+        "no_event": 20,
+        "regional_pressure": 35
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          4
+        ],
+        "turnsAfterBirth30": [
+          2,
+          7
+        ],
+        "turnsAfterBirth60": [
+          2,
+          9
+        ]
+      },
+      "lifecycleType": "tribal_horizon",
+      "note": "Should be tribal/cultural horizon, not compact empire.",
+      "observed": {
+        "collapseRiskMax": 0.417,
+        "collapseRiskMedian": 0.11,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 1.542,
+        "finalCitiesGivenSpawnMedian": 0.0,
+        "finalCitiesMean": 1.542,
+        "finalCitiesMedian": 0.0,
+        "finalCitiesP10": 0.0,
+        "finalCitiesP90": 5.7,
+        "latestClaimMedian": {
+          "claimedShare": 1.0,
+          "coreShare": 1.0,
+          "overextension": 0,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": 2.875,
+        "maxCitiesGivenSpawnMedian": 2.0,
+        "maxCitiesMean": 2.875,
+        "maxCitiesMedian": 2.0,
+        "peakToFinalDropGivenSpawnMean": 1.333,
+        "peakToFinalDropGivenSpawnMedian": 1.5,
+        "peakToFinalDropMean": 1.333,
+        "peakToFinalDropMedian": 1.5,
+        "peakTurnMedian": 82.5,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 75.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 22,
+          "empty_core_spawn": 2,
+          "no_spawn": 0,
+          "probability_skip": 7,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 0.417,
+        "survivalGivenSpawnWilsonLower95": 0.245,
+        "survivalRate": 0.417,
+        "survivalRateWilsonLower95": 0.245,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Bibracte",
+          "core_region": "gaul",
+          "leader": "Vercingetorix",
+          "mode": "empty_core",
+          "nation": "Celtic",
+          "placement": "target_tile",
+          "player": 9,
+          "seed": 1,
+          "turn": 75,
+          "x": 30,
+          "y": 28
+        },
+        {
+          "city": "Bibracte",
+          "core_region": "gaul",
+          "leader": "Vercingetorix",
+          "mode": "foreign_core_claimant",
+          "nation": "Celtic",
+          "placement": "target_tile",
+          "player": 9,
+          "seed": 2,
+          "turn": 75,
+          "x": 30,
+          "y": 28
+        },
+        {
+          "city": "Bibracte",
+          "core_region": "gaul",
+          "leader": "Vercingetorix",
+          "mode": "foreign_core_claimant",
+          "nation": "Celtic",
+          "placement": "target_tile",
+          "player": 9,
+          "seed": 3,
+          "turn": 75,
+          "x": 30,
+          "y": 28
+        },
+        {
+          "city": "Bibracte",
+          "core_region": "gaul",
+          "leader": "Vercingetorix",
+          "mode": "foreign_core_claimant",
+          "nation": "Celtic",
+          "placement": "target_tile",
+          "player": 9,
+          "seed": 4,
+          "turn": 75,
+          "x": 30,
+          "y": 28
+        },
+        {
+          "city": "Bibracte",
+          "core_region": "gaul",
+          "leader": "Vercingetorix",
+          "mode": "foreign_core_claimant",
+          "nation": "Celtic",
+          "placement": "target_tile",
+          "player": 9,
+          "seed": 5,
+          "turn": 75,
+          "x": 30,
+          "y": 28
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 22,
+          "empty_core_spawn": 2,
+          "no_spawn": 0,
+          "probability_skip": 7,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Athens",
+          "claimType": "peripheral",
+          "count": 104,
+          "region": "balkans_aegean"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "china": {
+      "actor": "china",
+      "checks": [
+        {
+          "hardMargin": 6.25,
+          "message": "Expected no more than 25.",
+          "metric": "medianFinalCities",
+          "observed": 12.5,
+          "threshold": 25,
+          "tolerance": 1.25,
+          "verdict": "pass"
+        },
+        {
+          "message": "Sustained high collapse diagnostics should be explained or resolved.",
+          "metric": "collapseRiskMedian",
+          "observed": 0.151,
+          "threshold": 0.55,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension",
+          "rival_pressure",
+          "episodic_high_collapse_risk"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 0,
+        "gold": 0,
+        "settlers": 0,
+        "ships": 0,
+        "workers": 0
+      },
+      "lifecycleEscapeRoutes": [
+        "high_core_control",
+        "high_mandate",
+        "high_cohesion",
+        "positive_economy",
+        "restrained_expansion"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_spawn": 10,
+        "continuity": 30,
+        "no_event": 10,
+        "reform": 25,
+        "regional_split": 25
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          8
+        ],
+        "turnsAfterBirth30": [
+          2,
+          16
+        ],
+        "turnsAfterBirth60": [
+          3,
+          28
+        ]
+      },
+      "lifecycleType": "initial_core",
+      "note": "Should allow dynastic replacement/continuity choices.",
+      "observed": {
+        "collapseRiskMax": 0.71,
+        "collapseRiskMedian": 0.151,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": null,
+        "finalCitiesGivenSpawnMedian": null,
+        "finalCitiesMean": 12.333,
+        "finalCitiesMedian": 12.5,
+        "finalCitiesP10": 7.3,
+        "finalCitiesP90": 17.0,
+        "latestClaimMedian": {
+          "claimedShare": 0.534,
+          "coreShare": 0.069,
+          "overextension": 0.467,
+          "rivalPressure": 0.528
+        },
+        "maxCitiesGivenSpawnMean": null,
+        "maxCitiesGivenSpawnMedian": null,
+        "maxCitiesMean": 17.917,
+        "maxCitiesMedian": 17.0,
+        "peakToFinalDropGivenSpawnMean": null,
+        "peakToFinalDropGivenSpawnMedian": null,
+        "peakToFinalDropMean": 5.583,
+        "peakToFinalDropMedian": 5.0,
+        "peakTurnMedian": 139.5,
+        "spawnRate": 0.0,
+        "spawnRateWilsonLower95": 0.0,
+        "spawnTurnMedian": null,
+        "spawnedSeedCount": 0,
+        "successorOutcomeCounts": {
+          "no_spawn": 24
+        },
+        "survivalGivenSpawnRate": null,
+        "survivalGivenSpawnWilsonLower95": null,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "initial",
+      "sampleSpawnRecords": [],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "no_spawn": 24
+        },
+        "interpretation": "low_spawn_probability",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 1.0,
+          "spawned": 0.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Tianjin",
+          "claimType": "peripheral",
+          "count": 1727,
+          "region": "china"
+        },
+        {
+          "city": "Guangzhou",
+          "claimType": "peripheral",
+          "count": 910,
+          "region": "china"
+        },
+        {
+          "city": "Changsha",
+          "claimType": "peripheral",
+          "count": 406,
+          "region": "steppe"
+        },
+        {
+          "city": "Jinan",
+          "claimType": "peripheral",
+          "count": 267,
+          "region": "steppe"
+        },
+        {
+          "city": "Taiyuan",
+          "claimType": "peripheral",
+          "count": 251,
+          "region": "steppe"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "chola": {
+      "actor": "chola",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.7.",
+          "metric": "spawnRate",
+          "observed": 0.75,
+          "threshold": 0.7,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.5.",
+          "metric": "survivalRate",
+          "observed": 0.75,
+          "threshold": 0.5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 3.",
+          "metric": "medianMaxCities",
+          "observed": 4.0,
+          "threshold": 3,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "strong_core_control",
+          "restrained_expansion",
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "historical_pressure_avoidable",
+        "pressureReasonsObserved": []
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 155,
+        "offensiveUnits": 2,
+        "settlers": 2,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "predecessor_high_mandate",
+        "predecessor_high_core_control",
+        "peaceful_reform",
+        "strong_defense"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_spawn": 15,
+        "continuity": 25,
+        "core_inheritance": 20,
+        "delay": 5,
+        "reform_or_rename": 25,
+        "regional_split": 10
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          9
+        ],
+        "turnsAfterBirth60": [
+          5,
+          15
+        ]
+      },
+      "lifecycleType": "dynastic_successor",
+      "note": "Needs South Indian/maritime bootstrap.",
+      "observed": {
+        "collapseRiskMax": 0.296,
+        "collapseRiskMedian": 0.083,
+        "dynasticTransferActions": {
+          "inherited": 17,
+          "noop": 52,
+          "protected": 31,
+          "skip": 4676
+        },
+        "dynasticTransferReasons": {
+          "bounded_cluster_inheritance": 17,
+          "delayed": 448,
+          "escape_route": 31,
+          "successor_activation_failed": 52,
+          "successor_exists": 1516,
+          "too_early": 2712
+        },
+        "finalCitiesGivenSpawnMean": 3.944,
+        "finalCitiesGivenSpawnMedian": 4.0,
+        "finalCitiesMean": 2.958,
+        "finalCitiesMedian": 3.0,
+        "finalCitiesP10": 0.0,
+        "finalCitiesP90": 5.0,
+        "latestClaimMedian": {
+          "claimedShare": 1.0,
+          "coreShare": 0.75,
+          "overextension": 0,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": 4.556,
+        "maxCitiesGivenSpawnMedian": 4.0,
+        "maxCitiesMean": 3.417,
+        "maxCitiesMedian": 4.0,
+        "peakToFinalDropGivenSpawnMean": 0.611,
+        "peakToFinalDropGivenSpawnMedian": 1.0,
+        "peakToFinalDropMean": 0.458,
+        "peakToFinalDropMedian": 0.0,
+        "peakTurnMedian": 178.0,
+        "spawnRate": 0.75,
+        "spawnRateWilsonLower95": 0.551,
+        "spawnTurnMedian": 115.0,
+        "spawnedSeedCount": 18,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 1,
+          "delayed": 6,
+          "failed_activation": 6,
+          "healthy_continuity_escape": 2,
+          "inherited": 17,
+          "no_spawn": 6,
+          "probability_skip": 1,
+          "spawned": 18,
+          "successor_exists": 18
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.824,
+        "survivalRate": 0.75,
+        "survivalRateWilsonLower95": 0.551,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Kanchipuram",
+          "core_region": "deccan_south_india",
+          "leader": "Rajaraja Chola",
+          "mode": "dynastic_transfer",
+          "nation": "Chola",
+          "placement": "relocated_tile",
+          "player": 15,
+          "seed": 1,
+          "turn": 115,
+          "x": 67,
+          "y": 51
+        },
+        {
+          "city": "Kanchipuram",
+          "core_region": "deccan_south_india",
+          "leader": "Rajaraja Chola",
+          "mode": "dynastic_transfer",
+          "nation": "Chola",
+          "placement": "relocated_tile",
+          "player": 15,
+          "seed": 2,
+          "turn": 115,
+          "x": 67,
+          "y": 51
+        },
+        {
+          "city": "Kanchipuram",
+          "core_region": "deccan_south_india",
+          "leader": "Rajaraja Chola",
+          "mode": "dynastic_transfer",
+          "nation": "Chola",
+          "placement": "relocated_tile",
+          "player": 15,
+          "seed": 3,
+          "turn": 115,
+          "x": 67,
+          "y": 51
+        },
+        {
+          "city": "Kanchipuram",
+          "core_region": "deccan_south_india",
+          "leader": "Rajaraja Chola",
+          "mode": "dynastic_transfer",
+          "nation": "Chola",
+          "placement": "relocated_tile",
+          "player": 15,
+          "seed": 4,
+          "turn": 115,
+          "x": 67,
+          "y": 51
+        },
+        {
+          "city": "Kanchipuram",
+          "core_region": "deccan_south_india",
+          "leader": "Rajaraja Chola",
+          "mode": "dynastic_transfer",
+          "nation": "Chola",
+          "placement": "relocated_tile",
+          "player": 15,
+          "seed": 5,
+          "turn": 115,
+          "x": 67,
+          "y": 51
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 1,
+          "delayed": 6,
+          "failed_activation": 6,
+          "healthy_continuity_escape": 2,
+          "inherited": 17,
+          "no_spawn": 6,
+          "probability_skip": 1,
+          "spawned": 18,
+          "successor_exists": 18
+        },
+        "interpretation": "activation_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.25,
+          "healthyContinuityEscape": 0.083,
+          "inherited": 0.708,
+          "noSpawn": 0.25,
+          "spawned": 0.75
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Thanjavur",
+          "claimType": "peripheral",
+          "count": 91,
+          "region": "steppe"
+        },
+        {
+          "city": "Chidambaram",
+          "claimType": "peripheral",
+          "count": 37,
+          "region": "steppe"
+        },
+        {
+          "city": "Negupatnam",
+          "claimType": "peripheral",
+          "count": 4,
+          "region": "india"
+        },
+        {
+          "city": "Thanjavur",
+          "claimType": "peripheral",
+          "count": 3,
+          "region": "steppe_mongolia"
+        },
+        {
+          "city": "Negupatnam",
+          "claimType": "peripheral",
+          "count": 2,
+          "region": "steppe"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "egypt": {
+      "actor": "egypt",
+      "checks": [
+        {
+          "hardMargin": 5.0,
+          "message": "Expected no more than 20.",
+          "metric": "medianFinalCities",
+          "observed": 14.0,
+          "threshold": 20,
+          "tolerance": 1.0,
+          "verdict": "pass"
+        },
+        {
+          "message": "Sustained high collapse diagnostics should be explained or resolved.",
+          "metric": "collapseRiskMedian",
+          "observed": 0.299,
+          "threshold": 0.55,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_rival_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension",
+          "episodic_high_collapse_risk"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 0,
+        "gold": 0,
+        "settlers": 0,
+        "ships": 0,
+        "workers": 0
+      },
+      "lifecycleEscapeRoutes": [
+        "high_core_control",
+        "high_mandate",
+        "high_cohesion",
+        "positive_economy",
+        "restrained_expansion"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_spawn": 10,
+        "continuity": 30,
+        "no_event": 10,
+        "reform": 25,
+        "regional_split": 25
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          8
+        ],
+        "turnsAfterBirth30": [
+          2,
+          16
+        ],
+        "turnsAfterBirth60": [
+          3,
+          28
+        ]
+      },
+      "lifecycleType": "initial_core",
+      "note": "Should contract/fragment outside Nile core.",
+      "observed": {
+        "collapseRiskMax": 0.763,
+        "collapseRiskMedian": 0.299,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": null,
+        "finalCitiesGivenSpawnMedian": null,
+        "finalCitiesMean": 13.458,
+        "finalCitiesMedian": 14.0,
+        "finalCitiesP10": 11.0,
+        "finalCitiesP90": 17.4,
+        "latestClaimMedian": {
+          "claimedShare": 0.24,
+          "coreShare": 0.231,
+          "overextension": 0.76,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": null,
+        "maxCitiesGivenSpawnMedian": null,
+        "maxCitiesMean": 16.25,
+        "maxCitiesMedian": 17.0,
+        "peakToFinalDropGivenSpawnMean": null,
+        "peakToFinalDropGivenSpawnMedian": null,
+        "peakToFinalDropMean": 2.792,
+        "peakToFinalDropMedian": 2.0,
+        "peakTurnMedian": 148.5,
+        "spawnRate": 0.0,
+        "spawnRateWilsonLower95": 0.0,
+        "spawnTurnMedian": null,
+        "spawnedSeedCount": 0,
+        "successorOutcomeCounts": {
+          "no_spawn": 24
+        },
+        "survivalGivenSpawnRate": null,
+        "survivalGivenSpawnWilsonLower95": null,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "initial",
+      "sampleSpawnRecords": [],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "no_spawn": 24
+        },
+        "interpretation": "low_spawn_probability",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 1.0,
+          "spawned": 0.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Ineb-Hedj",
+          "claimType": "peripheral",
+          "count": 3211,
+          "region": "maghreb_punic_west"
+        },
+        {
+          "city": "Waset",
+          "claimType": "peripheral",
+          "count": 2809,
+          "region": "near_east"
+        },
+        {
+          "city": "Yunu",
+          "claimType": "peripheral",
+          "count": 1242,
+          "region": "anatolia"
+        },
+        {
+          "city": "Hardai",
+          "claimType": "peripheral",
+          "count": 919,
+          "region": "africa"
+        },
+        {
+          "city": "Behdet",
+          "claimType": "peripheral",
+          "count": 842,
+          "region": "africa"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "franks": {
+      "actor": "franks",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.8.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.8,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.5.",
+          "metric": "survivalRate",
+          "observed": 1.0,
+          "threshold": 0.5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 4.",
+          "metric": "medianMaxCities",
+          "observed": 5.0,
+          "threshold": 4,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 155,
+        "offensiveUnits": 2,
+        "settlers": 2,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "predecessor_high_mandate",
+        "predecessor_high_core_control",
+        "peaceful_reform",
+        "strong_defense"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_spawn": 15,
+        "continuity": 25,
+        "core_inheritance": 20,
+        "delay": 5,
+        "reform_or_rename": 25,
+        "regional_split": 10
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          9
+        ],
+        "turnsAfterBirth60": [
+          5,
+          15
+        ]
+      },
+      "lifecycleType": "dynastic_successor",
+      "note": "Needs post-Roman inheritance/agency.",
+      "observed": {
+        "collapseRiskMax": 0.432,
+        "collapseRiskMedian": 0.117,
+        "dynasticTransferActions": {
+          "inherited": 11,
+          "protected": 201,
+          "skip": 4564
+        },
+        "dynasticTransferReasons": {
+          "bounded_cluster_inheritance": 11,
+          "escape_route": 201,
+          "successor_exists": 2092,
+          "too_early": 2472
+        },
+        "finalCitiesGivenSpawnMean": 5.083,
+        "finalCitiesGivenSpawnMedian": 4.5,
+        "finalCitiesMean": 5.083,
+        "finalCitiesMedian": 4.5,
+        "finalCitiesP10": 2.0,
+        "finalCitiesP90": 9.7,
+        "latestClaimMedian": {
+          "claimedShare": 0.775,
+          "coreShare": 0.333,
+          "overextension": 0.225,
+          "rivalPressure": 0.125
+        },
+        "maxCitiesGivenSpawnMean": 6.083,
+        "maxCitiesGivenSpawnMedian": 5.0,
+        "maxCitiesMean": 6.083,
+        "maxCitiesMedian": 5.0,
+        "peakToFinalDropGivenSpawnMean": 1.0,
+        "peakToFinalDropGivenSpawnMedian": 0.5,
+        "peakToFinalDropMean": 1.0,
+        "peakToFinalDropMedian": 0.5,
+        "peakTurnMedian": 156.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 105.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 10,
+          "healthy_continuity_escape": 12,
+          "inherited": 11,
+          "lineage_spawn": 3,
+          "no_spawn": 0,
+          "probability_skip": 1,
+          "spawned": 24,
+          "successor_exists": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Aachen",
+          "core_region": "gaul",
+          "leader": "Charlemagne",
+          "mode": "foreign_core_claimant",
+          "nation": "French",
+          "placement": "relocated_tile",
+          "player": 13,
+          "seed": 1,
+          "turn": 105,
+          "x": 30,
+          "y": 25
+        },
+        {
+          "city": "Aachen",
+          "core_region": "gaul",
+          "leader": "Charlemagne",
+          "mode": "dynastic_transfer",
+          "nation": "French",
+          "placement": "relocated_tile",
+          "player": 13,
+          "seed": 2,
+          "turn": 134,
+          "x": 30,
+          "y": 25
+        },
+        {
+          "city": "Aachen",
+          "core_region": "gaul",
+          "leader": "Charlemagne",
+          "mode": "weak_holder",
+          "nation": "French",
+          "placement": "relocated_tile",
+          "player": 13,
+          "seed": 3,
+          "turn": 105,
+          "x": 30,
+          "y": 28
+        },
+        {
+          "city": "Aachen",
+          "core_region": "gaul",
+          "leader": "Charlemagne",
+          "mode": "lineage_successor",
+          "nation": "French",
+          "placement": "relocated_tile",
+          "player": 13,
+          "seed": 4,
+          "turn": 105,
+          "x": 29,
+          "y": 23
+        },
+        {
+          "city": "Aachen",
+          "core_region": "gaul",
+          "leader": "Charlemagne",
+          "mode": "foreign_core_claimant",
+          "nation": "French",
+          "placement": "relocated_tile",
+          "player": 13,
+          "seed": 5,
+          "turn": 105,
+          "x": 28,
+          "y": 25
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 10,
+          "healthy_continuity_escape": 12,
+          "inherited": 11,
+          "lineage_spawn": 3,
+          "no_spawn": 0,
+          "probability_skip": 1,
+          "spawned": 24,
+          "successor_exists": 24
+        },
+        "interpretation": "inheritance_active",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.5,
+          "inherited": 0.458,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [],
+      "verdict": "pass"
+    },
+    "greece": {
+      "actor": "greece",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.9.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.9,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 2.5,
+          "message": "Expected no more than 10.",
+          "metric": "medianFinalCities",
+          "observed": 6.0,
+          "threshold": 10,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "message": "Sustained high collapse diagnostics should be explained or resolved.",
+          "metric": "collapseRiskMedian",
+          "observed": 0.177,
+          "threshold": 0.45,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 1,
+        "gold": 85,
+        "offensiveUnits": 1,
+        "settlers": 1,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "core_consolidation",
+        "defensive_investment",
+        "good_diplomacy",
+        "positive_economy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "defensive_support": 25,
+        "delay": 15,
+        "no_event": 10,
+        "regional_pressure": 20,
+        "settlement_support": 30
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          3
+        ],
+        "turnsAfterBirth30": [
+          2,
+          6
+        ],
+        "turnsAfterBirth60": [
+          3,
+          9
+        ]
+      },
+      "lifecycleType": "regional_kingdom",
+      "note": "Should fragment/absorb more often.",
+      "observed": {
+        "collapseRiskMax": 0.579,
+        "collapseRiskMedian": 0.177,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 6.125,
+        "finalCitiesGivenSpawnMedian": 6.0,
+        "finalCitiesMean": 6.125,
+        "finalCitiesMedian": 6.0,
+        "finalCitiesP10": 0.3,
+        "finalCitiesP90": 11.0,
+        "latestClaimMedian": {
+          "claimedShare": 0.286,
+          "coreShare": 0.254,
+          "overextension": 0.714,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": 7.417,
+        "maxCitiesGivenSpawnMedian": 7.0,
+        "maxCitiesMean": 7.417,
+        "maxCitiesMedian": 7.0,
+        "peakToFinalDropGivenSpawnMean": 1.292,
+        "peakToFinalDropGivenSpawnMedian": 1.0,
+        "peakToFinalDropMean": 1.292,
+        "peakToFinalDropMedian": 1.0,
+        "peakTurnMedian": 153.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 40.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 1,
+          "empty_core_spawn": 23,
+          "no_spawn": 0,
+          "probability_skip": 6,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 0.875,
+        "survivalGivenSpawnWilsonLower95": 0.69,
+        "survivalRate": 0.875,
+        "survivalRateWilsonLower95": 0.69,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Athens",
+          "core_region": "balkans_aegean",
+          "leader": "Pericles",
+          "mode": "empty_core",
+          "nation": "Greek",
+          "placement": "target_tile",
+          "player": 10,
+          "seed": 1,
+          "turn": 41,
+          "x": 41,
+          "y": 34
+        },
+        {
+          "city": "Athens",
+          "core_region": "balkans_aegean",
+          "leader": "Pericles",
+          "mode": "empty_core",
+          "nation": "Greek",
+          "placement": "target_tile",
+          "player": 10,
+          "seed": 2,
+          "turn": 40,
+          "x": 41,
+          "y": 34
+        },
+        {
+          "city": "Athens",
+          "core_region": "balkans_aegean",
+          "leader": "Pericles",
+          "mode": "empty_core",
+          "nation": "Greek",
+          "placement": "target_tile",
+          "player": 10,
+          "seed": 3,
+          "turn": 43,
+          "x": 41,
+          "y": 34
+        },
+        {
+          "city": "Athens",
+          "core_region": "balkans_aegean",
+          "leader": "Pericles",
+          "mode": "empty_core",
+          "nation": "Greek",
+          "placement": "target_tile",
+          "player": 10,
+          "seed": 4,
+          "turn": 40,
+          "x": 41,
+          "y": 34
+        },
+        {
+          "city": "Athens",
+          "core_region": "balkans_aegean",
+          "leader": "Pericles",
+          "mode": "foreign_core_claimant",
+          "nation": "Greek",
+          "placement": "relocated_tile",
+          "player": 10,
+          "seed": 5,
+          "turn": 46,
+          "x": 38,
+          "y": 34
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 1,
+          "empty_core_spawn": 23,
+          "no_spawn": 0,
+          "probability_skip": 6,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Sparti",
+          "claimType": "peripheral",
+          "count": 502,
+          "region": "europe"
+        },
+        {
+          "city": "Konstandinoupolis",
+          "claimType": "peripheral",
+          "count": 457,
+          "region": "europe"
+        },
+        {
+          "city": "Thivai",
+          "claimType": "peripheral",
+          "count": 308,
+          "region": "europe"
+        },
+        {
+          "city": "Capua",
+          "claimType": "peripheral",
+          "count": 212,
+          "region": "gaul"
+        },
+        {
+          "city": "Korinthos",
+          "claimType": "peripheral",
+          "count": 149,
+          "region": "europe"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "hittite": {
+      "actor": "hittite",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.5.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 4.",
+          "metric": "medianMaxCities",
+          "observed": 5.5,
+          "threshold": 4,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 150,
+        "offensiveUnits": 4,
+        "settlers": 2,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "core_consolidation",
+        "successful_reform",
+        "high_garrison_ratio",
+        "positive_economy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_pressure": 20,
+        "defensive_support": 20,
+        "delay": 15,
+        "expansion_support": 35,
+        "no_event": 10
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          4,
+          8
+        ],
+        "turnsAfterBirth60": [
+          6,
+          14
+        ]
+      },
+      "lifecycleType": "imperial_claimant",
+      "note": "Anatolia/Hattusa emergence should be much less rare.",
+      "observed": {
+        "collapseRiskMax": 0.62,
+        "collapseRiskMedian": 0.296,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 6.042,
+        "finalCitiesGivenSpawnMedian": 4.5,
+        "finalCitiesMean": 6.042,
+        "finalCitiesMedian": 4.5,
+        "finalCitiesP10": 1.0,
+        "finalCitiesP90": 13.0,
+        "latestClaimMedian": {
+          "claimedShare": 0.155,
+          "coreShare": 0.121,
+          "overextension": 0.845,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": 8.083,
+        "maxCitiesGivenSpawnMedian": 5.5,
+        "maxCitiesMean": 8.083,
+        "maxCitiesMedian": 5.5,
+        "peakToFinalDropGivenSpawnMean": 2.042,
+        "peakToFinalDropGivenSpawnMedian": 1.0,
+        "peakToFinalDropMean": 2.042,
+        "peakToFinalDropMedian": 1.0,
+        "peakTurnMedian": 149.5,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 42.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 23,
+          "empty_core_spawn": 1,
+          "no_spawn": 0,
+          "probability_skip": 7,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 0.917,
+        "survivalGivenSpawnWilsonLower95": 0.742,
+        "survivalRate": 0.917,
+        "survivalRateWilsonLower95": 0.742,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Hattusa",
+          "core_region": "anatolia",
+          "leader": "Suppiluliuma",
+          "mode": "foreign_core_claimant",
+          "nation": "Hittite",
+          "placement": "relocated_tile",
+          "player": 6,
+          "seed": 1,
+          "turn": 43,
+          "x": 45,
+          "y": 33
+        },
+        {
+          "city": "Hattusa",
+          "core_region": "anatolia",
+          "leader": "Suppiluliuma",
+          "mode": "foreign_core_claimant",
+          "nation": "Hittite",
+          "placement": "relocated_tile",
+          "player": 6,
+          "seed": 2,
+          "turn": 42,
+          "x": 45,
+          "y": 33
+        },
+        {
+          "city": "Hattusa",
+          "core_region": "anatolia",
+          "leader": "Suppiluliuma",
+          "mode": "foreign_core_claimant",
+          "nation": "Hittite",
+          "placement": "relocated_tile",
+          "player": 6,
+          "seed": 3,
+          "turn": 42,
+          "x": 45,
+          "y": 33
+        },
+        {
+          "city": "Hattusa",
+          "core_region": "anatolia",
+          "leader": "Suppiluliuma",
+          "mode": "foreign_core_claimant",
+          "nation": "Hittite",
+          "placement": "relocated_tile",
+          "player": 6,
+          "seed": 4,
+          "turn": 42,
+          "x": 45,
+          "y": 33
+        },
+        {
+          "city": "Hattusa",
+          "core_region": "anatolia",
+          "leader": "Suppiluliuma",
+          "mode": "foreign_core_claimant",
+          "nation": "Hittite",
+          "placement": "relocated_tile",
+          "player": 6,
+          "seed": 5,
+          "turn": 42,
+          "x": 45,
+          "y": 33
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 23,
+          "empty_core_spawn": 1,
+          "no_spawn": 0,
+          "probability_skip": 7,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Hattusas",
+          "claimType": "peripheral",
+          "count": 1107,
+          "region": "europe"
+        },
+        {
+          "city": "Kussara",
+          "claimType": "peripheral",
+          "count": 586,
+          "region": "europe"
+        },
+        {
+          "city": "Zalpuwa",
+          "claimType": "peripheral",
+          "count": 456,
+          "region": "europe"
+        },
+        {
+          "city": "Capua",
+          "claimType": "peripheral",
+          "count": 272,
+          "region": "gaul"
+        },
+        {
+          "city": "Puruskhanda",
+          "claimType": "peripheral",
+          "count": 267,
+          "region": "europe"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "inca": {
+      "actor": "inca",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.9.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.9,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 5.",
+          "metric": "medianMaxCities",
+          "observed": 7.0,
+          "threshold": 5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "strong_core_control",
+          "restrained_expansion",
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "historical_pressure_avoidable",
+        "pressureReasonsObserved": []
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 1,
+        "gold": 85,
+        "offensiveUnits": 1,
+        "settlers": 1,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "core_consolidation",
+        "defensive_investment",
+        "good_diplomacy",
+        "positive_economy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "defensive_support": 25,
+        "delay": 15,
+        "no_event": 10,
+        "regional_pressure": 20,
+        "settlement_support": 30
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          3
+        ],
+        "turnsAfterBirth30": [
+          2,
+          6
+        ],
+        "turnsAfterBirth60": [
+          3,
+          9
+        ]
+      },
+      "lifecycleType": "regional_kingdom",
+      "note": "Needs Andean consolidation.",
+      "observed": {
+        "collapseRiskMax": 0.155,
+        "collapseRiskMedian": 0.086,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 6.125,
+        "finalCitiesGivenSpawnMedian": 7.0,
+        "finalCitiesMean": 6.125,
+        "finalCitiesMedian": 7.0,
+        "finalCitiesP10": 5.0,
+        "finalCitiesP90": 7.0,
+        "latestClaimMedian": {
+          "claimedShare": 1.0,
+          "coreShare": 0.8,
+          "overextension": 0,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": 6.125,
+        "maxCitiesGivenSpawnMedian": 7.0,
+        "maxCitiesMean": 6.125,
+        "maxCitiesMedian": 7.0,
+        "peakToFinalDropGivenSpawnMean": 0.0,
+        "peakToFinalDropGivenSpawnMedian": 0.0,
+        "peakToFinalDropMean": 0.0,
+        "peakToFinalDropMedian": 0.0,
+        "peakTurnMedian": 201.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 160.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "empty_core_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 10,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Cusco",
+          "core_region": "andes",
+          "leader": "Pachacuti",
+          "mode": "empty_core",
+          "nation": "Inca",
+          "placement": "target_tile",
+          "player": 23,
+          "seed": 1,
+          "turn": 163,
+          "x": 152,
+          "y": 62
+        },
+        {
+          "city": "Cusco",
+          "core_region": "andes",
+          "leader": "Pachacuti",
+          "mode": "empty_core",
+          "nation": "Inca",
+          "placement": "target_tile",
+          "player": 23,
+          "seed": 2,
+          "turn": 161,
+          "x": 152,
+          "y": 62
+        },
+        {
+          "city": "Cusco",
+          "core_region": "andes",
+          "leader": "Pachacuti",
+          "mode": "empty_core",
+          "nation": "Inca",
+          "placement": "target_tile",
+          "player": 23,
+          "seed": 3,
+          "turn": 162,
+          "x": 152,
+          "y": 62
+        },
+        {
+          "city": "Cusco",
+          "core_region": "andes",
+          "leader": "Pachacuti",
+          "mode": "empty_core",
+          "nation": "Inca",
+          "placement": "target_tile",
+          "player": 23,
+          "seed": 4,
+          "turn": 160,
+          "x": 152,
+          "y": 62
+        },
+        {
+          "city": "Cusco",
+          "core_region": "andes",
+          "leader": "Pachacuti",
+          "mode": "empty_core",
+          "nation": "Inca",
+          "placement": "target_tile",
+          "player": 23,
+          "seed": 5,
+          "turn": 161,
+          "x": 152,
+          "y": 62
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "empty_core_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 10,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Mexihco Tenochtitlan",
+          "claimType": "peripheral",
+          "count": 2,
+          "region": "mesoamerica"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "india": {
+      "actor": "india",
+      "checks": [
+        {
+          "hardMargin": 4.5,
+          "message": "Expected no more than 18.",
+          "metric": "medianFinalCities",
+          "observed": 19.0,
+          "threshold": 18,
+          "tolerance": 0.9,
+          "verdict": "warn"
+        },
+        {
+          "message": "Sustained high collapse diagnostics should be explained or resolved.",
+          "metric": "collapseRiskMedian",
+          "observed": 0.313,
+          "threshold": 0.55,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_rival_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension",
+          "episodic_high_collapse_risk"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 0,
+        "gold": 0,
+        "settlers": 0,
+        "ships": 0,
+        "workers": 0
+      },
+      "lifecycleEscapeRoutes": [
+        "high_core_control",
+        "high_mandate",
+        "high_cohesion",
+        "positive_economy",
+        "restrained_expansion"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_spawn": 10,
+        "continuity": 30,
+        "no_event": 10,
+        "reform": 25,
+        "regional_split": 25
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          8
+        ],
+        "turnsAfterBirth30": [
+          2,
+          16
+        ],
+        "turnsAfterBirth60": [
+          3,
+          28
+        ]
+      },
+      "lifecycleType": "initial_core",
+      "note": "Should fragment regionally instead of one continuous polity.",
+      "observed": {
+        "collapseRiskMax": 0.793,
+        "collapseRiskMedian": 0.313,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": null,
+        "finalCitiesGivenSpawnMedian": null,
+        "finalCitiesMean": 18.417,
+        "finalCitiesMedian": 19.0,
+        "finalCitiesP10": 9.0,
+        "finalCitiesP90": 24.0,
+        "latestClaimMedian": {
+          "claimedShare": 0.167,
+          "coreShare": 0.094,
+          "overextension": 0.833,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": null,
+        "maxCitiesGivenSpawnMedian": null,
+        "maxCitiesMean": 23.125,
+        "maxCitiesMedian": 24.5,
+        "peakToFinalDropGivenSpawnMean": null,
+        "peakToFinalDropGivenSpawnMedian": null,
+        "peakToFinalDropMean": 4.708,
+        "peakToFinalDropMedian": 3.5,
+        "peakTurnMedian": 178.0,
+        "spawnRate": 0.0,
+        "spawnRateWilsonLower95": 0.0,
+        "spawnTurnMedian": null,
+        "spawnedSeedCount": 0,
+        "successorOutcomeCounts": {
+          "no_spawn": 24
+        },
+        "survivalGivenSpawnRate": null,
+        "survivalGivenSpawnWilsonLower95": null,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "initial",
+      "sampleSpawnRecords": [],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "no_spawn": 24
+        },
+        "interpretation": "low_spawn_probability",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 1.0,
+          "spawned": 0.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Mumbai",
+          "claimType": "peripheral",
+          "count": 3676,
+          "region": "india"
+        },
+        {
+          "city": "Ahmedabad",
+          "claimType": "peripheral",
+          "count": 2066,
+          "region": "india"
+        },
+        {
+          "city": "Lucknow",
+          "claimType": "peripheral",
+          "count": 1260,
+          "region": "south_china"
+        },
+        {
+          "city": "Varanasi",
+          "claimType": "peripheral",
+          "count": 1085,
+          "region": "south_china"
+        },
+        {
+          "city": "Chandigarh",
+          "claimType": "peripheral",
+          "count": 961,
+          "region": "south_china"
+        }
+      ],
+      "verdict": "warn"
+    },
+    "japan": {
+      "actor": "japan",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.8.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.8,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.6.",
+          "metric": "survivalRate",
+          "observed": 1.0,
+          "threshold": 0.6,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 2.",
+          "metric": "medianMaxCities",
+          "observed": 2.0,
+          "threshold": 2,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension",
+          "rival_pressure"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 2,
+        "gold": 100,
+        "offensiveUnits": 0,
+        "settlers": 2,
+        "ships": 1,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "island_core_control",
+        "naval_security",
+        "defensive_investment"
+      ],
+      "lifecycleOutcomeWeights": {
+        "defensive_support": 35,
+        "naval_support": 20,
+        "no_event": 20,
+        "settlement_support": 25
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          3
+        ],
+        "turnsAfterBirth30": [
+          2,
+          5
+        ],
+        "turnsAfterBirth60": [
+          3,
+          7
+        ]
+      },
+      "lifecycleType": "island_core",
+      "note": "Needs durable island setup.",
+      "observed": {
+        "collapseRiskMax": 0.298,
+        "collapseRiskMedian": 0.222,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 2.042,
+        "finalCitiesGivenSpawnMedian": 2.0,
+        "finalCitiesMean": 2.042,
+        "finalCitiesMedian": 2.0,
+        "finalCitiesP10": 2.0,
+        "finalCitiesP90": 2.0,
+        "latestClaimMedian": {
+          "claimedShare": 0.5,
+          "coreShare": 0.5,
+          "overextension": 0.5,
+          "rivalPressure": 0.4
+        },
+        "maxCitiesGivenSpawnMean": 2.042,
+        "maxCitiesGivenSpawnMedian": 2.0,
+        "maxCitiesMean": 2.042,
+        "maxCitiesMedian": 2.0,
+        "peakToFinalDropGivenSpawnMean": 0.0,
+        "peakToFinalDropGivenSpawnMedian": 0.0,
+        "peakToFinalDropMean": 0.0,
+        "peakToFinalDropMedian": 0.0,
+        "peakTurnMedian": 164.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 160.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 7,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Kyoto",
+          "core_region": "japan_korea",
+          "leader": "Ashikaga Yoshimasa",
+          "mode": "foreign_core_claimant",
+          "nation": "Japanese",
+          "placement": "target_tile",
+          "player": 21,
+          "seed": 1,
+          "turn": 161,
+          "x": 95,
+          "y": 35
+        },
+        {
+          "city": "Kyoto",
+          "core_region": "japan_korea",
+          "leader": "Ashikaga Yoshimasa",
+          "mode": "foreign_core_claimant",
+          "nation": "Japanese",
+          "placement": "target_tile",
+          "player": 21,
+          "seed": 2,
+          "turn": 161,
+          "x": 95,
+          "y": 35
+        },
+        {
+          "city": "Kyoto",
+          "core_region": "japan_korea",
+          "leader": "Ashikaga Yoshimasa",
+          "mode": "weak_holder",
+          "nation": "Japanese",
+          "placement": "target_tile",
+          "player": 21,
+          "seed": 3,
+          "turn": 160,
+          "x": 95,
+          "y": 35
+        },
+        {
+          "city": "Kyoto",
+          "core_region": "japan_korea",
+          "leader": "Ashikaga Yoshimasa",
+          "mode": "weak_holder",
+          "nation": "Japanese",
+          "placement": "target_tile",
+          "player": 21,
+          "seed": 4,
+          "turn": 160,
+          "x": 95,
+          "y": 35
+        },
+        {
+          "city": "Kyoto",
+          "core_region": "japan_korea",
+          "leader": "Ashikaga Yoshimasa",
+          "mode": "weak_holder",
+          "nation": "Japanese",
+          "placement": "target_tile",
+          "player": 21,
+          "seed": 5,
+          "turn": 160,
+          "x": 95,
+          "y": 35
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 7,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Tokyo",
+          "claimType": "peripheral",
+          "count": 762,
+          "region": "china"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "ming": {
+      "actor": "ming",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.7.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.7,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.5.",
+          "metric": "survivalRate",
+          "observed": 1.0,
+          "threshold": 0.5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 5.",
+          "metric": "medianMaxCities",
+          "observed": 5.0,
+          "threshold": 5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "restrained_expansion",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "rival_pressure"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 155,
+        "offensiveUnits": 2,
+        "settlers": 2,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "predecessor_high_mandate",
+        "predecessor_high_core_control",
+        "peaceful_reform",
+        "strong_defense"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_spawn": 15,
+        "continuity": 25,
+        "core_inheritance": 20,
+        "delay": 5,
+        "reform_or_rename": 25,
+        "regional_split": 10
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          9
+        ],
+        "turnsAfterBirth60": [
+          5,
+          15
+        ]
+      },
+      "lifecycleType": "dynastic_successor",
+      "note": "Should be dynastic successor/reunifier.",
+      "observed": {
+        "collapseRiskMax": 0.248,
+        "collapseRiskMedian": 0.148,
+        "dynasticTransferActions": {
+          "inherited": 24,
+          "skip": 4752
+        },
+        "dynasticTransferReasons": {
+          "bounded_cluster_inheritance": 24,
+          "successor_exists": 960,
+          "too_early": 3792
+        },
+        "finalCitiesGivenSpawnMean": 4.333,
+        "finalCitiesGivenSpawnMedian": 4.0,
+        "finalCitiesMean": 4.333,
+        "finalCitiesMedian": 4.0,
+        "finalCitiesP10": 2.3,
+        "finalCitiesP90": 6.7,
+        "latestClaimMedian": {
+          "claimedShare": 1.0,
+          "coreShare": 0.5,
+          "overextension": 0,
+          "rivalPressure": 0.5
+        },
+        "maxCitiesGivenSpawnMean": 5.042,
+        "maxCitiesGivenSpawnMedian": 5.0,
+        "maxCitiesMean": 5.042,
+        "maxCitiesMedian": 5.0,
+        "peakToFinalDropGivenSpawnMean": 0.708,
+        "peakToFinalDropGivenSpawnMedian": 0.5,
+        "peakToFinalDropMean": 0.708,
+        "peakToFinalDropMedian": 0.5,
+        "peakTurnMedian": 182.5,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 160.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "inherited": 24,
+          "no_spawn": 0,
+          "spawned": 24,
+          "successor_exists": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Beijing",
+          "core_region": "north_china",
+          "leader": "Xuande",
+          "mode": "dynastic_transfer",
+          "nation": "Manchu",
+          "placement": "relocated_tile",
+          "player": 20,
+          "seed": 1,
+          "turn": 160,
+          "x": 85,
+          "y": 43
+        },
+        {
+          "city": "Beijing",
+          "core_region": "north_china",
+          "leader": "Xuande",
+          "mode": "dynastic_transfer",
+          "nation": "Manchu",
+          "placement": "relocated_tile",
+          "player": 20,
+          "seed": 2,
+          "turn": 160,
+          "x": 78,
+          "y": 30
+        },
+        {
+          "city": "Beijing",
+          "core_region": "north_china",
+          "leader": "Xuande",
+          "mode": "dynastic_transfer",
+          "nation": "Manchu",
+          "placement": "relocated_tile",
+          "player": 20,
+          "seed": 3,
+          "turn": 160,
+          "x": 78,
+          "y": 29
+        },
+        {
+          "city": "Beijing",
+          "core_region": "north_china",
+          "leader": "Xuande",
+          "mode": "dynastic_transfer",
+          "nation": "Manchu",
+          "placement": "relocated_tile",
+          "player": 20,
+          "seed": 4,
+          "turn": 160,
+          "x": 84,
+          "y": 31
+        },
+        {
+          "city": "Beijing",
+          "core_region": "north_china",
+          "leader": "Xuande",
+          "mode": "dynastic_transfer",
+          "nation": "Manchu",
+          "placement": "relocated_tile",
+          "player": 20,
+          "seed": 5,
+          "turn": 160,
+          "x": 81,
+          "y": 35
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "inherited": 24,
+          "no_spawn": 0,
+          "spawned": 24,
+          "successor_exists": 24
+        },
+        "interpretation": "inheritance_active",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 1.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Harbin",
+          "claimType": "peripheral",
+          "count": 40,
+          "region": "steppe"
+        },
+        {
+          "city": "Mukden",
+          "claimType": "peripheral",
+          "count": 40,
+          "region": "steppe"
+        },
+        {
+          "city": "Aihun",
+          "claimType": "peripheral",
+          "count": 33,
+          "region": "steppe"
+        },
+        {
+          "city": "Cicigar",
+          "claimType": "peripheral",
+          "count": 19,
+          "region": "steppe"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "nubia": {
+      "actor": "nubia",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.6.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.6,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 2.",
+          "metric": "medianFinalCities",
+          "observed": 9.0,
+          "threshold": 2,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 2.5,
+          "message": "Expected no more than 10.",
+          "metric": "medianFinalCities",
+          "observed": 9.0,
+          "threshold": 10,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 1,
+        "gold": 85,
+        "offensiveUnits": 1,
+        "settlers": 1,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "core_consolidation",
+        "defensive_investment",
+        "good_diplomacy",
+        "positive_economy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "absorption": 20,
+        "autonomy": 25,
+        "no_event": 20,
+        "regional_pressure": 35
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          3
+        ],
+        "turnsAfterBirth30": [
+          2,
+          5
+        ],
+        "turnsAfterBirth60": [
+          3,
+          8
+        ]
+      },
+      "lifecycleType": "nubian_regional_kingdom",
+      "note": null,
+      "observed": {
+        "collapseRiskMax": 0.543,
+        "collapseRiskMedian": 0.239,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 9.417,
+        "finalCitiesGivenSpawnMedian": 9.0,
+        "finalCitiesMean": 9.417,
+        "finalCitiesMedian": 9.0,
+        "finalCitiesP10": 6.3,
+        "finalCitiesP90": 13.0,
+        "latestClaimMedian": {
+          "claimedShare": 0.683,
+          "coreShare": 0.168,
+          "overextension": 0.317,
+          "rivalPressure": 0.2
+        },
+        "maxCitiesGivenSpawnMean": 18.792,
+        "maxCitiesGivenSpawnMedian": 17.5,
+        "maxCitiesMean": 18.792,
+        "maxCitiesMedian": 17.5,
+        "peakToFinalDropGivenSpawnMean": 9.375,
+        "peakToFinalDropGivenSpawnMedian": 8.5,
+        "peakToFinalDropMean": 9.375,
+        "peakToFinalDropMedian": 8.5,
+        "peakTurnMedian": 107.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 35.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "lineage_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 9,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Napata",
+          "core_region": "nile",
+          "leader": "Piye",
+          "mode": "lineage_successor",
+          "nation": "Nubian",
+          "placement": "target_tile",
+          "player": 4,
+          "seed": 1,
+          "turn": 37,
+          "x": 42,
+          "y": 46
+        },
+        {
+          "city": "Napata",
+          "core_region": "nile",
+          "leader": "Piye",
+          "mode": "lineage_successor",
+          "nation": "Nubian",
+          "placement": "target_tile",
+          "player": 4,
+          "seed": 2,
+          "turn": 36,
+          "x": 42,
+          "y": 46
+        },
+        {
+          "city": "Napata",
+          "core_region": "nile",
+          "leader": "Piye",
+          "mode": "lineage_successor",
+          "nation": "Nubian",
+          "placement": "target_tile",
+          "player": 4,
+          "seed": 3,
+          "turn": 35,
+          "x": 42,
+          "y": 46
+        },
+        {
+          "city": "Napata",
+          "core_region": "nile",
+          "leader": "Piye",
+          "mode": "lineage_successor",
+          "nation": "Nubian",
+          "placement": "target_tile",
+          "player": 4,
+          "seed": 4,
+          "turn": 35,
+          "x": 42,
+          "y": 46
+        },
+        {
+          "city": "Napata",
+          "core_region": "nile",
+          "leader": "Piye",
+          "mode": "lineage_successor",
+          "nation": "Nubian",
+          "placement": "target_tile",
+          "player": 4,
+          "seed": 5,
+          "turn": 37,
+          "x": 42,
+          "y": 46
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "lineage_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 9,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Waset",
+          "claimType": "peripheral",
+          "count": 1447,
+          "region": "near_east"
+        },
+        {
+          "city": "Dongola",
+          "claimType": "peripheral",
+          "count": 703,
+          "region": "near_east"
+        },
+        {
+          "city": "Ineb-Hedj",
+          "claimType": "peripheral",
+          "count": 428,
+          "region": "maghreb_punic_west"
+        },
+        {
+          "city": "Per-Bastet",
+          "claimType": "peripheral",
+          "count": 426,
+          "region": "near_east"
+        },
+        {
+          "city": "Soleb",
+          "claimType": "peripheral",
+          "count": 406,
+          "region": "near_east"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "persia": {
+      "actor": "persia",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.9.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.9,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 2.5,
+          "message": "Expected at least 10.",
+          "metric": "medianMaxCities",
+          "observed": 10.5,
+          "threshold": 10,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension",
+          "rival_pressure",
+          "episodic_high_collapse_risk"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 150,
+        "offensiveUnits": 4,
+        "settlers": 2,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "core_consolidation",
+        "successful_reform",
+        "high_garrison_ratio",
+        "positive_economy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_pressure": 20,
+        "defensive_support": 20,
+        "delay": 15,
+        "expansion_support": 35,
+        "no_event": 10
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          4,
+          8
+        ],
+        "turnsAfterBirth60": [
+          6,
+          14
+        ]
+      },
+      "lifecycleType": "imperial_claimant",
+      "note": "Needs imperial Near East expansion.",
+      "observed": {
+        "collapseRiskMax": 0.74,
+        "collapseRiskMedian": 0.308,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 8.333,
+        "finalCitiesGivenSpawnMedian": 8.5,
+        "finalCitiesMean": 8.333,
+        "finalCitiesMedian": 8.5,
+        "finalCitiesP10": 3.3,
+        "finalCitiesP90": 13.7,
+        "latestClaimMedian": {
+          "claimedShare": 0.161,
+          "coreShare": 0.091,
+          "overextension": 0.839,
+          "rivalPressure": 0.633
+        },
+        "maxCitiesGivenSpawnMean": 10.417,
+        "maxCitiesGivenSpawnMedian": 10.5,
+        "maxCitiesMean": 10.417,
+        "maxCitiesMedian": 10.5,
+        "peakToFinalDropGivenSpawnMean": 2.083,
+        "peakToFinalDropGivenSpawnMedian": 1.0,
+        "peakToFinalDropMean": 2.083,
+        "peakToFinalDropMedian": 1.0,
+        "peakTurnMedian": 165.5,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 45.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 7,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Parsa",
+          "core_region": "iran",
+          "leader": "Cyrus",
+          "mode": "foreign_core_claimant",
+          "nation": "Persian",
+          "placement": "relocated_tile",
+          "player": 11,
+          "seed": 1,
+          "turn": 45,
+          "x": 56,
+          "y": 34
+        },
+        {
+          "city": "Parsa",
+          "core_region": "iran",
+          "leader": "Cyrus",
+          "mode": "foreign_core_claimant",
+          "nation": "Persian",
+          "placement": "relocated_tile",
+          "player": 11,
+          "seed": 2,
+          "turn": 46,
+          "x": 56,
+          "y": 34
+        },
+        {
+          "city": "Parsa",
+          "core_region": "iran",
+          "leader": "Cyrus",
+          "mode": "foreign_core_claimant",
+          "nation": "Persian",
+          "placement": "relocated_tile",
+          "player": 11,
+          "seed": 3,
+          "turn": 45,
+          "x": 56,
+          "y": 34
+        },
+        {
+          "city": "Parsa",
+          "core_region": "iran",
+          "leader": "Cyrus",
+          "mode": "foreign_core_claimant",
+          "nation": "Persian",
+          "placement": "relocated_tile",
+          "player": 11,
+          "seed": 4,
+          "turn": 45,
+          "x": 56,
+          "y": 34
+        },
+        {
+          "city": "Parsa",
+          "core_region": "iran",
+          "leader": "Cyrus",
+          "mode": "foreign_core_claimant",
+          "nation": "Persian",
+          "placement": "relocated_tile",
+          "player": 11,
+          "seed": 5,
+          "turn": 48,
+          "x": 56,
+          "y": 34
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 7,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Susa",
+          "claimType": "peripheral",
+          "count": 893,
+          "region": "steppe"
+        },
+        {
+          "city": "Hagmatana",
+          "claimType": "peripheral",
+          "count": 674,
+          "region": "steppe"
+        },
+        {
+          "city": "Pathragada",
+          "claimType": "peripheral",
+          "count": 537,
+          "region": "steppe"
+        },
+        {
+          "city": "Takshasila",
+          "claimType": "peripheral",
+          "count": 427,
+          "region": "steppe"
+        },
+        {
+          "city": "Chang'an",
+          "claimType": "peripheral",
+          "count": 396,
+          "region": "north_china"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "phoenicia": {
+      "actor": "phoenicia",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.8.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.8,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 2.",
+          "metric": "medianMaxCities",
+          "observed": 2.0,
+          "threshold": 2,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 175,
+        "offensiveUnits": 1,
+        "settlers": 3,
+        "ships": 2,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "naval_security",
+        "coastal_core_control",
+        "positive_economy",
+        "good_diplomacy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_pressure": 15,
+        "defensive_support": 15,
+        "no_event": 10,
+        "ship_settler_support": 35,
+        "trade_support": 25
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          7
+        ],
+        "turnsAfterBirth60": [
+          4,
+          12
+        ]
+      },
+      "lifecycleType": "maritime_trader",
+      "note": "Needs maritime/trade network support.",
+      "observed": {
+        "collapseRiskMax": 0.557,
+        "collapseRiskMedian": 0.213,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 2.042,
+        "finalCitiesGivenSpawnMedian": 2.0,
+        "finalCitiesMean": 2.042,
+        "finalCitiesMedian": 2.0,
+        "finalCitiesP10": 1.0,
+        "finalCitiesP90": 3.7,
+        "latestClaimMedian": {
+          "claimedShare": 0.5,
+          "coreShare": 0.5,
+          "overextension": 0.5,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": 2.417,
+        "maxCitiesGivenSpawnMedian": 2.0,
+        "maxCitiesMean": 2.417,
+        "maxCitiesMedian": 2.0,
+        "peakToFinalDropGivenSpawnMean": 0.375,
+        "peakToFinalDropGivenSpawnMedian": 0.0,
+        "peakToFinalDropMean": 0.375,
+        "peakToFinalDropMedian": 0.0,
+        "peakTurnMedian": 77.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 50.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "empty_core_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 11,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 0.917,
+        "survivalGivenSpawnWilsonLower95": 0.742,
+        "survivalRate": 0.917,
+        "survivalRateWilsonLower95": 0.742,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Tyre",
+          "core_region": "levant",
+          "leader": "Hiram",
+          "mode": "empty_core",
+          "nation": "Phoenician",
+          "placement": "relocated_tile",
+          "player": 7,
+          "seed": 1,
+          "turn": 52,
+          "x": 47,
+          "y": 39
+        },
+        {
+          "city": "Tyre",
+          "core_region": "levant",
+          "leader": "Hiram",
+          "mode": "empty_core",
+          "nation": "Phoenician",
+          "placement": "relocated_tile",
+          "player": 7,
+          "seed": 2,
+          "turn": 50,
+          "x": 47,
+          "y": 39
+        },
+        {
+          "city": "Tyre",
+          "core_region": "levant",
+          "leader": "Hiram",
+          "mode": "empty_core",
+          "nation": "Phoenician",
+          "placement": "relocated_tile",
+          "player": 7,
+          "seed": 3,
+          "turn": 50,
+          "x": 47,
+          "y": 39
+        },
+        {
+          "city": "Tyre",
+          "core_region": "levant",
+          "leader": "Hiram",
+          "mode": "empty_core",
+          "nation": "Phoenician",
+          "placement": "relocated_tile",
+          "player": 7,
+          "seed": 4,
+          "turn": 51,
+          "x": 47,
+          "y": 39
+        },
+        {
+          "city": "Tyre",
+          "core_region": "levant",
+          "leader": "Hiram",
+          "mode": "empty_core",
+          "nation": "Phoenician",
+          "placement": "relocated_tile",
+          "player": 7,
+          "seed": 5,
+          "turn": 50,
+          "x": 47,
+          "y": 39
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "empty_core_spawn": 24,
+          "no_spawn": 0,
+          "probability_skip": 11,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Sur",
+          "claimType": "peripheral",
+          "count": 677,
+          "region": "iran"
+        },
+        {
+          "city": "Saidoon",
+          "claimType": "peripheral",
+          "count": 206,
+          "region": "iran"
+        },
+        {
+          "city": "Sur",
+          "claimType": "peripheral",
+          "count": 138,
+          "region": "mesopotamia"
+        },
+        {
+          "city": "Parsa",
+          "claimType": "peripheral",
+          "count": 120,
+          "region": "iran"
+        },
+        {
+          "city": "Kussara",
+          "claimType": "peripheral",
+          "count": 119,
+          "region": "anatolia"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "portugal": {
+      "actor": "portugal",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.6.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.6,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.5.",
+          "metric": "survivalRate",
+          "observed": 1.0,
+          "threshold": 0.5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 2.",
+          "metric": "medianMaxCities",
+          "observed": 2.0,
+          "threshold": 2,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "restrained_expansion",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "rival_pressure"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 175,
+        "offensiveUnits": 1,
+        "settlers": 3,
+        "ships": 2,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "naval_security",
+        "coastal_core_control",
+        "positive_economy",
+        "good_diplomacy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_pressure": 15,
+        "defensive_support": 15,
+        "no_event": 10,
+        "ship_settler_support": 35,
+        "trade_support": 25
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          7
+        ],
+        "turnsAfterBirth60": [
+          4,
+          12
+        ]
+      },
+      "lifecycleType": "maritime_trader",
+      "note": "Needs Lisbon survival and maritime bootstrap.",
+      "observed": {
+        "collapseRiskMax": 0.439,
+        "collapseRiskMedian": 0.125,
+        "dynasticTransferActions": {
+          "inherited": 6,
+          "noop": 12,
+          "protected": 2,
+          "skip": 4756
+        },
+        "dynasticTransferReasons": {
+          "bounded_cluster_inheritance": 6,
+          "escape_route": 2,
+          "missing_transfer_city": 12,
+          "successor_exists": 964,
+          "too_early": 3792
+        },
+        "finalCitiesGivenSpawnMean": 2.708,
+        "finalCitiesGivenSpawnMedian": 2.0,
+        "finalCitiesMean": 2.708,
+        "finalCitiesMedian": 2.0,
+        "finalCitiesP10": 1.0,
+        "finalCitiesP90": 4.7,
+        "latestClaimMedian": {
+          "claimedShare": 1.0,
+          "coreShare": 0,
+          "overextension": 0,
+          "rivalPressure": 0.5
+        },
+        "maxCitiesGivenSpawnMean": 2.875,
+        "maxCitiesGivenSpawnMedian": 2.0,
+        "maxCitiesMean": 2.875,
+        "maxCitiesMedian": 2.0,
+        "peakToFinalDropGivenSpawnMean": 0.167,
+        "peakToFinalDropGivenSpawnMedian": 0.0,
+        "peakToFinalDropMean": 0.167,
+        "peakToFinalDropMedian": 0.0,
+        "peakTurnMedian": 180.5,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 161.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 18,
+          "failed_activation": 11,
+          "healthy_continuity_escape": 2,
+          "inherited": 6,
+          "no_spawn": 0,
+          "probability_skip": 1,
+          "spawned": 24,
+          "successor_exists": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Lisbon",
+          "core_region": "iberia",
+          "leader": "Henry",
+          "mode": "foreign_core_claimant",
+          "nation": "Portuguese",
+          "placement": "relocated_tile",
+          "player": 19,
+          "seed": 1,
+          "turn": 161,
+          "x": 35,
+          "y": 38
+        },
+        {
+          "city": "Lisbon",
+          "core_region": "iberia",
+          "leader": "Henry",
+          "mode": "foreign_core_claimant",
+          "nation": "Portuguese",
+          "placement": "relocated_tile",
+          "player": 19,
+          "seed": 2,
+          "turn": 161,
+          "x": 24,
+          "y": 37
+        },
+        {
+          "city": "Lisbon",
+          "core_region": "iberia",
+          "leader": "Henry",
+          "mode": "dynastic_transfer",
+          "nation": "Portuguese",
+          "placement": "relocated_tile",
+          "player": 19,
+          "seed": 3,
+          "turn": 160,
+          "x": 42,
+          "y": 58
+        },
+        {
+          "city": "Lisbon",
+          "core_region": "iberia",
+          "leader": "Henry",
+          "mode": "foreign_core_claimant",
+          "nation": "Portuguese",
+          "placement": "relocated_tile",
+          "player": 19,
+          "seed": 4,
+          "turn": 161,
+          "x": 34,
+          "y": 44
+        },
+        {
+          "city": "Lisbon",
+          "core_region": "iberia",
+          "leader": "Henry",
+          "mode": "dynastic_transfer",
+          "nation": "Portuguese",
+          "placement": "relocated_tile",
+          "player": 19,
+          "seed": 5,
+          "turn": 160,
+          "x": 23,
+          "y": 37
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 18,
+          "failed_activation": 11,
+          "healthy_continuity_escape": 2,
+          "inherited": 6,
+          "no_spawn": 0,
+          "probability_skip": 1,
+          "spawned": 24,
+          "successor_exists": 24
+        },
+        "interpretation": "inheritance_active",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.458,
+          "healthyContinuityEscape": 0.083,
+          "inherited": 0.25,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Capua",
+          "claimType": "peripheral",
+          "count": 80,
+          "region": "gaul"
+        },
+        {
+          "city": "Beneventum",
+          "claimType": "peripheral",
+          "count": 40,
+          "region": "gaul"
+        },
+        {
+          "city": "Veii",
+          "claimType": "peripheral",
+          "count": 40,
+          "region": "gaul"
+        },
+        {
+          "city": "Nagpur",
+          "claimType": "peripheral",
+          "count": 8,
+          "region": "south_china"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "rome": {
+      "actor": "rome",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.9.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.9,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 2.5,
+          "message": "Expected at least 10.",
+          "metric": "medianMaxCities",
+          "observed": 9.5,
+          "threshold": 10,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 150,
+        "offensiveUnits": 4,
+        "settlers": 2,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "core_consolidation",
+        "successful_reform",
+        "high_garrison_ratio",
+        "positive_economy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_pressure": 20,
+        "defensive_support": 20,
+        "delay": 15,
+        "expansion_support": 35,
+        "no_event": 10
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          4,
+          8
+        ],
+        "turnsAfterBirth60": [
+          6,
+          14
+        ]
+      },
+      "lifecycleType": "imperial_claimant",
+      "note": "Needs Italy/Mediterranean expansion before collapse tuning.",
+      "observed": {
+        "collapseRiskMax": 0.649,
+        "collapseRiskMedian": 0.233,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 8.5,
+        "finalCitiesGivenSpawnMedian": 7.0,
+        "finalCitiesMean": 8.5,
+        "finalCitiesMedian": 7.0,
+        "finalCitiesP10": 2.3,
+        "finalCitiesP90": 15.7,
+        "latestClaimMedian": {
+          "claimedShare": 0.195,
+          "coreShare": 0.111,
+          "overextension": 0.805,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": 10.458,
+        "maxCitiesGivenSpawnMedian": 9.5,
+        "maxCitiesMean": 10.458,
+        "maxCitiesMedian": 9.5,
+        "peakToFinalDropGivenSpawnMean": 1.958,
+        "peakToFinalDropGivenSpawnMedian": 1.5,
+        "peakToFinalDropMean": 1.958,
+        "peakToFinalDropMedian": 1.5,
+        "peakTurnMedian": 154.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 55.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "empty_core_spawn": 23,
+          "lineage_spawn": 1,
+          "no_spawn": 0,
+          "probability_skip": 5,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Roma",
+          "core_region": "italy",
+          "leader": "Romulus",
+          "mode": "empty_core",
+          "nation": "Roman",
+          "placement": "target_tile",
+          "player": 12,
+          "seed": 1,
+          "turn": 55,
+          "x": 35,
+          "y": 32
+        },
+        {
+          "city": "Roma",
+          "core_region": "italy",
+          "leader": "Romulus",
+          "mode": "empty_core",
+          "nation": "Roman",
+          "placement": "target_tile",
+          "player": 12,
+          "seed": 2,
+          "turn": 55,
+          "x": 35,
+          "y": 32
+        },
+        {
+          "city": "Roma",
+          "core_region": "italy",
+          "leader": "Romulus",
+          "mode": "empty_core",
+          "nation": "Roman",
+          "placement": "target_tile",
+          "player": 12,
+          "seed": 3,
+          "turn": 55,
+          "x": 35,
+          "y": 32
+        },
+        {
+          "city": "Roma",
+          "core_region": "italy",
+          "leader": "Romulus",
+          "mode": "empty_core",
+          "nation": "Roman",
+          "placement": "target_tile",
+          "player": 12,
+          "seed": 4,
+          "turn": 56,
+          "x": 35,
+          "y": 32
+        },
+        {
+          "city": "Roma",
+          "core_region": "italy",
+          "leader": "Romulus",
+          "mode": "lineage_successor",
+          "nation": "Roman",
+          "placement": "target_tile",
+          "player": 12,
+          "seed": 5,
+          "turn": 55,
+          "x": 35,
+          "y": 32
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "empty_core_spawn": 23,
+          "lineage_spawn": 1,
+          "no_spawn": 0,
+          "probability_skip": 5,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Beneventum",
+          "claimType": "peripheral",
+          "count": 751,
+          "region": "europe"
+        },
+        {
+          "city": "Ancona",
+          "claimType": "peripheral",
+          "count": 602,
+          "region": "europe"
+        },
+        {
+          "city": "Corfinium",
+          "claimType": "peripheral",
+          "count": 554,
+          "region": "europe"
+        },
+        {
+          "city": "Veii",
+          "claimType": "peripheral",
+          "count": 476,
+          "region": "europe"
+        },
+        {
+          "city": "Sparti",
+          "claimType": "peripheral",
+          "count": 417,
+          "region": "europe"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "song": {
+      "actor": "song",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.7.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.7,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.5.",
+          "metric": "survivalRate",
+          "observed": 1.0,
+          "threshold": 0.5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 5.",
+          "metric": "medianMaxCities",
+          "observed": 8.0,
+          "threshold": 5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "weak_core_control",
+          "overextension",
+          "rival_pressure"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 3,
+        "gold": 155,
+        "offensiveUnits": 2,
+        "settlers": 2,
+        "ships": 0,
+        "workers": 1
+      },
+      "lifecycleEscapeRoutes": [
+        "predecessor_high_mandate",
+        "predecessor_high_core_control",
+        "peaceful_reform",
+        "strong_defense"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_spawn": 15,
+        "continuity": 25,
+        "core_inheritance": 20,
+        "delay": 5,
+        "reform_or_rename": 25,
+        "regional_split": 10
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          2,
+          4
+        ],
+        "turnsAfterBirth30": [
+          3,
+          9
+        ],
+        "turnsAfterBirth60": [
+          5,
+          15
+        ]
+      },
+      "lifecycleType": "dynastic_successor",
+      "note": "Should inherit/transform China instead of microstate.",
+      "observed": {
+        "collapseRiskMax": 0.488,
+        "collapseRiskMedian": 0.149,
+        "dynasticTransferActions": {
+          "inherited": 21,
+          "protected": 47,
+          "skip": 4708
+        },
+        "dynasticTransferReasons": {
+          "bounded_cluster_inheritance": 21,
+          "escape_route": 47,
+          "successor_exists": 1996,
+          "too_early": 2712
+        },
+        "finalCitiesGivenSpawnMean": 5.333,
+        "finalCitiesGivenSpawnMedian": 4.0,
+        "finalCitiesMean": 5.333,
+        "finalCitiesMedian": 4.0,
+        "finalCitiesP10": 2.0,
+        "finalCitiesP90": 11.0,
+        "latestClaimMedian": {
+          "claimedShare": 0.75,
+          "coreShare": 0.45,
+          "overextension": 0.25,
+          "rivalPressure": 0.402
+        },
+        "maxCitiesGivenSpawnMean": 7.208,
+        "maxCitiesGivenSpawnMedian": 8.0,
+        "maxCitiesMean": 7.208,
+        "maxCitiesMedian": 8.0,
+        "peakToFinalDropGivenSpawnMean": 1.875,
+        "peakToFinalDropGivenSpawnMedian": 1.0,
+        "peakToFinalDropMean": 1.875,
+        "peakToFinalDropMedian": 1.0,
+        "peakTurnMedian": 158.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 115.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "claimant_spawn": 3,
+          "healthy_continuity_escape": 7,
+          "inherited": 21,
+          "no_spawn": 0,
+          "probability_skip": 1,
+          "spawned": 24,
+          "successor_exists": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Kaifeng",
+          "core_region": "north_china",
+          "leader": "Taizu",
+          "mode": "dynastic_transfer",
+          "nation": "Korean",
+          "placement": "relocated_tile",
+          "player": 16,
+          "seed": 1,
+          "turn": 118,
+          "x": 80,
+          "y": 35
+        },
+        {
+          "city": "Kaifeng",
+          "core_region": "north_china",
+          "leader": "Taizu",
+          "mode": "dynastic_transfer",
+          "nation": "Korean",
+          "placement": "relocated_tile",
+          "player": 16,
+          "seed": 2,
+          "turn": 115,
+          "x": 78,
+          "y": 33
+        },
+        {
+          "city": "Kaifeng",
+          "core_region": "north_china",
+          "leader": "Taizu",
+          "mode": "dynastic_transfer",
+          "nation": "Korean",
+          "placement": "relocated_tile",
+          "player": 16,
+          "seed": 3,
+          "turn": 115,
+          "x": 85,
+          "y": 43
+        },
+        {
+          "city": "Kaifeng",
+          "core_region": "north_china",
+          "leader": "Taizu",
+          "mode": "foreign_core_claimant",
+          "nation": "Korean",
+          "placement": "relocated_tile",
+          "player": 16,
+          "seed": 4,
+          "turn": 115,
+          "x": 85,
+          "y": 43
+        },
+        {
+          "city": "Kaifeng",
+          "core_region": "north_china",
+          "leader": "Taizu",
+          "mode": "dynastic_transfer",
+          "nation": "Korean",
+          "placement": "relocated_tile",
+          "player": 16,
+          "seed": 5,
+          "turn": 115,
+          "x": 80,
+          "y": 35
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "claimant_spawn": 3,
+          "healthy_continuity_escape": 7,
+          "inherited": 21,
+          "no_spawn": 0,
+          "probability_skip": 1,
+          "spawned": 24,
+          "successor_exists": 24
+        },
+        "interpretation": "inheritance_active",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.292,
+          "inherited": 0.875,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Ungjin",
+          "claimType": "peripheral",
+          "count": 407,
+          "region": "steppe"
+        },
+        {
+          "city": "Wanggomsong",
+          "claimType": "peripheral",
+          "count": 380,
+          "region": "steppe"
+        },
+        {
+          "city": "Sabi",
+          "claimType": "peripheral",
+          "count": 344,
+          "region": "steppe"
+        },
+        {
+          "city": "Wandu",
+          "claimType": "peripheral",
+          "count": 146,
+          "region": "steppe"
+        },
+        {
+          "city": "Jolbon",
+          "claimType": "peripheral",
+          "count": 118,
+          "region": "steppe"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "steppe": {
+      "actor": "steppe",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.7.",
+          "metric": "spawnRate",
+          "observed": 1.0,
+          "threshold": 0.7,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 0.5.",
+          "metric": "survivalRate",
+          "observed": 1.0,
+          "threshold": 0.5,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.75,
+          "message": "Expected no more than 7.",
+          "metric": "medianFinalCities",
+          "observed": 1.0,
+          "threshold": 7,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 1.",
+          "metric": "medianMaxCities",
+          "observed": 3.0,
+          "threshold": 1,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "strong_core_control",
+          "restrained_expansion",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "rival_pressure"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 1,
+        "gold": 150,
+        "offensiveUnits": 7,
+        "settlers": 1,
+        "ships": 0,
+        "workers": 0
+      },
+      "lifecycleEscapeRoutes": [
+        "neighbor_strong_defense",
+        "poor_steppe_economy",
+        "failed_conquest",
+        "good_diplomacy"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_pressure": 20,
+        "delay": 15,
+        "mobile_army_support": 40,
+        "no_event": 10,
+        "regional_split": 15
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          3
+        ],
+        "turnsAfterBirth30": [
+          3,
+          9
+        ],
+        "turnsAfterBirth60": [
+          5,
+          18
+        ]
+      },
+      "lifecycleType": "steppe_conqueror",
+      "note": "Roving pastoralist confederation: persists with a few camps and raids that contest the steppe, not a settled city-empire.",
+      "observed": {
+        "collapseRiskMax": 0.568,
+        "collapseRiskMedian": 0.101,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": 1.458,
+        "finalCitiesGivenSpawnMedian": 1.0,
+        "finalCitiesMean": 1.458,
+        "finalCitiesMedian": 1.0,
+        "finalCitiesP10": 1.0,
+        "finalCitiesP90": 2.0,
+        "latestClaimMedian": {
+          "claimedShare": 1.0,
+          "coreShare": 1.0,
+          "overextension": 0,
+          "rivalPressure": 0.571
+        },
+        "maxCitiesGivenSpawnMean": 3.208,
+        "maxCitiesGivenSpawnMedian": 3.0,
+        "maxCitiesMean": 3.208,
+        "maxCitiesMedian": 3.0,
+        "peakToFinalDropGivenSpawnMean": 1.75,
+        "peakToFinalDropGivenSpawnMedian": 2.0,
+        "peakToFinalDropMean": 1.75,
+        "peakToFinalDropMedian": 2.0,
+        "peakTurnMedian": 97.0,
+        "spawnRate": 1.0,
+        "spawnRateWilsonLower95": 0.862,
+        "spawnTurnMedian": 15.0,
+        "spawnedSeedCount": 24,
+        "successorOutcomeCounts": {
+          "empty_core_spawn": 24,
+          "no_spawn": 0,
+          "spawned": 24
+        },
+        "survivalGivenSpawnRate": 1.0,
+        "survivalGivenSpawnWilsonLower95": 0.862,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "emergent",
+      "sampleSpawnRecords": [
+        {
+          "city": "Karakorum",
+          "core_region": "steppe_mongolia",
+          "leader": "Temujin",
+          "mode": "empty_core",
+          "nation": "Mongol",
+          "placement": "target_tile",
+          "player": 17,
+          "seed": 1,
+          "turn": 15,
+          "x": 82,
+          "y": 24
+        },
+        {
+          "city": "Karakorum",
+          "core_region": "steppe_mongolia",
+          "leader": "Temujin",
+          "mode": "empty_core",
+          "nation": "Mongol",
+          "placement": "target_tile",
+          "player": 17,
+          "seed": 2,
+          "turn": 15,
+          "x": 82,
+          "y": 24
+        },
+        {
+          "city": "Karakorum",
+          "core_region": "steppe_mongolia",
+          "leader": "Temujin",
+          "mode": "empty_core",
+          "nation": "Mongol",
+          "placement": "target_tile",
+          "player": 17,
+          "seed": 3,
+          "turn": 15,
+          "x": 82,
+          "y": 24
+        },
+        {
+          "city": "Karakorum",
+          "core_region": "steppe_mongolia",
+          "leader": "Temujin",
+          "mode": "empty_core",
+          "nation": "Mongol",
+          "placement": "target_tile",
+          "player": 17,
+          "seed": 4,
+          "turn": 15,
+          "x": 82,
+          "y": 24
+        },
+        {
+          "city": "Karakorum",
+          "core_region": "steppe_mongolia",
+          "leader": "Temujin",
+          "mode": "empty_core",
+          "nation": "Mongol",
+          "placement": "target_tile",
+          "player": 17,
+          "seed": 5,
+          "turn": 15,
+          "x": 82,
+          "y": 24
+        }
+      ],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "empty_core_spawn": 24,
+          "no_spawn": 0,
+          "spawned": 24
+        },
+        "interpretation": "not_successor_limited",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 0.0,
+          "spawned": 1.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Wuhan",
+          "claimType": "peripheral",
+          "count": 105,
+          "region": "japan_korea"
+        },
+        {
+          "city": "Tianjin",
+          "claimType": "peripheral",
+          "count": 48,
+          "region": "china"
+        },
+        {
+          "city": "Khovd",
+          "claimType": "peripheral",
+          "count": 40,
+          "region": "steppe"
+        },
+        {
+          "city": "Xi'an",
+          "claimType": "peripheral",
+          "count": 40,
+          "region": "china"
+        },
+        {
+          "city": "Karabalgasun",
+          "claimType": "peripheral",
+          "count": 35,
+          "region": "steppe"
+        }
+      ],
+      "verdict": "pass"
+    },
+    "sumer": {
+      "actor": "sumer",
+      "checks": [
+        {
+          "hardMargin": 1.5,
+          "message": "Expected at least 3.",
+          "metric": "medianFinalCities",
+          "observed": 3.0,
+          "threshold": 3,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "hardMargin": 2.0,
+          "message": "Expected no more than 8.",
+          "metric": "medianFinalCities",
+          "observed": 3.0,
+          "threshold": 8,
+          "tolerance": 0.5,
+          "verdict": "pass"
+        },
+        {
+          "message": "Sustained high collapse diagnostics should be explained or resolved.",
+          "metric": "collapseRiskMedian",
+          "observed": 0.131,
+          "threshold": 0.4,
+          "verdict": "pass"
+        }
+      ],
+      "historicalGravityAssessment": {
+        "escapeRoutesObserved": [
+          "strong_core_control",
+          "low_rival_pressure",
+          "low_collapse_pressure"
+        ],
+        "interpretation": "mixed_pressure",
+        "pressureReasonsObserved": [
+          "overextension"
+        ]
+      },
+      "lifecycleBootstrapPackage": {
+        "defenders": 0,
+        "gold": 0,
+        "settlers": 0,
+        "ships": 0,
+        "workers": 0
+      },
+      "lifecycleEscapeRoutes": [
+        "high_core_control",
+        "high_mandate",
+        "high_cohesion",
+        "positive_economy",
+        "restrained_expansion"
+      ],
+      "lifecycleOutcomeWeights": {
+        "claimant_spawn": 10,
+        "continuity": 30,
+        "no_event": 10,
+        "reform": 25,
+        "regional_split": 25
+      },
+      "lifecycleTargets": {
+        "turnsAfterBirth10": [
+          1,
+          8
+        ],
+        "turnsAfterBirth30": [
+          2,
+          16
+        ],
+        "turnsAfterBirth60": [
+          3,
+          28
+        ]
+      },
+      "lifecycleType": "initial_core",
+      "note": "Should urbanize then feed successor chains.",
+      "observed": {
+        "collapseRiskMax": 0.541,
+        "collapseRiskMedian": 0.131,
+        "dynasticTransferActions": {},
+        "dynasticTransferReasons": {},
+        "finalCitiesGivenSpawnMean": null,
+        "finalCitiesGivenSpawnMedian": null,
+        "finalCitiesMean": 3.708,
+        "finalCitiesMedian": 3.0,
+        "finalCitiesP10": 2.0,
+        "finalCitiesP90": 4.7,
+        "latestClaimMedian": {
+          "claimedShare": 0.75,
+          "coreShare": 0.75,
+          "overextension": 0.25,
+          "rivalPressure": 0
+        },
+        "maxCitiesGivenSpawnMean": null,
+        "maxCitiesGivenSpawnMedian": null,
+        "maxCitiesMean": 4.333,
+        "maxCitiesMedian": 4.0,
+        "peakToFinalDropGivenSpawnMean": null,
+        "peakToFinalDropGivenSpawnMedian": null,
+        "peakToFinalDropMean": 0.625,
+        "peakToFinalDropMedian": 0.0,
+        "peakTurnMedian": 89.5,
+        "spawnRate": 0.0,
+        "spawnRateWilsonLower95": 0.0,
+        "spawnTurnMedian": null,
+        "spawnedSeedCount": 0,
+        "successorOutcomeCounts": {
+          "no_spawn": 24
+        },
+        "survivalGivenSpawnRate": null,
+        "survivalGivenSpawnWilsonLower95": null,
+        "survivalRate": 1.0,
+        "survivalRateWilsonLower95": 0.862,
+        "totalSeeds": 24
+      },
+      "role": "initial",
+      "sampleSpawnRecords": [],
+      "successorOutcomeAssessment": {
+        "counts": {
+          "no_spawn": 24
+        },
+        "interpretation": "low_spawn_probability",
+        "rates": {
+          "delayedNoSite": 0.0,
+          "failedActivation": 0.0,
+          "healthyContinuityEscape": 0.0,
+          "inherited": 0.0,
+          "noSpawn": 1.0,
+          "spawned": 0.0
+        }
+      },
+      "topReleaseCandidates": [
+        {
+          "city": "Hattusa",
+          "claimType": "peripheral",
+          "count": 282,
+          "region": "anatolia"
+        },
+        {
+          "city": "Chongqing",
+          "claimType": "peripheral",
+          "count": 108,
+          "region": "north_china"
+        },
+        {
+          "city": "Yunu",
+          "claimType": "peripheral",
+          "count": 100,
+          "region": "anatolia"
+        },
+        {
+          "city": "Nesa",
+          "claimType": "peripheral",
+          "count": 88,
+          "region": "anatolia"
+        },
+        {
+          "city": "Eridug",
+          "claimType": "peripheral",
+          "count": 87,
+          "region": "iran"
+        }
+      ],
+      "verdict": "pass"
+    }
+  },
+  "globalSummary": {
+    "aggregate": {
+      "arrivalActors": {
+        "abbasid": 70,
+        "assyria": 102,
+        "aztec": 41,
+        "carthage": 121,
+        "castile": 35,
+        "celts": 47,
+        "china": 171,
+        "chola": 46,
+        "egypt": 175,
+        "franks": 71,
+        "greece": 96,
+        "hittite": 95,
+        "inca": 48,
+        "india": 217,
+        "japan": 45,
+        "ming": 69,
+        "nubia": 107,
+        "persia": 112,
+        "phoenicia": 61,
+        "portugal": 46,
+        "rome": 124,
+        "song": 85,
+        "steppe": 43,
+        "sumer": 50,
+        "unknown": 206
+      },
+      "arrivalGroups": {
+        "africa": 258,
+        "east_asia": 361,
+        "europe": 399,
+        "india": 151,
+        "near_east": 356,
+        "new_world": 92,
+        "steppe": 303,
+        "unknown": 363
+      },
+      "burstActions": {
+        "applied": 287,
+        "protected": 15304,
+        "skip": 3513
+      },
+      "burstActorActions": {
+        "assyria:applied": 72,
+        "assyria:protected": 3826,
+        "assyria:skip": 878,
+        "persia:applied": 48,
+        "persia:protected": 3683,
+        "persia:skip": 1045,
+        "rome:applied": 71,
+        "rome:protected": 3427,
+        "rome:skip": 1278,
+        "steppe:applied": 96,
+        "steppe:protected": 4368,
+        "steppe:skip": 312
+      },
+      "burstActorReasons": {
+        "assyria:after_window": 2866,
+        "assyria:application_cap": 426,
+        "assyria:bounded_burst_support": 72,
+        "assyria:cooldown": 528,
+        "assyria:missing_actor": 878,
+        "assyria:on_target": 6,
+        "persia:after_window": 2627,
+        "persia:application_cap": 696,
+        "persia:bounded_burst_support": 48,
+        "persia:cooldown": 360,
+        "persia:missing_actor": 1045,
+        "rome:after_window": 1554,
+        "rome:application_cap": 1090,
+        "rome:bounded_burst_support": 71,
+        "rome:cooldown": 720,
+        "rome:missing_actor": 1278,
+        "rome:on_target": 63,
+        "steppe:after_window": 2760,
+        "steppe:application_cap": 816,
+        "steppe:bounded_burst_support": 96,
+        "steppe:cooldown": 792,
+        "steppe:missing_actor": 312
+      },
+      "burstReasons": {
+        "after_window": 9807,
+        "application_cap": 3028,
+        "bounded_burst_support": 287,
+        "cooldown": 2400,
+        "missing_actor": 3513,
+        "on_target": 69
+      },
+      "civilWarChecks": 0,
+      "civilWarEligibleChecks": 0,
+      "civilWarInertRuns": 0,
+      "civilWarNoop": 0,
+      "civilWarSkipReasons": {},
+      "civilWarSkips": 0,
+      "civilWarTriggered": 0,
+      "claimConversionActorApplied": {
+        "abbasid": 5,
+        "assyria": 20,
+        "carthage": 5,
+        "castile": 1,
+        "celts": 8,
+        "china": 86,
+        "chola": 2,
+        "egypt": 29,
+        "franks": 3,
+        "hittite": 4,
+        "india": 3,
+        "ming": 7,
+        "nubia": 60,
+        "persia": 25,
+        "phoenicia": 2,
+        "portugal": 1,
+        "rome": 32,
+        "song": 29,
+        "steppe": 44,
+        "sumer": 4
+      },
+      "claimConversionActorClaimClasses": {
+        "abbasid:core": 3,
+        "abbasid:historical": 2,
+        "assyria:contested": 3,
+        "assyria:core": 3,
+        "assyria:historical": 14,
+        "carthage:core": 3,
+        "carthage:historical": 2,
+        "castile:core": 1,
+        "celts:core": 4,
+        "celts:historical": 4,
+        "china:core": 9,
+        "china:historical": 77,
+        "chola:historical": 2,
+        "egypt:core": 27,
+        "egypt:historical": 2,
+        "franks:core": 2,
+        "franks:historical": 1,
+        "hittite:core": 1,
+        "hittite:historical": 3,
+        "india:historical": 3,
+        "ming:contested": 2,
+        "ming:core": 2,
+        "ming:historical": 3,
+        "nubia:core": 11,
+        "nubia:historical": 49,
+        "persia:contested": 7,
+        "persia:core": 4,
+        "persia:historical": 14,
+        "phoenicia:historical": 2,
+        "portugal:core": 1,
+        "rome:contested": 2,
+        "rome:historical": 30,
+        "song:contested": 12,
+        "song:core": 10,
+        "song:historical": 7,
+        "steppe:core": 31,
+        "steppe:historical": 13,
+        "sumer:core": 3,
+        "sumer:historical": 1
+      },
+      "claimConversionActorRegions": {
+        "abbasid:iran": 2,
+        "abbasid:mesopotamia": 3,
+        "assyria:anatolia": 5,
+        "assyria:iran": 8,
+        "assyria:levant": 1,
+        "assyria:mesopotamia": 3,
+        "assyria:steppe_mongolia": 3,
+        "carthage:iberia": 2,
+        "carthage:maghreb_punic_west": 3,
+        "castile:iberia": 1,
+        "celts:europe": 4,
+        "celts:gaul": 4,
+        "china:japan_korea": 13,
+        "china:north_china": 9,
+        "china:south_china": 5,
+        "china:steppe_mongolia": 59,
+        "chola:north_india": 2,
+        "egypt:mesopotamia": 2,
+        "egypt:nile": 27,
+        "franks:gaul": 2,
+        "franks:iberia": 1,
+        "hittite:anatolia": 1,
+        "hittite:mesopotamia": 3,
+        "india:iran": 3,
+        "ming:japan_korea": 2,
+        "ming:north_china": 2,
+        "ming:south_china": 1,
+        "ming:steppe_mongolia": 2,
+        "nubia:africa": 49,
+        "nubia:nile": 11,
+        "persia:iran": 4,
+        "persia:north_india": 14,
+        "persia:steppe_mongolia": 7,
+        "phoenicia:maghreb_punic_west": 2,
+        "portugal:iberia": 1,
+        "rome:anatolia": 2,
+        "rome:balkans_aegean": 8,
+        "rome:gaul": 11,
+        "rome:iberia": 9,
+        "rome:steppe_mongolia": 2,
+        "song:japan_korea": 4,
+        "song:north_china": 10,
+        "song:south_china": 3,
+        "song:steppe_mongolia": 12,
+        "steppe:north_china": 13,
+        "steppe:steppe_mongolia": 31,
+        "sumer:levant": 1,
+        "sumer:mesopotamia": 3
+      },
+      "claimConversionActorSkips": {
+        "abbasid:no_claim_match": 10,
+        "assyria:no_claim_match": 63,
+        "carthage:no_claim_match": 48,
+        "castile:no_claim_match": 2,
+        "celts:no_claim_match": 2,
+        "china:no_claim_match": 68,
+        "chola:no_claim_match": 2,
+        "egypt:no_claim_match": 153,
+        "franks:no_claim_match": 2,
+        "greece:no_claim_match": 33,
+        "hittite:no_claim_match": 52,
+        "inca:no_claim_match": 1,
+        "india:no_claim_match": 153,
+        "japan:no_claim_match": 1,
+        "ming:no_claim_match": 1,
+        "nubia:no_claim_match": 55,
+        "persia:no_claim_match": 91,
+        "phoenicia:no_claim_match": 14,
+        "portugal:no_claim_match": 2,
+        "rome:no_claim_match": 84,
+        "song:no_claim_match": 14,
+        "steppe:no_claim_match": 17,
+        "sumer:no_claim_match": 30,
+        "unknown:no_winner_actor": 453
+      },
+      "claimConversionSkipReasons": {
+        "no_claim_match": 898,
+        "no_winner_actor": 453
+      },
+      "conquestConversionActions": {
+        "resolved": 284,
+        "tracking": 284
+      },
+      "conquestConversionActorActions": {
+        "assyria:resolved": 48,
+        "assyria:tracking": 48,
+        "persia:resolved": 48,
+        "persia:tracking": 48,
+        "rome:resolved": 116,
+        "rome:tracking": 116,
+        "steppe:resolved": 72,
+        "steppe:tracking": 72
+      },
+      "conquestConversionActorReasons": {
+        "assyria:captured_then_lost": 1,
+        "assyria:durable_region_gain": 3,
+        "assyria:no_conversion": 44,
+        "assyria:target_support_applied": 48,
+        "persia:no_conversion": 44,
+        "persia:rival_declined_no_hold": 4,
+        "persia:target_support_applied": 48,
+        "rome:captured_then_lost": 6,
+        "rome:durable_region_gain": 28,
+        "rome:no_conversion": 76,
+        "rome:rival_declined_no_hold": 6,
+        "rome:target_support_applied": 116,
+        "steppe:no_conversion": 72,
+        "steppe:target_support_applied": 72
+      },
+      "conquestConversionReasons": {
+        "captured_then_lost": 7,
+        "durable_region_gain": 31,
+        "no_conversion": 236,
+        "rival_declined_no_hold": 10,
+        "target_support_applied": 284
+      },
+      "conquestTargetActions": {
+        "applied": 216,
+        "protected": 15375,
+        "skip": 3513
+      },
+      "conquestTargetActorActions": {
+        "assyria:applied": 48,
+        "assyria:protected": 3850,
+        "assyria:skip": 878,
+        "persia:applied": 48,
+        "persia:protected": 3683,
+        "persia:skip": 1045,
+        "rome:applied": 48,
+        "rome:protected": 3450,
+        "rome:skip": 1278,
+        "steppe:applied": 72,
+        "steppe:protected": 4392,
+        "steppe:skip": 312
+      },
+      "conquestTargetActorReasons": {
+        "assyria:application_cap": 3484,
+        "assyria:cooldown": 360,
+        "assyria:missing_actor": 878,
+        "assyria:on_target": 6,
+        "assyria:target_support": 48,
+        "persia:application_cap": 2870,
+        "persia:cooldown": 407,
+        "persia:missing_actor": 1045,
+        "persia:on_target": 406,
+        "persia:target_support": 48,
+        "rome:application_cap": 2706,
+        "rome:cooldown": 391,
+        "rome:missing_actor": 1278,
+        "rome:on_target": 353,
+        "rome:target_support": 48,
+        "steppe:application_cap": 3768,
+        "steppe:cooldown": 624,
+        "steppe:missing_actor": 312,
+        "steppe:target_support": 72
+      },
+      "conquestTargetReasons": {
+        "application_cap": 12828,
+        "cooldown": 1782,
+        "missing_actor": 3513,
+        "on_target": 765,
+        "target_support": 216
+      },
+      "contactRegions": {
+        "africa": 249,
+        "americas": 17,
+        "anatolia": 37,
+        "balkans_aegean": 13,
+        "china": 45,
+        "deccan_south_india": 10,
+        "europe": 302,
+        "gaul": 100,
+        "iberia": 100,
+        "india": 59,
+        "iran": 207,
+        "italy": 1,
+        "japan_korea": 126,
+        "maghreb_punic_west": 91,
+        "mesoamerica": 4,
+        "mesopotamia": 85,
+        "near_east": 53,
+        "nile": 37,
+        "north_china": 190,
+        "north_india": 18,
+        "south_china": 103,
+        "steppe": 504,
+        "steppe_mongolia": 226,
+        "unknown": 2385
+      },
+      "contractionRecipientActorCounts": {
+        "nubia": 3971
+      },
+      "coreConsolidationActions": {},
+      "coreConsolidationActorActions": {},
+      "coreConsolidationActorReasons": {},
+      "coreConsolidationReasons": {},
+      "dominationWarnings": 0,
+      "dynasticProbeActions": {},
+      "dynasticTransferActions": {
+        "inherited": 107,
+        "noop": 66,
+        "protected": 314,
+        "skip": 32945
+      },
+      "dynasticTransferActorActions": {
+        "abbasid:inherited": 10,
+        "abbasid:protected": 33,
+        "abbasid:skip": 4733,
+        "castile:inherited": 18,
+        "castile:noop": 2,
+        "castile:skip": 4756,
+        "chola:inherited": 17,
+        "chola:noop": 52,
+        "chola:protected": 31,
+        "chola:skip": 4676,
+        "franks:inherited": 11,
+        "franks:protected": 201,
+        "franks:skip": 4564,
+        "ming:inherited": 24,
+        "ming:skip": 4752,
+        "portugal:inherited": 6,
+        "portugal:noop": 12,
+        "portugal:protected": 2,
+        "portugal:skip": 4756,
+        "song:inherited": 21,
+        "song:protected": 47,
+        "song:skip": 4708
+      },
+      "dynasticTransferActorReasons": {
+        "abbasid:bounded_cluster_inheritance": 10,
+        "abbasid:escape_route": 33,
+        "abbasid:successor_exists": 2141,
+        "abbasid:too_early": 2592,
+        "castile:bounded_cluster_inheritance": 18,
+        "castile:delayed": 40,
+        "castile:missing_transfer_city": 1,
+        "castile:successor_activation_failed": 1,
+        "castile:successor_exists": 924,
+        "castile:too_early": 3792,
+        "chola:bounded_cluster_inheritance": 17,
+        "chola:delayed": 448,
+        "chola:escape_route": 31,
+        "chola:successor_activation_failed": 52,
+        "chola:successor_exists": 1516,
+        "chola:too_early": 2712,
+        "franks:bounded_cluster_inheritance": 11,
+        "franks:escape_route": 201,
+        "franks:successor_exists": 2092,
+        "franks:too_early": 2472,
+        "ming:bounded_cluster_inheritance": 24,
+        "ming:successor_exists": 960,
+        "ming:too_early": 3792,
+        "portugal:bounded_cluster_inheritance": 6,
+        "portugal:escape_route": 2,
+        "portugal:missing_transfer_city": 12,
+        "portugal:successor_exists": 964,
+        "portugal:too_early": 3792,
+        "song:bounded_cluster_inheritance": 21,
+        "song:escape_route": 47,
+        "song:successor_exists": 1996,
+        "song:too_early": 2712
+      },
+      "dynasticTransferReasons": {
+        "bounded_cluster_inheritance": 107,
+        "delayed": 488,
+        "escape_route": 314,
+        "missing_transfer_city": 13,
+        "successor_activation_failed": 53,
+        "successor_exists": 10593,
+        "too_early": 21864
+      },
+      "expansionPressureActions": {
+        "candidate": 13092,
+        "protected": 48770,
+        "skip": 5362
+      },
+      "fallbackSuccessorDormantActors": {},
+      "fallbackSuccessorOutcomes": {},
+      "fallbackSuccessorParentRegions": {},
+      "highRiskStressTurns": 24063,
+      "homelandDefenseActorApplied": {},
+      "homelandDefenseActorCities": {},
+      "homelandDefenseActorSkips": {},
+      "homelandDefenseSkipReasons": {},
+      "iberianActivationActorActions": {
+        "castile:inherited_spawn": 18,
+        "castile:spawned": 5,
+        "portugal:inherited_spawn": 6,
+        "portugal:spawned": 18
+      },
+      "iberianSiteActorPlacements": {
+        "castile:candidate_sites": 5,
+        "castile:occupied_tile_no_site": 4,
+        "portugal:candidate_sites": 18
+      },
+      "iberianSiteActorTargetHolders": {
+        "castile:none": 9,
+        "portugal:none": 18
+      },
+      "iberianSitePoolActorRegions": {
+        "castile:gaul": 9,
+        "castile:iberia": 9,
+        "castile:maghreb_punic_west": 9,
+        "portugal:africa": 18,
+        "portugal:gaul": 18,
+        "portugal:iberia": 18,
+        "portugal:maghreb_punic_west": 18
+      },
+      "iberianSitePoolActorScopes": {
+        "castile:core": 9,
+        "castile:fallback": 18,
+        "portugal:core": 18,
+        "portugal:fallback": 54
+      },
+      "lineageHandoffActions": {
+        "eligible": 45,
+        "protected": 47,
+        "skip": 9460
+      },
+      "lineageHandoffActorActions": {
+        "ming:eligible": 24,
+        "ming:skip": 4752,
+        "song:eligible": 21,
+        "song:protected": 47,
+        "song:skip": 4708
+      },
+      "lineageHandoffActorReasons": {
+        "ming:successor_exists": 960,
+        "ming:too_early": 3792,
+        "ming:transfer_pressure": 24,
+        "song:escape_route": 47,
+        "song:successor_exists": 1996,
+        "song:too_early": 2712,
+        "song:transfer_pressure": 21
+      },
+      "lineageHandoffReasons": {
+        "escape_route": 47,
+        "successor_exists": 2956,
+        "too_early": 6504,
+        "transfer_pressure": 45
+      },
+      "maxFinalCities": 182.0,
+      "meanCityAutonomy": 0.283,
+      "meanCityUnrest": 0.605,
+      "meanDynasticBonus": 0.0,
+      "meanDynasticEffectiveStress": 0.0,
+      "meanDynasticStateCapacityModifier": 0.0,
+      "meanFinalCities": 161.083,
+      "meanFiscalRisk": 0.003,
+      "meanInstitutionCohesion": 0.632,
+      "meanInstitutionStressModifier": 0.0,
+      "meanMandate": 0.384,
+      "meanMandateStressReduction": 0.0,
+      "meanMaxCityShare": 0.124,
+      "meanMigrationPressure": 0.594,
+      "meanOrganicStress": 17.925,
+      "meanPressureStressModifier": 0.0,
+      "meanReformPressure": 0.17,
+      "meanStateCapacityCrisis": 0.139,
+      "meanStateCapacityModifier": 0.12,
+      "meanSuccessionRisk": 0.098,
+      "minFinalCities": 131.0,
+      "nearEastHandoffActions": {
+        "applied": 144,
+        "protected": 14402,
+        "skip": 4558
+      },
+      "nearEastHandoffActorActions": {
+        "abbasid:applied": 72,
+        "abbasid:protected": 2069,
+        "abbasid:skip": 2635,
+        "assyria:applied": 48,
+        "assyria:protected": 3850,
+        "assyria:skip": 878,
+        "persia:applied": 24,
+        "persia:protected": 3707,
+        "persia:skip": 1045,
+        "sumer:protected": 4776
+      },
+      "nearEastHandoffActorReasons": {
+        "abbasid:application_cap": 1129,
+        "abbasid:cooldown": 712,
+        "abbasid:corridor_support": 72,
+        "abbasid:missing_actor": 2635,
+        "abbasid:on_target": 228,
+        "assyria:application_cap": 3532,
+        "assyria:cooldown": 312,
+        "assyria:corridor_support": 48,
+        "assyria:missing_actor": 878,
+        "assyria:on_target": 6,
+        "persia:application_cap": 3301,
+        "persia:corridor_support": 24,
+        "persia:missing_actor": 1045,
+        "persia:on_target": 406,
+        "sumer:diagnostics_only": 4776
+      },
+      "nearEastHandoffReasons": {
+        "application_cap": 7962,
+        "cooldown": 1024,
+        "corridor_support": 144,
+        "diagnostics_only": 4776,
+        "missing_actor": 4558,
+        "on_target": 640
+      },
+      "objectiveActions": {
+        "applied": 93,
+        "noop": 973,
+        "protected": 6269,
+        "skip": 11769
+      },
+      "objectiveActorActions": {
+        "abbasid:applied": 24,
+        "abbasid:protected": 2117,
+        "abbasid:skip": 2635,
+        "castile:applied": 1,
+        "castile:noop": 501,
+        "castile:protected": 422,
+        "castile:skip": 3852,
+        "portugal:noop": 472,
+        "portugal:protected": 492,
+        "portugal:skip": 3812,
+        "rome:applied": 68,
+        "rome:protected": 3238,
+        "rome:skip": 1470
+      },
+      "objectiveActorObjectives": {
+        "abbasid:abbasid_corridor_consolidation:applied": 24,
+        "abbasid:abbasid_corridor_consolidation:protected": 2117,
+        "abbasid:abbasid_corridor_consolidation:skip": 2635,
+        "castile:castile_iberian_consolidation:applied": 1,
+        "castile:castile_iberian_consolidation:noop": 501,
+        "castile:castile_iberian_consolidation:protected": 422,
+        "castile:castile_iberian_consolidation:skip": 3852,
+        "portugal:portugal_iberian_port_consolidation:noop": 472,
+        "portugal:portugal_iberian_port_consolidation:protected": 492,
+        "portugal:portugal_iberian_port_consolidation:skip": 3812,
+        "rome:rome_mediterranean_conquest:applied": 68,
+        "rome:rome_mediterranean_conquest:protected": 3238,
+        "rome:rome_mediterranean_conquest:skip": 1470
+      },
+      "objectiveActorReasons": {
+        "abbasid:application_cap": 1035,
+        "abbasid:missing_actor": 2635,
+        "abbasid:on_target": 1082,
+        "abbasid:settlement_city": 24,
+        "castile:cooldown": 3,
+        "castile:missing_actor": 3852,
+        "castile:missing_site": 501,
+        "castile:on_target": 419,
+        "castile:settlement_support": 1,
+        "portugal:missing_actor": 3812,
+        "portugal:missing_site": 472,
+        "portugal:on_target": 492,
+        "rome:after_window": 882,
+        "rome:application_cap": 906,
+        "rome:before_window": 192,
+        "rome:cooldown": 651,
+        "rome:missing_actor": 1278,
+        "rome:no_rival_target": 480,
+        "rome:on_target": 319,
+        "rome:staging_support": 68
+      },
+      "objectiveReasons": {
+        "after_window": 882,
+        "application_cap": 1941,
+        "before_window": 192,
+        "cooldown": 654,
+        "missing_actor": 11577,
+        "missing_site": 973,
+        "no_rival_target": 480,
+        "on_target": 2312,
+        "settlement_city": 24,
+        "settlement_support": 1,
+        "staging_support": 68
+      },
+      "oceanCrossingActors": {},
+      "oceanCrossingRoutes": {},
+      "organicArrivalLogs": 2283,
+      "organicBurstLogs": 19104,
+      "organicCityPressureLogs": 387524,
+      "organicClaimConversionLogs": 1721,
+      "organicConquestConversionLogs": 568,
+      "organicConquestTargetLogs": 19104,
+      "organicContactLogs": 4962,
+      "organicContractionRecipientLogs": 3971,
+      "organicCoreConsolidationLogs": 0,
+      "organicDynasticProbeLogs": 0,
+      "organicDynasticTransferLogs": 33432,
+      "organicEventLogs": 218537,
+      "organicEventRiskLogs": 119110,
+      "organicExpansionPressureLogs": 67224,
+      "organicFallbackSuccessorLogs": 0,
+      "organicHomelandDefenseLogs": 0,
+      "organicIberianActivationLogs": 47,
+      "organicIberianSiteLogs": 27,
+      "organicIberianSitePoolLogs": 99,
+      "organicInstitutionLogs": 119110,
+      "organicLineageHandoffLogs": 9552,
+      "organicMandateLogs": 119110,
+      "organicMechanicLogs": 0,
+      "organicMetricLogs": 119110,
+      "organicNearEastHandoffLogs": 19104,
+      "organicObjectiveLogs": 19104,
+      "organicOceanCrossingLogs": 0,
+      "organicPartialContractionLogs": 67224,
+      "organicPrestigeLogs": 119110,
+      "organicRegionLogs": 124176,
+      "organicSecessionLogs": 0,
+      "organicSettlerConversionLogs": 1090,
+      "organicStabilityLogs": 119110,
+      "organicStateCapacityLogs": 119110,
+      "organicTargetOverlapLogs": 96566,
+      "organicTechFloorLogs": 0,
+      "organicUrbanizationLogs": 4776,
+      "partialContractionActions": {
+        "monitor": 755,
+        "protected": 66394,
+        "released": 75
+      },
+      "partialContractionActorActions": {
+        "abbasid:protected": 2141,
+        "assyria:protected": 3898,
+        "aztec:protected": 961,
+        "carthage:monitor": 44,
+        "carthage:protected": 3080,
+        "carthage:released": 2,
+        "castile:protected": 924,
+        "celts:protected": 1509,
+        "china:monitor": 58,
+        "china:protected": 4715,
+        "china:released": 3,
+        "chola:protected": 1516,
+        "egypt:monitor": 150,
+        "egypt:protected": 4612,
+        "egypt:released": 14,
+        "franks:protected": 2092,
+        "greece:protected": 3542,
+        "hittite:protected": 3550,
+        "inca:protected": 971,
+        "india:monitor": 293,
+        "india:protected": 4444,
+        "india:released": 39,
+        "japan:protected": 974,
+        "ming:protected": 960,
+        "nubia:monitor": 146,
+        "nubia:protected": 3815,
+        "nubia:released": 10,
+        "persia:monitor": 37,
+        "persia:protected": 3690,
+        "persia:released": 4,
+        "phoenicia:protected": 3332,
+        "portugal:protected": 964,
+        "rome:monitor": 27,
+        "rome:protected": 3468,
+        "rome:released": 3,
+        "song:protected": 1996,
+        "steppe:protected": 4464,
+        "sumer:protected": 4776
+      },
+      "partialContractionActorReasons": {
+        "abbasid:below_condition_gate": 2141,
+        "assyria:below_condition_gate": 3898,
+        "aztec:below_condition_gate": 961,
+        "carthage:awaiting_sustained_risk": 44,
+        "carthage:below_condition_gate": 3043,
+        "carthage:cooldown": 35,
+        "carthage:single_city_release": 2,
+        "carthage:turn_success_limit": 2,
+        "castile:below_condition_gate": 924,
+        "celts:below_condition_gate": 1509,
+        "china:awaiting_sustained_risk": 58,
+        "china:below_condition_gate": 4676,
+        "china:cooldown": 39,
+        "china:single_city_release": 3,
+        "chola:below_condition_gate": 1516,
+        "egypt:awaiting_sustained_risk": 150,
+        "egypt:below_condition_gate": 4373,
+        "egypt:bounded_cluster_release": 3,
+        "egypt:cooldown": 239,
+        "egypt:single_city_release": 11,
+        "franks:below_condition_gate": 2092,
+        "greece:below_condition_gate": 3542,
+        "hittite:below_condition_gate": 3550,
+        "inca:below_condition_gate": 971,
+        "india:awaiting_sustained_risk": 293,
+        "india:below_condition_gate": 3732,
+        "india:bounded_cluster_release": 12,
+        "india:cooldown": 703,
+        "india:single_city_release": 27,
+        "india:turn_success_limit": 9,
+        "japan:below_condition_gate": 974,
+        "ming:below_condition_gate": 960,
+        "nubia:awaiting_sustained_risk": 146,
+        "nubia:below_condition_gate": 3629,
+        "nubia:cooldown": 90,
+        "nubia:missing_live_regional_successor": 91,
+        "nubia:single_city_release": 10,
+        "nubia:turn_success_limit": 5,
+        "persia:awaiting_sustained_risk": 37,
+        "persia:below_condition_gate": 3625,
+        "persia:bounded_cluster_release": 1,
+        "persia:cooldown": 63,
+        "persia:single_city_release": 3,
+        "persia:turn_success_limit": 2,
+        "phoenicia:below_condition_gate": 3332,
+        "portugal:below_condition_gate": 964,
+        "rome:awaiting_sustained_risk": 27,
+        "rome:below_condition_gate": 3441,
+        "rome:cooldown": 26,
+        "rome:single_city_release": 3,
+        "rome:turn_success_limit": 1,
+        "song:below_condition_gate": 1996,
+        "steppe:below_condition_gate": 4464,
+        "sumer:below_condition_gate": 4776
+      },
+      "partialContractionReasons": {
+        "awaiting_sustained_risk": 755,
+        "below_condition_gate": 65089,
+        "bounded_cluster_release": 16,
+        "cooldown": 1195,
+        "missing_live_regional_successor": 91,
+        "single_city_release": 59,
+        "turn_success_limit": 19
+      },
+      "secessionEvents": {},
+      "settlerConversionActions": {
+        "resolved": 544,
+        "tracking": 546
+      },
+      "settlerConversionActorActions": {
+        "abbasid:resolved": 95,
+        "abbasid:tracking": 96,
+        "assyria:resolved": 24,
+        "assyria:tracking": 24,
+        "aztec:resolved": 24,
+        "aztec:tracking": 24,
+        "carthage:resolved": 24,
+        "carthage:tracking": 24,
+        "castile:resolved": 23,
+        "castile:tracking": 24,
+        "celts:resolved": 24,
+        "celts:tracking": 24,
+        "chola:resolved": 18,
+        "chola:tracking": 18,
+        "franks:resolved": 24,
+        "franks:tracking": 24,
+        "greece:resolved": 24,
+        "greece:tracking": 24,
+        "hittite:resolved": 24,
+        "hittite:tracking": 24,
+        "inca:resolved": 24,
+        "inca:tracking": 24,
+        "japan:resolved": 24,
+        "japan:tracking": 24,
+        "ming:resolved": 24,
+        "ming:tracking": 24,
+        "nubia:resolved": 24,
+        "nubia:tracking": 24,
+        "persia:resolved": 24,
+        "persia:tracking": 24,
+        "phoenicia:resolved": 24,
+        "phoenicia:tracking": 24,
+        "portugal:resolved": 24,
+        "portugal:tracking": 24,
+        "rome:resolved": 24,
+        "rome:tracking": 24,
+        "song:resolved": 24,
+        "song:tracking": 24,
+        "steppe:resolved": 24,
+        "steppe:tracking": 24
+      },
+      "settlerConversionActorReasons": {
+        "abbasid:city_gain": 60,
+        "abbasid:city_gain_lost": 9,
+        "abbasid:no_city_gain": 26,
+        "abbasid:settlers_created": 96,
+        "assyria:city_gain": 19,
+        "assyria:city_gain_lost": 5,
+        "assyria:settlers_created": 24,
+        "aztec:actor_lost": 1,
+        "aztec:city_gain": 23,
+        "aztec:settlers_created": 24,
+        "carthage:city_gain": 24,
+        "carthage:settlers_created": 24,
+        "castile:city_gain": 14,
+        "castile:city_gain_lost": 1,
+        "castile:no_city_gain": 8,
+        "castile:settlers_created": 24,
+        "celts:actor_lost": 12,
+        "celts:city_gain": 6,
+        "celts:city_gain_lost": 6,
+        "celts:settlers_created": 24,
+        "chola:city_gain": 17,
+        "chola:no_city_gain": 1,
+        "chola:settlers_created": 18,
+        "franks:city_gain": 24,
+        "franks:settlers_created": 24,
+        "greece:city_gain": 21,
+        "greece:city_gain_lost": 3,
+        "greece:settlers_created": 24,
+        "hittite:actor_lost": 1,
+        "hittite:city_gain": 20,
+        "hittite:city_gain_lost": 3,
+        "hittite:settlers_created": 24,
+        "inca:city_gain": 24,
+        "inca:settlers_created": 24,
+        "japan:city_gain": 22,
+        "japan:city_gain_lost": 1,
+        "japan:no_city_gain": 1,
+        "japan:settlers_created": 24,
+        "ming:city_gain": 24,
+        "ming:settlers_created": 24,
+        "nubia:city_gain": 24,
+        "nubia:settlers_created": 24,
+        "persia:city_gain": 20,
+        "persia:city_gain_lost": 3,
+        "persia:no_city_gain": 1,
+        "persia:settlers_created": 24,
+        "phoenicia:actor_lost": 2,
+        "phoenicia:city_gain": 7,
+        "phoenicia:city_gain_lost": 4,
+        "phoenicia:no_city_gain": 11,
+        "phoenicia:settlers_created": 24,
+        "portugal:city_gain": 17,
+        "portugal:no_city_gain": 7,
+        "portugal:settlers_created": 24,
+        "rome:city_gain": 21,
+        "rome:city_gain_lost": 2,
+        "rome:no_city_gain": 1,
+        "rome:settlers_created": 24,
+        "song:city_gain": 23,
+        "song:city_gain_lost": 1,
+        "song:settlers_created": 24,
+        "steppe:no_city_gain": 24,
+        "steppe:settlers_created": 24
+      },
+      "settlerConversionReasons": {
+        "actor_lost": 16,
+        "city_gain": 410,
+        "city_gain_lost": 38,
+        "no_city_gain": 80,
+        "settlers_created": 546
+      },
+      "stagnationWarnings": 0,
+      "targetOverlapActorRegions": {
+        "abbasid:settlement_objective:iran": 24,
+        "abbasid:settlement_objective:levant": 24,
+        "abbasid:settlement_objective:mesopotamia": 24,
+        "assyria:conquest_target:anatolia": 4776,
+        "assyria:conquest_target:iran": 4776,
+        "assyria:conquest_target:levant": 4776,
+        "assyria:conquest_target:mesopotamia": 4776,
+        "castile:settlement_objective:iberia": 502,
+        "persia:conquest_target:iran": 4776,
+        "persia:conquest_target:levant": 4776,
+        "persia:conquest_target:mesopotamia": 4776,
+        "persia:conquest_target:north_india": 4776,
+        "portugal:settlement_objective:iberia": 472,
+        "rome:conquest_target:gaul": 4776,
+        "rome:conquest_target:iberia": 4776,
+        "rome:conquest_target:italy": 4776,
+        "rome:conquest_target:levant": 4776,
+        "rome:conquest_target:maghreb_punic_west": 4776,
+        "rome:objective:gaul": 4776,
+        "rome:objective:iberia": 4776,
+        "rome:objective:italy": 4776,
+        "steppe:conquest_target:europe": 4776,
+        "steppe:conquest_target:iran": 4776,
+        "steppe:conquest_target:north_china": 4776,
+        "steppe:conquest_target:steppe_mongolia": 4776
+      },
+      "targetOverlapActorSources": {
+        "abbasid:settlement_objective": 72,
+        "assyria:conquest_target": 19104,
+        "castile:settlement_objective": 502,
+        "persia:conquest_target": 19104,
+        "portugal:settlement_objective": 472,
+        "rome:conquest_target": 23880,
+        "rome:objective": 14328,
+        "steppe:conquest_target": 19104
+      },
+      "targetOverlapSelectedRegions": {
+        "abbasid:settlement_objective:iran": 18,
+        "abbasid:settlement_objective:levant": 1,
+        "abbasid:settlement_objective:mesopotamia": 5,
+        "assyria:conquest_target:anatolia": 10,
+        "assyria:conquest_target:iran": 470,
+        "assyria:conquest_target:mesopotamia": 4296,
+        "castile:settlement_objective:iberia": 1,
+        "persia:conquest_target:iran": 627,
+        "persia:conquest_target:mesopotamia": 4149,
+        "rome:conquest_target:gaul": 723,
+        "rome:conquest_target:iberia": 321,
+        "rome:conquest_target:italy": 741,
+        "rome:conquest_target:maghreb_punic_west": 2991,
+        "rome:objective:gaul": 1875,
+        "rome:objective:iberia": 914,
+        "rome:objective:italy": 1987,
+        "steppe:conquest_target:europe": 1237,
+        "steppe:conquest_target:iran": 216,
+        "steppe:conquest_target:north_china": 3255,
+        "steppe:conquest_target:steppe_mongolia": 68
+      },
+      "targetOverlapTopRivals": {
+        "abbasid:settlement_objective:assyria": 6,
+        "abbasid:settlement_objective:china": 1,
+        "abbasid:settlement_objective:egypt": 1,
+        "abbasid:settlement_objective:india": 16,
+        "abbasid:settlement_objective:persia": 2,
+        "abbasid:settlement_objective:phoenicia": 21,
+        "abbasid:settlement_objective:sumer": 23,
+        "assyria:conquest_target:abbasid": 1466,
+        "assyria:conquest_target:china": 22,
+        "assyria:conquest_target:egypt": 1202,
+        "assyria:conquest_target:greece": 104,
+        "assyria:conquest_target:hittite": 1903,
+        "assyria:conquest_target:india": 1889,
+        "assyria:conquest_target:nubia": 113,
+        "assyria:conquest_target:persia": 698,
+        "assyria:conquest_target:phoenicia": 3542,
+        "assyria:conquest_target:sumer": 4756,
+        "castile:settlement_objective:carthage": 264,
+        "castile:settlement_objective:celts": 39,
+        "castile:settlement_objective:egypt": 182,
+        "castile:settlement_objective:portugal": 17,
+        "persia:conquest_target:abbasid": 1365,
+        "persia:conquest_target:assyria": 1216,
+        "persia:conquest_target:china": 22,
+        "persia:conquest_target:egypt": 5,
+        "persia:conquest_target:hittite": 3,
+        "persia:conquest_target:india": 6431,
+        "persia:conquest_target:phoenicia": 3256,
+        "persia:conquest_target:sumer": 4452,
+        "portugal:settlement_objective:carthage": 277,
+        "portugal:settlement_objective:castile": 116,
+        "portugal:settlement_objective:egypt": 79,
+        "rome:conquest_target:abbasid": 172,
+        "rome:conquest_target:assyria": 118,
+        "rome:conquest_target:carthage": 2268,
+        "rome:conquest_target:castile": 477,
+        "rome:conquest_target:celts": 1172,
+        "rome:conquest_target:egypt": 3269,
+        "rome:conquest_target:franks": 1124,
+        "rome:conquest_target:greece": 251,
+        "rome:conquest_target:hittite": 474,
+        "rome:conquest_target:nubia": 345,
+        "rome:conquest_target:phoenicia": 3214,
+        "rome:conquest_target:portugal": 9,
+        "rome:conquest_target:sumer": 44,
+        "rome:objective:carthage": 1152,
+        "rome:objective:castile": 477,
+        "rome:objective:celts": 1172,
+        "rome:objective:egypt": 607,
+        "rome:objective:franks": 1124,
+        "rome:objective:greece": 251,
+        "rome:objective:hittite": 474,
+        "rome:objective:nubia": 67,
+        "rome:objective:portugal": 9,
+        "steppe:conquest_target:abbasid": 682,
+        "steppe:conquest_target:assyria": 909,
+        "steppe:conquest_target:carthage": 420,
+        "steppe:conquest_target:celts": 181,
+        "steppe:conquest_target:china": 5331,
+        "steppe:conquest_target:egypt": 218,
+        "steppe:conquest_target:franks": 188,
+        "steppe:conquest_target:greece": 282,
+        "steppe:conquest_target:hittite": 1014,
+        "steppe:conquest_target:india": 1881,
+        "steppe:conquest_target:ming": 341,
+        "steppe:conquest_target:persia": 741,
+        "steppe:conquest_target:phoenicia": 4,
+        "steppe:conquest_target:rome": 1032,
+        "steppe:conquest_target:song": 1034,
+        "steppe:conquest_target:sumer": 40
+      },
+      "techFloorActorApplied": {},
+      "techFloorActorReasons": {},
+      "techFloorActorSkips": {},
+      "techFloorSkipReasons": {},
+      "urbanizationActions": {
+        "created": 48,
+        "protected": 4728
+      },
+      "urbanizationReasons": {
+        "city_cap": 477,
+        "cooldown": 408,
+        "mesopotamian_city_density": 48,
+        "on_target": 3843
+      }
+    },
+    "failures": [],
+    "firstNewWorldArrivals": [
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 1,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "inca",
+        "city": "Cusco",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "andes",
+        "origin_group": "new_world",
+        "player": 23,
+        "region": "andes",
+        "region_group": "new_world",
+        "seed": 2,
+        "turn": 161,
+        "x": 152,
+        "y": 62
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 3,
+        "turn": 161,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 4,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 5,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 6,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 7,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 8,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "inca",
+        "city": "Cusco",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "andes",
+        "origin_group": "new_world",
+        "player": 23,
+        "region": "andes",
+        "region_group": "new_world",
+        "seed": 9,
+        "turn": 160,
+        "x": 152,
+        "y": 62
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 10,
+        "turn": 161,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "inca",
+        "city": "Cusco",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "andes",
+        "origin_group": "new_world",
+        "player": 23,
+        "region": "andes",
+        "region_group": "new_world",
+        "seed": 11,
+        "turn": 160,
+        "x": 152,
+        "y": 62
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 12,
+        "turn": 161,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 13,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 14,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 15,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 16,
+        "turn": 161,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 17,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 18,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "inca",
+        "city": "Cusco",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "andes",
+        "origin_group": "new_world",
+        "player": 23,
+        "region": "andes",
+        "region_group": "new_world",
+        "seed": 19,
+        "turn": 160,
+        "x": 152,
+        "y": 62
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 20,
+        "turn": 161,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 21,
+        "turn": 161,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 22,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 23,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      },
+      {
+        "actor": "aztec",
+        "city": "Tenochtitlan",
+        "city_count": 1,
+        "claim_type": "core",
+        "core_region": "mesoamerica",
+        "origin_group": "new_world",
+        "player": 22,
+        "region": "mesoamerica",
+        "region_group": "new_world",
+        "seed": 24,
+        "turn": 160,
+        "x": 142,
+        "y": 44
+      }
+    ],
+    "firstOceanCrossings": [],
+    "label": "ab_p51",
+    "players": 8,
+    "runsFailed": 0,
+    "runsRequested": 24,
+    "runsSucceeded": 24,
+    "scenario": "data/organic_history/scenarios/earth_global_4000_v1.sav",
+    "secessionDetails": [],
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "turns": 200
+  },
+  "historicalGravity": {
+    "conditionGates": {
+      "collapseOrContraction": [
+        "sustained_high_collapse_risk",
+        "overextension",
+        "low_core_control",
+        "low_mandate",
+        "low_cohesion",
+        "high_unrest_or_autonomy",
+        "fiscal_or_war_stress",
+        "validated_release_candidates"
+      ],
+      "contactShock": [
+        "actual_old_world_new_world_contact",
+        "isolation_or_low_contact_immunity",
+        "population_density_or_city_size",
+        "development_and_diplomacy_modifiers"
+      ],
+      "dynasticTransfer": [
+        "successor_window_open",
+        "predecessor_low_mandate_or_fragmented",
+        "successor_core_controlled_by_predecessor_or_foreign_holder",
+        "validated_core_transfer_or_claimant_site",
+        "no_recent_birth_protection"
+      ],
+      "regionalExpansionPressure": [
+        "below_target_city_curve",
+        "under_owned_core_or_historical_region",
+        "nearby_weak_holder_or_vacant_site",
+        "sufficient_economy_or_profile_bootstrap",
+        "no_active_collapse_crisis"
+      ]
+    },
+    "escapeRoutes": {
+      "examples": {
+        "china": "A high-mandate, unified China should continue or reform instead of always being replaced by Song or Ming.",
+        "new_world": "Aztec/Inca outcomes after contact should vary with development, diplomacy, geography, and preparedness.",
+        "rome": "A Rome with strong Italy/core control, good cohesion, and restrained frontier overreach should avoid collapse pressure."
+      },
+      "generic": [
+        "high_core_control",
+        "high_mandate",
+        "high_cohesion",
+        "low_unrest",
+        "positive_economy",
+        "adequate_garrisons",
+        "defensive_investment",
+        "successful_reform",
+        "good_diplomacy",
+        "restrained_expansion"
+      ]
+    },
+    "mechanicSeparation": {
+      "forbiddenPattern": "Do not fire events only because an actor and calendar date match history.",
+      "historicalDataRole": "Defines claims, niches, successor identities, expected pressures, and flavor.",
+      "mechanicTriggerRole": "Generic mechanics decide whether current overextension, mandate, core control, contact, war, or economy conditions justify pressure."
+    },
+    "outcomeWeights": {
+      "collapsePressure": {
+        "autonomy_increase": 25,
+        "no_event": 5,
+        "recovery": 20,
+        "reform": 20,
+        "regional_cluster_release": 10,
+        "single_city_release": 20
+      },
+      "dynasticPressure": {
+        "claimant_spawn": 20,
+        "continuity": 25,
+        "core_inheritance": 20,
+        "delay": 10,
+        "reform_or_rename": 25
+      },
+      "expansionPressure": {
+        "defensive_support": 20,
+        "economic_support": 15,
+        "no_event": 10,
+        "offensive_support": 20,
+        "settlement_support": 35
+      }
+    },
+    "principle": "Historical roles are pressure and opportunity, not scripted destiny. Mechanics must be condition-gated, avoidable through good management, and probabilistic when pressure is high."
+  },
+  "probeEvidence": {
+    "actions": {
+      "dynasticTransfer": {
+        "inherited": 107,
+        "noop": 66,
+        "protected": 314,
+        "skip": 32945
+      },
+      "expansionPressure": {
+        "candidate": 13092,
+        "protected": 48770,
+        "skip": 5362
+      },
+      "partialContraction": {
+        "monitor": 755,
+        "protected": 66394,
+        "released": 75
+      }
+    },
+    "hasContactDiagnostics": true,
+    "hasLifecycleProbeLogs": true,
+    "logs": {
+      "arrival": 2283,
+      "contact": 4962,
+      "dynasticTransfer": 33432,
+      "expansionPressure": 67224,
+      "oceanCrossing": 0,
+      "partialContraction": 67224
+    }
+  },
+  "summary": {
+    "actorCount": 24,
+    "failedActors": 0,
+    "passedActors": 23,
+    "warnedActors": 1
+  },
+  "sweepDir": "/Users/amitmisra/code/freeciv/runs/ab_p51"
+}

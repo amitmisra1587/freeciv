@@ -1,11 +1,11 @@
 {
-    "acceptedBaseline": false,
-    "baselineSnapshot": "tools/organic_history/baselines/wave3_global_4000_19_2_3.json",
-    "baselineVerdict": "19/2/3 @ 100x200 (earth_global_4000_v1)",
-    "description": "Accepted organic-history baseline (Wave 3 claim-conversion stickiness). 19 pass / 2 warn / 3 fail at 100x200 on earth_global_4000_v1; generalizes (active + non-regressive) on earth_medieval_v1 and earth_1450_v1 (Phase 43). luaCommands identical to phase38_wave3_claim_conversion; this is the canonical fixed comparison baseline for future A/B experiments (e.g. Wave 6).",
+    "acceptedBaseline": true,
+    "baselineSnapshot": "tools/organic_history/baselines/wave4_global_4000_23_1_0.json",
+    "baselineVerdict": "23/1/0 @ 24x200 (earth_global_4000_v1)",
+    "description": "Accepted organic-history baseline (Wave 4 = Wave 3 + hinterland withering + steppe confederacy graduated friction). 23 pass / 1 warn / 0 fail at 24x200 on earth_global_4000_v1 (deterministic). Adds two flag-on mechanics over Wave 3: (1) hinterland demographic withering, which fixes Nubia/Portugal over-extension; (2) steppe confederacy graduated friction, where the steppe actor spawns early, persists as a roving confederation, and imposes a per-city pressure tax (scaled by an emergent power level P and holder legitimacy) on cities settled in steppe regions. 24-seed isolation: the two are SYNERGISTIC -- hinterland ALONE regresses Ming (warn->fail); the confederacy rescues Ming and lifts Rome/Castile/Assyria over the line. Net vs Wave 3 baseline (18/4/2): +5 pass, fails 2->0. Sole cost: India pass->warn (final cities 19, just over the 18 ceiling). The previously-feared Persia and Rome/Castile regressions do NOT materialise at 24 seeds (Persia holds pass at 10.5). CAVEAT: the two added mechanics were validated only on earth_global_4000_v1; cross-scenario generalization (medieval/1450) is NOT yet re-confirmed.",
     "generalization": {
-        "earth_1450_v1": "active_inconclusive (active + non-regressive)",
-        "earth_medieval_v1": "generalizes"
+        "earth_1450_v1": "not_revalidated (hinterland+confederacy tested only on earth_global_4000_v1)",
+        "earth_medieval_v1": "not_revalidated (hinterland+confederacy tested only on earth_global_4000_v1)"
     },
     "luaCommands": [
         "lua cmd organic_history_mechanics_enabled = true",
@@ -76,13 +76,15 @@
         "lua cmd organic_history_partial_contraction_min_remaining_cities = 4",
         "lua cmd organic_history_partial_contraction_claimant_successors_enabled = true",
         "lua cmd organic_history_partial_contraction_cooldown = 30",
-        "lua cmd organic_history_contact_diagnostics_enabled = true"
+        "lua cmd organic_history_contact_diagnostics_enabled = true",
+        "lua cmd organic_history_hinterland_withering_enabled = true",
+        "lua cmd organic_history_steppe_confederacy_enabled = true",
+        "lua cmd organic_history_steppe_confederacy_power_formula = \"B\""
     ],
-    "mode": "phase38_wave3_claim_conversion",
-    "name": "wave3_baseline_candidate",
+    "mode": "wave4_hinterland_steppe_confederacy",
+    "name": "wave4_baseline_candidate",
     "scope": "earth_global_4000_v1",
     "validatedScenarios": [
         "earth_global_4000_v1"
-    ],
-    "supersededBy": "wave4_baseline_candidate"
+    ]
 }
