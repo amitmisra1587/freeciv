@@ -108,6 +108,78 @@ if organic_history_scaling_stress_ceilings == nil then
     nubia = 10,
   }
 end
+-- Era-scaled over-extension stability (OFF by default). DoC's actual model:
+-- instability is driven by POPULATION, not city count -- non-core ("separatism")
+-- population measured against the administrative capacity of the CORE, where the
+-- core's capacity scales up with the era. Before ~1000 BC communications are slow
+-- so a core can administer almost nothing beyond itself (vast empires nearly
+-- impossible); by ~1500 AD a core can hold a large periphery. Concretely:
+--   admin   = core_pop * era_weight(turn) + admin_base
+--   load    = non-core pop (total_pop - core_pop)
+--   penalty = weight * tanh((load/admin - 1) * scale), clamped to [0, max]
+-- Added to collapse_risk and used to flag the actor as over-capacity (for
+-- decisive collapse). Makes Bronze-Age Egypt's sprawl genuinely unstable while a
+-- compact core, or the same size in a late era, stays stable.
+organic_history_overextension_era_enabled =
+    organic_history_overextension_era_enabled or false
+organic_history_overextension_era_admin_base =
+    organic_history_overextension_era_admin_base or 3
+organic_history_overextension_era_weight_early =
+    organic_history_overextension_era_weight_early or 0.5
+organic_history_overextension_era_weight_late =
+    organic_history_overextension_era_weight_late or 3.0
+organic_history_overextension_era_ramp_start_turn =
+    organic_history_overextension_era_ramp_start_turn or 20
+organic_history_overextension_era_ramp_end_turn =
+    organic_history_overextension_era_ramp_end_turn or 180
+organic_history_overextension_era_penalty_weight =
+    organic_history_overextension_era_penalty_weight or 0.6
+organic_history_overextension_era_penalty_max =
+    organic_history_overextension_era_penalty_max or 0.6
+organic_history_overextension_era_scale =
+    organic_history_overextension_era_scale or 1.5
+-- Decisive collapse (OFF by default). When an over-capacity civ stays at high
+-- collapse_risk for a sustained period it does not merely shed a city -- it
+-- COLLAPSES: a large fraction of its non-core cities break away to a shared,
+-- defenceless "Free Cities" independent, and if it has lost its core it dies
+-- outright. The fragments are then picked off by neighbouring powers (see
+-- organic_history_check_independent_absorption), producing real rise-and-fall and
+-- turnover rather than the slow, never-lethal partial_contraction shedding.
+organic_history_decisive_collapse_enabled =
+    organic_history_decisive_collapse_enabled or false
+-- Also run the stability/collapse system for emergent / claim-less civs (using a
+-- synthesized capital-region core), so upstarts like a 31-city Tibet collapse too
+-- rather than over-extending with impunity outside the 24 scenario actors.
+organic_history_collapse_emergent_enabled =
+    organic_history_collapse_emergent_enabled or false
+organic_history_decisive_collapse_risk_threshold =
+    organic_history_decisive_collapse_risk_threshold or 0.55
+organic_history_decisive_collapse_sustained_turns =
+    organic_history_decisive_collapse_sustained_turns or 5
+organic_history_decisive_collapse_shed_fraction =
+    organic_history_decisive_collapse_shed_fraction or 0.6
+organic_history_decisive_collapse_cooldown =
+    organic_history_decisive_collapse_cooldown or 15
+organic_history_decisive_collapse_death_core_pop =
+    organic_history_decisive_collapse_death_core_pop or 3
+organic_history_decisive_collapse_min_cities =
+    organic_history_decisive_collapse_min_cities or 6
+organic_history_decisive_collapse_streaks =
+    organic_history_decisive_collapse_streaks or {}
+organic_history_decisive_collapse_last =
+    organic_history_decisive_collapse_last or {}
+-- Independent ("Free Cities") fragments + how fast neighbours absorb them.
+if organic_history_independent_nation_candidates == nil then
+  organic_history_independent_nation_candidates = {"Pirate", "Barbarian"}
+end
+organic_history_independent_absorb_enabled =
+    organic_history_independent_absorb_enabled or false
+organic_history_independent_absorb_per_turn =
+    organic_history_independent_absorb_per_turn or 2
+organic_history_independent_absorb_radius =
+    organic_history_independent_absorb_radius or 4
+organic_history_independent_player_id =
+    organic_history_independent_player_id or nil
 -- Phase 45 settlement containment (OFF by default; CONCLUDED NEGATIVE).
 -- Experiment: for listed over-expander actors, cap how many cities they may hold
 -- in explicitly-foreign regions (deep in another power's space, far outside their
@@ -772,6 +844,7 @@ function organic_history_turn_begin(turn, year)
   organic_history_check_objectives(turn)
   organic_history_check_core_consolidation(turn)
   organic_history_log_collapse_diagnostics(turn)
+  organic_history_check_independent_absorption(turn)
   organic_history_log_flavor_diagnostics(turn)
   organic_history_check_dynastic_transfers(turn)
   organic_history_check_civil_wars(turn)
@@ -854,6 +927,14 @@ function organic_history_clamp(value, low, high)
   end
 
   return value
+end
+
+-- math.tanh was removed in Lua 5.3+; provide a saturating hyperbolic tangent.
+function organic_history_tanh(x)
+  if x > 20 then return 1 end
+  if x < -20 then return -1 end
+  local e = math.exp(2 * x)
+  return (e - 1) / (e + 1)
 end
 
 function organic_history_update_prestige(player, cities, culture, wars)
@@ -7040,6 +7121,45 @@ function organic_history_check_expansion_pressures(turn)
   end
 end
 
+-- Era administrative weight: how much core population can administer, per era.
+-- Ramps low (Bronze Age, slow communications) to high (early-modern). Multiplied
+-- by core_pop to get administrative capacity.
+function organic_history_overextension_era_weight(turn)
+  local lo = organic_history_overextension_era_weight_early
+  local hi = organic_history_overextension_era_weight_late
+  local t0 = organic_history_overextension_era_ramp_start_turn
+  local t1 = organic_history_overextension_era_ramp_end_turn
+  local p = organic_history_clamp((turn - t0) / math.max(1, t1 - t0), 0, 1)
+  return lo + (hi - lo) * p
+end
+
+-- The region of a player's capital (or first city) -- a synthesized core for
+-- civs that have no claims metadata, so over-extension discipline still applies.
+function organic_history_capital_region(player)
+  for city in player:cities_iterate() do
+    if city:is_primary_capital() or city:is_capital() or city:is_gov_center() then
+      return organic_history_region_for_city(city)
+    end
+  end
+  for city in player:cities_iterate() do
+    return organic_history_region_for_city(city)
+  end
+  return nil
+end
+
+-- Effective claim type: real claims when available, else a synthesized binary
+-- (capital region = core, everything else = peripheral) so emergent civs are
+-- over-extension-disciplined just like the scenario actors.
+function organic_history_effective_claim_type(claims, region_id, fallback_core)
+  if claims ~= nil then
+    return organic_history_region_claim_type(claims, region_id)
+  end
+  if fallback_core ~= nil and region_id == fallback_core then
+    return "core"
+  end
+  return "peripheral"
+end
+
 function organic_history_collapse_risk_for(player, actor_id, claims)
   local player_id = organic_history_player_id(player)
   local state = organic_history_state_capacity[player_id] or {}
@@ -7049,14 +7169,22 @@ function organic_history_collapse_risk_for(player, actor_id, claims)
   local claimed = 0
   local peripheral = 0
   local occupied_core = 0
+  local total_pop = 0
+  local core_pop = 0
   local city_details = {}
+  local fallback_core = (claims == nil)
+      and organic_history_capital_region(player) or nil
 
   for city in player:cities_iterate() do
     local region_id = organic_history_region_for_city(city)
-    local claim_type = organic_history_region_claim_type(claims, region_id)
+    local claim_type = organic_history_effective_claim_type(claims, region_id,
+                                                            fallback_core)
+    local size = city.size or 1
     total = total + 1
+    total_pop = total_pop + size
     if claim_type == "core" then
       core = core + 1
+      core_pop = core_pop + size
     end
     if claim_type ~= "peripheral" then
       claimed = claimed + 1
@@ -7094,16 +7222,41 @@ function organic_history_collapse_risk_for(player, actor_id, claims)
           0, organic_history_scaling_stress_max)
     end
   end
+  -- Era-scaled over-extension (DoC pop model): non-core population measured
+  -- against era-scaled core administrative capacity. When non-core pop outruns
+  -- what the core can administer for the era, instability rises and the actor is
+  -- flagged over-capacity (eligible for decisive collapse). Bronze-Age sprawl is
+  -- near-unadministrable; the same periphery is fine in a late era.
+  local overext_era = 0
+  local era_over_capacity = false
+  local era_load_ratio = 0
+  if organic_history_overextension_era_enabled then
+    local admin = core_pop * organic_history_overextension_era_weight(
+                      game.current_turn())
+        + organic_history_overextension_era_admin_base
+    local load = total_pop - core_pop
+    era_load_ratio = load / math.max(1, admin)
+    if era_load_ratio > 1 then
+      era_over_capacity = true
+      overext_era = organic_history_clamp(
+          organic_history_overextension_era_penalty_weight
+          * organic_history_tanh((era_load_ratio - 1)
+                      * organic_history_overextension_era_scale),
+          0, organic_history_overextension_era_penalty_max)
+    end
+  end
   local collapse_risk = organic_history_clamp(crisis * 0.38
                                              + overextension * 0.24
                                              + peripheral_share * 0.22
                                              + (1 - mandate_score) * 0.16
-                                             + scaling_stress,
+                                             + scaling_stress + overext_era,
                                              0, 1)
   local release_candidates = {}
   for _, detail in ipairs(city_details) do
     if detail.claim_type == "peripheral"
        or (collapse_risk >= 0.65 and detail.claim_type ~= "core"
+           and detail.claim_type ~= "unknown")
+       or (era_over_capacity and detail.claim_type ~= "core"
            and detail.claim_type ~= "unknown") then
       table.insert(release_candidates, detail)
     end
@@ -7123,6 +7276,11 @@ function organic_history_collapse_risk_for(player, actor_id, claims)
     collapse_risk = collapse_risk,
     scaling_stress = scaling_stress,
     scaling_ceiling = scaling_ceiling,
+    overext_era = overext_era,
+    era_over_capacity = era_over_capacity,
+    era_load_ratio = era_load_ratio,
+    total_pop = total_pop,
+    core_pop = core_pop,
     release_candidates = release_candidates
   }
 end
@@ -7792,6 +7950,152 @@ function organic_history_release_city_for_detail(player, detail)
   return nil
 end
 
+function organic_history_player_by_id(pid)
+  if pid == nil then return nil end
+  for p in players_iterate() do
+    if organic_history_player_id(p) == pid then return p end
+  end
+  return nil
+end
+
+-- The shared, defenceless "Free Cities" minor that collapse fragments fall to.
+-- Created lazily with an AUTO-PICKED nation (nil -> create_command_newcomer
+-- chooses an available non-barbarian nation). Using an actual barbarian nation
+-- (Pirate/Barbarian) corrupts the engine's barbarian summoning and crashes.
+function organic_history_get_independent_player()
+  local existing = organic_history_player_by_id(
+      organic_history_independent_player_id)
+  if existing ~= nil and existing.is_alive then return existing end
+  local ok, p = pcall(function()
+    return edit.create_player("Free Cities", nil, "classic")
+  end)
+  if ok and p ~= nil then
+    organic_history_independent_player_id = organic_history_player_id(p)
+    log.normal('organic_history_decisive_collapse turn=%d action="independent_created" player=%d nation=%q',
+               game.current_turn(), organic_history_independent_player_id,
+               organic_history_rule_name(p.nation))
+    return p
+  end
+  return nil
+end
+
+-- Decisive collapse: a sustained over-capacity, high-risk civ sheds a large
+-- fraction of its non-core cities to the Free Cities independent at once, and
+-- dies if it has already lost its core. Hooked where risk + claims are computed.
+function organic_history_check_decisive_collapse(turn, player, actor_id, risk,
+                                                 claims)
+  if not organic_history_decisive_collapse_enabled then return end
+  if risk == nil or actor_id == nil then return end
+  local key = actor_id
+  local eligible = risk.era_over_capacity
+      and risk.collapse_risk >= organic_history_decisive_collapse_risk_threshold
+      and risk.total >= organic_history_decisive_collapse_min_cities
+  if not eligible then
+    organic_history_decisive_collapse_streaks[key] = 0
+    return
+  end
+  organic_history_decisive_collapse_streaks[key] =
+      (organic_history_decisive_collapse_streaks[key] or 0) + 1
+  if organic_history_decisive_collapse_streaks[key]
+      < organic_history_decisive_collapse_sustained_turns then
+    return
+  end
+  if turn < (organic_history_decisive_collapse_last[key] or -999999)
+      + organic_history_decisive_collapse_cooldown then
+    return
+  end
+
+  local fallback_core = (claims == nil)
+      and organic_history_capital_region(player) or nil
+  local noncore, core_cities = {}, {}
+  for city in player:cities_iterate() do
+    local rt = organic_history_effective_claim_type(claims,
+        organic_history_region_for_city(city), fallback_core)
+    if rt == "core" then
+      table.insert(core_cities, city)
+    else
+      table.insert(noncore, city)
+    end
+  end
+  local indep = organic_history_get_independent_player()
+  if indep == nil then return end
+
+  local die = (risk.core_pop or 0)
+      < organic_history_decisive_collapse_death_core_pop
+  -- shed the smallest/weakest frontier cities first
+  table.sort(noncore, function(a, b) return (a.size or 0) < (b.size or 0) end)
+  local shed_target = die and #noncore
+      or math.ceil(organic_history_decisive_collapse_shed_fraction * #noncore)
+  local shed = 0
+  for _, city in ipairs(noncore) do
+    if shed >= shed_target then break end
+    local ok = pcall(function() return edit.transfer_city(city, indep) end)
+    if ok then shed = shed + 1 end
+  end
+  if die then
+    for _, city in ipairs(core_cities) do
+      pcall(function() edit.transfer_city(city, indep) end)
+    end
+    -- Remove remaining units so the player dies cleanly (death needs 0 cities
+    -- AND 0 units); otherwise it lingers city-less with an army and trips the
+    -- engine's player-death assertions.
+    local units = {}
+    for u in player:units_iterate() do table.insert(units, u) end
+    for _, u in ipairs(units) do
+      pcall(function() edit.unit_kill(u, "retired", nil) end)
+    end
+  end
+  organic_history_decisive_collapse_last[key] = turn
+  organic_history_decisive_collapse_streaks[key] = 0
+  log.normal('organic_history_decisive_collapse turn=%d actor=%q action=%q cities_before=%d shed=%d core_pop=%.1f collapse_risk=%.3f era_load=%.2f',
+             turn, actor_id, die and "death" or "fragment", risk.total, shed,
+             risk.core_pop or 0, risk.collapse_risk, risk.era_load_ratio or 0)
+end
+
+-- Neighbouring powers pick off the defenceless Free Cities fragments over time
+-- (the freeciv AI will not reliably do this, so it is scripted): each turn a few
+-- independent cities flip to the nearest major power within range.
+function organic_history_check_independent_absorption(turn)
+  if not organic_history_independent_absorb_enabled then return end
+  local indep = organic_history_player_by_id(
+      organic_history_independent_player_id)
+  if indep == nil then return end
+  local indep_id = organic_history_player_id(indep)
+  local frags = {}
+  for c in indep:cities_iterate() do table.insert(frags, c) end
+  if #frags == 0 then return end
+  local r2 = organic_history_independent_absorb_radius
+      * organic_history_independent_absorb_radius
+  -- Bleed faster when the independent is large, so it never becomes a power: at
+  -- least per_turn, more if it is holding a big backlog of fragments.
+  local budget = math.max(organic_history_independent_absorb_per_turn,
+                          math.ceil(#frags / 3))
+  local absorbed = 0
+  for _, c in ipairs(frags) do
+    if absorbed >= budget then break end
+    local best_owner, best_d = nil, nil
+    for p in players_iterate() do
+      if p.is_alive and organic_history_player_id(p) ~= indep_id then
+        for oc in p:cities_iterate() do
+          local d = c.tile:sq_distance(oc.tile)
+          if best_d == nil or d < best_d then
+            best_d = d
+            best_owner = p
+          end
+        end
+      end
+    end
+    if best_owner ~= nil and best_d ~= nil and best_d <= r2 then
+      local ok = pcall(function() return edit.transfer_city(c, best_owner) end)
+      if ok then
+        absorbed = absorbed + 1
+        log.normal('organic_history_independent_absorption turn=%d city=%q absorbed_by=%d sq_dist=%d',
+                   turn, c.name, organic_history_player_id(best_owner), best_d)
+      end
+    end
+  end
+end
+
 function organic_history_log_collapse_diagnostics(turn)
   if not organic_history_collapse_diagnostics_enabled
      or not organic_history_scenario_metadata_active() then
@@ -7799,27 +8103,34 @@ function organic_history_log_collapse_diagnostics(turn)
   end
 
   for player in players_iterate() do
-    if player.is_alive then
+    if player.is_alive
+       and organic_history_player_id(player)
+           ~= organic_history_independent_player_id then
       local metadata, actor_id = organic_history_actor_metadata_for(player)
-      local claims = organic_history_active_actor_region_claims()[actor_id]
-      if metadata ~= nil and claims ~= nil then
+      local claims = actor_id ~= nil
+          and organic_history_active_actor_region_claims()[actor_id] or nil
+      local has_claims = (metadata ~= nil and claims ~= nil)
+      -- Discipline scenario actors always; emergent/claim-less civs only when the
+      -- emergent flag is on (else upstarts like Tibet over-extend with impunity).
+      if has_claims or organic_history_collapse_emergent_enabled then
         local risk = organic_history_collapse_risk_for(player, actor_id, claims)
         if risk ~= nil then
-          log.normal('organic_history_collapse turn=%d player=%d actor=%q status="diagnostic" cities=%d core_cities=%d claimed_cities=%d peripheral_cities=%d core_share=%.3f peripheral_share=%.3f mandate=%.3f crisis=%.3f overextension=%.3f scaling_stress=%.3f collapse_risk=%.3f release_candidates=%d',
-                     turn, organic_history_player_id(player), actor_id,
+          local key = actor_id
+              or ("player_" .. organic_history_player_id(player))
+          log.normal('organic_history_collapse turn=%d player=%d actor=%q status="diagnostic" cities=%d core_cities=%d claimed_cities=%d peripheral_cities=%d core_share=%.3f peripheral_share=%.3f mandate=%.3f crisis=%.3f overextension=%.3f scaling_stress=%.3f overext_era=%.3f collapse_risk=%.3f release_candidates=%d',
+                     turn, organic_history_player_id(player), key,
                      risk.total, risk.core, risk.claimed, risk.peripheral,
                      risk.core_share, risk.peripheral_share, risk.mandate,
                      risk.crisis, risk.overextension, risk.scaling_stress,
+                     risk.overext_era or 0,
                      risk.collapse_risk,
                      #risk.release_candidates)
-          organic_history_check_partial_contraction(turn, player, actor_id,
-                                                    risk)
-          for _, candidate in ipairs(risk.release_candidates) do
-            log.normal('organic_history_collapse_candidate turn=%d player=%d actor=%q city=%q region=%q claim_type=%q collapse_risk=%.3f',
-                       turn, organic_history_player_id(player), actor_id,
-                       candidate.name, candidate.region, candidate.claim_type,
-                       risk.collapse_risk)
+          if actor_id ~= nil then
+            organic_history_check_partial_contraction(turn, player, actor_id,
+                                                      risk)
           end
+          organic_history_check_decisive_collapse(turn, player, key, risk,
+                                                  claims)
         end
       end
     end
