@@ -138,6 +138,28 @@ organic_history_overextension_era_penalty_max =
     organic_history_overextension_era_penalty_max or 0.6
 organic_history_overextension_era_scale =
     organic_history_overextension_era_scale or 1.5
+-- Geography-driven administrative cost (OFF by default). Replaces the
+-- claim-anchored core/non-core over-extension model with one based on
+-- ACCESSIBILITY + CLIMATE: a city is cheap to hold if it is near the core,
+-- sea-connected (both coastal), and at a similar latitude; remote/inland/
+-- dissimilar cities are expensive and drive collapse. Empires then consolidate
+-- around accessible cores emergently (Rome -> the Mediterranean rim, not inland
+-- Germany) with no per-civ scripting. Feeds the same era ramp + decisive collapse;
+-- the highest-admin-cost cities shed first. Capacity scales with the era weight.
+organic_history_geo_admin_enabled =
+    organic_history_geo_admin_enabled or false
+organic_history_geo_admin_dist_weight =
+    organic_history_geo_admin_dist_weight or 1.0
+organic_history_geo_admin_climate_weight =
+    organic_history_geo_admin_climate_weight or 0.5
+organic_history_geo_admin_sea_factor =
+    organic_history_geo_admin_sea_factor or 0.4
+organic_history_geo_admin_inland_factor =
+    organic_history_geo_admin_inland_factor or 1.5
+organic_history_geo_admin_free_cost =
+    organic_history_geo_admin_free_cost or 4
+organic_history_geo_admin_capacity_base =
+    organic_history_geo_admin_capacity_base or 22
 -- Decisive collapse (OFF by default). When an over-capacity civ stays at high
 -- collapse_risk for a sustained period it does not merely shed a city -- it
 -- COLLAPSES: a large fraction of its non-core cities break away to a shared,
@@ -180,6 +202,31 @@ organic_history_independent_absorb_radius =
     organic_history_independent_absorb_radius or 4
 organic_history_independent_player_id =
     organic_history_independent_player_id or nil
+-- Conquest death (OFF by default). The geography collapse model makes empires
+-- contract to their accessible core and PERSIST -- realistic, but it removes the
+-- self-collapse death that produced turnover. Death must instead come from
+-- CONQUEST: a small civ (already shrunk) that sits next to a clearly dominant
+-- rival has its cities absorbed by the nearest stronger neighbour and dies --
+-- "Rome destroys Carthage" rather than Carthage self-immolating. Scripted because
+-- the freeciv AI will not finish a weak neighbour on its own.
+organic_history_conquest_death_enabled =
+    organic_history_conquest_death_enabled or false
+organic_history_conquest_death_max_cities =
+    organic_history_conquest_death_max_cities or 3
+organic_history_conquest_death_dominance_ratio =
+    organic_history_conquest_death_dominance_ratio or 2.0
+organic_history_conquest_death_adjacency_radius =
+    organic_history_conquest_death_adjacency_radius or 5
+organic_history_conquest_death_max_per_turn =
+    organic_history_conquest_death_max_per_turn or 2
+organic_history_conquest_death_min_age =
+    organic_history_conquest_death_min_age or 20
+organic_history_conquest_death_cooldown =
+    organic_history_conquest_death_cooldown or 8
+organic_history_player_first_seen =
+    organic_history_player_first_seen or {}
+organic_history_conquest_death_last =
+    organic_history_conquest_death_last or {}
 -- Phase 45 settlement containment (OFF by default; CONCLUDED NEGATIVE).
 -- Experiment: for listed over-expander actors, cap how many cities they may hold
 -- in explicitly-foreign regions (deep in another power's space, far outside their
@@ -845,6 +892,7 @@ function organic_history_turn_begin(turn, year)
   organic_history_check_core_consolidation(turn)
   organic_history_log_collapse_diagnostics(turn)
   organic_history_check_independent_absorption(turn)
+  organic_history_check_conquest_death(turn)
   organic_history_log_flavor_diagnostics(turn)
   organic_history_check_dynastic_transfers(turn)
   organic_history_check_civil_wars(turn)
@@ -7160,6 +7208,51 @@ function organic_history_effective_claim_type(claims, region_id, fallback_core)
   return "peripheral"
 end
 
+-- Coarse sea-access proxy: the tile or any CAdjacent tile is oceanic.
+function organic_history_tile_is_coastal(tile)
+  if tile == nil then return false end
+  local terr = tile.terrain
+  if terr ~= nil then
+    local okc, cls = pcall(function() return terr:class_name() end)
+    if okc and cls == "Oceanic" then return true end
+  end
+  for adj in tile:circle_iterate(1) do
+    if adj.id ~= tile.id and adj.terrain ~= nil then
+      local okc, cls = pcall(function() return adj.terrain:class_name() end)
+      if okc and cls == "Oceanic" then return true end
+    end
+  end
+  return false
+end
+
+-- The player's core anchor tile: the capital's tile, else the first city's tile.
+function organic_history_player_core_tile(player)
+  for city in player:cities_iterate() do
+    if city:is_primary_capital() or city:is_capital()
+       or city:is_gov_center() then
+      return city.tile
+    end
+  end
+  for city in player:cities_iterate() do
+    return city.tile
+  end
+  return nil
+end
+
+-- Administrative cost of holding a city from the core: distance (discounted for
+-- sea access when both core and city are coastal) + climate (latitude) gap.
+function organic_history_city_admin_cost(city, core_tile, core_coastal)
+  if city == nil or city.tile == nil or core_tile == nil then return 0 end
+  local dist = math.sqrt(city.tile:sq_distance(core_tile))
+  local access = organic_history_geo_admin_inland_factor
+  if core_coastal and organic_history_tile_is_coastal(city.tile) then
+    access = organic_history_geo_admin_sea_factor
+  end
+  local climate = math.abs((city.tile.y or 0) - (core_tile.y or 0))
+  return organic_history_geo_admin_dist_weight * dist * access
+      + organic_history_geo_admin_climate_weight * climate
+end
+
 function organic_history_collapse_risk_for(player, actor_id, claims)
   local player_id = organic_history_player_id(player)
   local state = organic_history_state_capacity[player_id] or {}
@@ -7174,12 +7267,22 @@ function organic_history_collapse_risk_for(player, actor_id, claims)
   local city_details = {}
   local fallback_core = (claims == nil)
       and organic_history_capital_region(player) or nil
+  local core_tile = organic_history_geo_admin_enabled
+      and organic_history_player_core_tile(player) or nil
+  local core_coastal = (core_tile ~= nil)
+      and organic_history_tile_is_coastal(core_tile) or false
+  local geo_load = 0
 
   for city in player:cities_iterate() do
     local region_id = organic_history_region_for_city(city)
     local claim_type = organic_history_effective_claim_type(claims, region_id,
                                                             fallback_core)
     local size = city.size or 1
+    local admin_cost = organic_history_geo_admin_enabled
+        and organic_history_city_admin_cost(city, core_tile, core_coastal) or 0
+    if admin_cost > organic_history_geo_admin_free_cost then
+      geo_load = geo_load + (admin_cost - organic_history_geo_admin_free_cost)
+    end
     total = total + 1
     total_pop = total_pop + size
     if claim_type == "core" then
@@ -7198,7 +7301,8 @@ function organic_history_collapse_risk_for(player, actor_id, claims)
       city_id = organic_history_city_key(city),
       name = city.name,
       region = region_id,
-      claim_type = claim_type
+      claim_type = claim_type,
+      admin_cost = admin_cost
     })
   end
 
@@ -7245,6 +7349,23 @@ function organic_history_collapse_risk_for(player, actor_id, claims)
           0, organic_history_overextension_era_penalty_max)
     end
   end
+  -- Geography model: over-extension is driven by total ADMIN COST (accessibility
+  -- + climate) vs era-scaled capacity, replacing the claim-anchored pop ratio.
+  if organic_history_geo_admin_enabled then
+    local capacity = organic_history_geo_admin_capacity_base
+        * organic_history_overextension_era_weight(game.current_turn())
+    era_load_ratio = geo_load / math.max(1, capacity)
+    era_over_capacity = era_load_ratio > 1
+    if era_over_capacity then
+      overext_era = organic_history_clamp(
+          organic_history_overextension_era_penalty_weight
+          * organic_history_tanh((era_load_ratio - 1)
+                      * organic_history_overextension_era_scale),
+          0, organic_history_overextension_era_penalty_max)
+    else
+      overext_era = 0
+    end
+  end
   local collapse_risk = organic_history_clamp(crisis * 0.38
                                              + overextension * 0.24
                                              + peripheral_share * 0.22
@@ -7252,13 +7373,29 @@ function organic_history_collapse_risk_for(player, actor_id, claims)
                                              + scaling_stress + overext_era,
                                              0, 1)
   local release_candidates = {}
-  for _, detail in ipairs(city_details) do
-    if detail.claim_type == "peripheral"
-       or (collapse_risk >= 0.65 and detail.claim_type ~= "core"
-           and detail.claim_type ~= "unknown")
-       or (era_over_capacity and detail.claim_type ~= "core"
-           and detail.claim_type ~= "unknown") then
-      table.insert(release_candidates, detail)
+  if organic_history_geo_admin_enabled then
+    -- Shed the least-accessible (highest admin cost) cities first.
+    local sorted = {}
+    for _, detail in ipairs(city_details) do
+      table.insert(sorted, detail)
+    end
+    table.sort(sorted, function(a, b)
+      return (a.admin_cost or 0) > (b.admin_cost or 0)
+    end)
+    for _, detail in ipairs(sorted) do
+      if (detail.admin_cost or 0) > organic_history_geo_admin_free_cost then
+        table.insert(release_candidates, detail)
+      end
+    end
+  else
+    for _, detail in ipairs(city_details) do
+      if detail.claim_type == "peripheral"
+         or (collapse_risk >= 0.65 and detail.claim_type ~= "core"
+             and detail.claim_type ~= "unknown")
+         or (era_over_capacity and detail.claim_type ~= "core"
+             and detail.claim_type ~= "unknown") then
+        table.insert(release_candidates, detail)
+      end
     end
   end
 
@@ -8007,29 +8144,53 @@ function organic_history_check_decisive_collapse(turn, player, actor_id, risk,
 
   local fallback_core = (claims == nil)
       and organic_history_capital_region(player) or nil
+  local geo = organic_history_geo_admin_enabled
+  local geo_core_tile = geo and organic_history_player_core_tile(player) or nil
+  local geo_core_coastal = (geo_core_tile ~= nil)
+      and organic_history_tile_is_coastal(geo_core_tile) or false
   local noncore, core_cities = {}, {}
   for city in player:cities_iterate() do
-    local rt = organic_history_effective_claim_type(claims,
-        organic_history_region_for_city(city), fallback_core)
-    if rt == "core" then
-      table.insert(core_cities, city)
+    if geo then
+      local cost = organic_history_city_admin_cost(city, geo_core_tile,
+                                                   geo_core_coastal)
+      if cost > organic_history_geo_admin_free_cost then
+        table.insert(noncore, {city = city, w = cost})
+      else
+        table.insert(core_cities, city)
+      end
     else
-      table.insert(noncore, city)
+      local rt = organic_history_effective_claim_type(claims,
+          organic_history_region_for_city(city), fallback_core)
+      if rt == "core" then
+        table.insert(core_cities, city)
+      else
+        table.insert(noncore, {city = city, w = city.size or 0})
+      end
     end
   end
   local indep = organic_history_get_independent_player()
   if indep == nil then return end
 
-  local die = (risk.core_pop or 0)
-      < organic_history_decisive_collapse_death_core_pop
-  -- shed the smallest/weakest frontier cities first
-  table.sort(noncore, function(a, b) return (a.size or 0) < (b.size or 0) end)
+  -- Die once the accessible/core holdings are gone.
+  local die
+  if geo then
+    die = #core_cities == 0
+  else
+    die = (risk.core_pop or 0)
+        < organic_history_decisive_collapse_death_core_pop
+  end
+  -- Shed worst-first: highest admin cost (geo) / smallest frontier (claim).
+  if geo then
+    table.sort(noncore, function(a, b) return a.w > b.w end)
+  else
+    table.sort(noncore, function(a, b) return a.w < b.w end)
+  end
   local shed_target = die and #noncore
       or math.ceil(organic_history_decisive_collapse_shed_fraction * #noncore)
   local shed = 0
-  for _, city in ipairs(noncore) do
+  for _, entry in ipairs(noncore) do
     if shed >= shed_target then break end
-    local ok = pcall(function() return edit.transfer_city(city, indep) end)
+    local ok = pcall(function() return edit.transfer_city(entry.city, indep) end)
     if ok then shed = shed + 1 end
   end
   if die then
@@ -8091,6 +8252,72 @@ function organic_history_check_independent_absorption(turn)
         absorbed = absorbed + 1
         log.normal('organic_history_independent_absorption turn=%d city=%q absorbed_by=%d sq_dist=%d',
                    turn, c.name, organic_history_player_id(best_owner), best_d)
+      end
+    end
+  end
+end
+
+-- Conquest death: a small civ next to a clearly dominant rival has its cities
+-- absorbed by the nearest stronger neighbour (per city) and dies. Restores
+-- turnover under the geography collapse model, where civs otherwise shrink to
+-- their accessible core and persist forever.
+function organic_history_check_conquest_death(turn)
+  if not organic_history_conquest_death_enabled then return end
+  local civs = {}
+  for p in players_iterate() do
+    local pid = organic_history_player_id(p)
+    if p.is_alive and pid ~= organic_history_independent_player_id then
+      local cities = {}
+      for c in p:cities_iterate() do table.insert(cities, c) end
+      if #cities > 0 and organic_history_player_first_seen[pid] == nil then
+        organic_history_player_first_seen[pid] = turn
+      end
+      civs[#civs + 1] = {player = p, id = pid, cities = cities, n = #cities}
+    end
+  end
+  local r2 = organic_history_conquest_death_adjacency_radius
+      * organic_history_conquest_death_adjacency_radius
+  local ratio = organic_history_conquest_death_dominance_ratio
+  local absorbed = 0
+  for _, w in ipairs(civs) do
+    if absorbed >= organic_history_conquest_death_max_per_turn then break end
+    local age = turn - (organic_history_player_first_seen[w.id] or turn)
+    if w.n > 0 and w.n <= organic_history_conquest_death_max_cities
+       and age >= organic_history_conquest_death_min_age
+       and turn >= (organic_history_conquest_death_last[w.id] or -999999)
+           + organic_history_conquest_death_cooldown then
+      local flipped = 0
+      for _, wc in ipairs(w.cities) do
+        local best, bestd = nil, nil
+        for _, r in ipairs(civs) do
+          if r.id ~= w.id and r.n >= ratio * w.n then
+            for _, rc in ipairs(r.cities) do
+              local d = wc.tile:sq_distance(rc.tile)
+              if d <= r2 and (bestd == nil or d < bestd) then
+                bestd = d
+                best = r.player
+              end
+            end
+          end
+        end
+        if best ~= nil then
+          local ok = pcall(function() return edit.transfer_city(wc, best) end)
+          if ok then flipped = flipped + 1 end
+        end
+      end
+      if flipped > 0 then
+        organic_history_conquest_death_last[w.id] = turn
+        absorbed = absorbed + 1
+        local died = (w.player:num_cities() == 0)
+        if died then
+          local units = {}
+          for u in w.player:units_iterate() do table.insert(units, u) end
+          for _, u in ipairs(units) do
+            pcall(function() edit.unit_kill(u, "retired", nil) end)
+          end
+        end
+        log.normal('organic_history_conquest_death turn=%d victim=%d cities_before=%d flipped=%d died=%s',
+                   turn, w.id, w.n, flipped, tostring(died))
       end
     end
   end
