@@ -1,0 +1,23 @@
+{
+  "acceptedBaseline": false,
+  "baseline": "engine_real_combat_control",
+  "description": "Phase 62 land feasibility spike: focus Rome's default AI on Athens, provide a prepared but finite army, and require any capture to occur through normal Freeciv combat.",
+  "luaCommands": [
+    "lua cmd organic_history_strategy_spike_enabled = true",
+    "lua cmd organic_history_strategy_spike_attacker = \"rome\"",
+    "lua cmd organic_history_strategy_spike_target = \"greece\"",
+    "lua cmd organic_history_strategy_spike_target_city = \"Athens\"",
+    "lua cmd organic_history_strategy_spike_war_bonus = 6000",
+    "lua cmd organic_history_strategy_spike_conquest_pct = 800",
+    "lua cmd organic_history_strategy_spike_duration = 60",
+    "lua cmd organic_history_strategy_spike_offensive_units = 12",
+    "lua cmd organic_history_strategy_spike_defenders = 3",
+    "lua cmd organic_history_strategy_spike_ferries = 0",
+    "lua cmd organic_history_strategy_spike_gold = 300",
+    "lua cmd organic_history_strategy_spike_force_war = true"
+  ],
+  "mode": "real_combat_feasibility",
+  "name": "phase62_land_strategy_spike",
+  "scope": "earth_ancient_v1",
+  "validatedScenarios": []
+}

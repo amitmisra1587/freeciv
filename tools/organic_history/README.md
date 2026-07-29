@@ -177,6 +177,19 @@ real combat (`engine_combat`), political transfers such as succession or
 secession, and legacy scripted conquest/absorption. `analyze_campaign.py`
 exposes these counts and events under `ownershipChanges`.
 
+Run the Phase 62 real-combat feasibility gates after changing temporary
+strategy-target AI hooks or ferry coordination:
+
+```bash
+tools/organic_history/phase62_land_strategy_gate.sh
+tools/organic_history/phase62_overseas_strategy_gate.sh
+```
+
+The land fixture focuses Rome on Athens. The overseas fixture focuses Portugal
+on Cusco. Both provide a finite prepared force, then require the target city to
+be captured by the expected attacker through engine combat before the temporary
+directive expires. Script-initiated ownership changes fail the gates.
+
 Run the Phase 29 diagnostics-only lifecycle probe after editing lifecycle probe
 profiles, contact/discovery diagnostics, or probe reporting:
 

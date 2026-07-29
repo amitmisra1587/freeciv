@@ -595,6 +595,11 @@ static void player_defaults(struct player *pplayer)
   pplayer->ai_common.fuzzy = 0;
   pplayer->ai_common.expand = 100;
   pplayer->ai_common.barbarian_type = NOT_A_BARBARIAN;
+  pplayer->ai_common.strategy_target_player = -1;
+  pplayer->ai_common.strategy_target_city = -1;
+  pplayer->ai_common.strategy_war_desire_bonus = 0;
+  pplayer->ai_common.strategy_conquest_worth_pct = 100;
+  pplayer->ai_common.strategy_expires = -1;
   player_slots_iterate(pslot) {
     pplayer->ai_common.love[player_slot_index(pslot)] = 1;
   } player_slots_iterate_end;

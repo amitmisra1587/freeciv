@@ -924,6 +924,12 @@ static int dai_war_desire(struct ai_type *ait, struct player *pplayer,
     want /= 4;
   }
 
+  if (pplayer->ai_common.strategy_expires >= game.info.turn
+      && pplayer->ai_common.strategy_target_player
+         == player_number(target)) {
+    want += pplayer->ai_common.strategy_war_desire_bonus;
+  }
+
   DIPLO_LOG(ait, LOG_DEBUG, pplayer, target, "War want %d, war fear %d",
             want, fear);
   return (want - fear);

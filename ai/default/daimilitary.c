@@ -73,6 +73,21 @@
 #define CITY_CONQUEST_WORTH(_city_, _data_) \
   (_data_->worth * 0.9 + (city_size_get(_city_) - 0.5) * 10)
 
+static int dai_strategy_conquest_worth_pct(const struct player *pplayer,
+                                           const struct city *pcity)
+{
+  if (pplayer->ai_common.strategy_expires < game.info.turn
+      || pplayer->ai_common.strategy_target_player
+         != player_number(city_owner(pcity))) {
+    return 100;
+  }
+  if (pplayer->ai_common.strategy_target_city >= 0
+      && pplayer->ai_common.strategy_target_city != pcity->id) {
+    return 100;
+  }
+  return MAX(100, pplayer->ai_common.strategy_conquest_worth_pct);
+}
+
 static unsigned int assess_danger(struct ai_type *ait,
                                   const struct civ_map *nmap,
                                   struct city *pcity,
@@ -1417,7 +1432,9 @@ static void process_attacker_want(struct ai_type *ait,
           if (owner_size <= FINISH_HIM_CITY_COUNT) {
             finishing_factor = (2 - (float)owner_size / FINISH_HIM_CITY_COUNT);
           }
-          desire = CITY_CONQUEST_WORTH(acity, acity_data) * 10 * finishing_factor;
+          desire = CITY_CONQUEST_WORTH(acity, acity_data) * 10
+                   * finishing_factor
+                   * dai_strategy_conquest_worth_pct(pplayer, acity) / 100;
         } else {
           desire = 0;
         }
@@ -1631,7 +1648,8 @@ static struct adv_choice *kill_something_with(struct ai_type *ait,
       if (owner_size <= FINISH_HIM_CITY_COUNT) {
         finishing_factor = (2 - (float)owner_size / FINISH_HIM_CITY_COUNT);
       }
-      benefit += CITY_CONQUEST_WORTH(acity, acity_data) * finishing_factor / 3;
+      benefit += CITY_CONQUEST_WORTH(acity, acity_data) * finishing_factor
+                 * dai_strategy_conquest_worth_pct(pplayer, acity) / 300;
     }
 
     /* end dealing with cities */

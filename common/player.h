@@ -124,6 +124,14 @@ struct player_ai {
   int love[MAX_NUM_PLAYER_SLOTS];
 
   struct ai_trait *traits;
+
+  /* Temporary external strategy focus. Zero-default and ignored by the
+   * standard AI unless explicitly set by a server-side ruleset script. */
+  int strategy_target_player;
+  int strategy_target_city;
+  int strategy_war_desire_bonus;
+  int strategy_conquest_worth_pct;
+  int strategy_expires;
 };
 
 /* Diplomatic states (how one player views another).

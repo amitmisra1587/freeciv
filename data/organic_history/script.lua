@@ -227,6 +227,36 @@ organic_history_player_first_seen =
     organic_history_player_first_seen or {}
 organic_history_conquest_death_last =
     organic_history_conquest_death_last or {}
+-- Phase 62 real-combat feasibility spike (OFF by default). It sets a
+-- temporary C/default-AI target bias but never moves units or transfers cities.
+organic_history_strategy_spike_enabled =
+    organic_history_strategy_spike_enabled or false
+organic_history_strategy_spike_attacker =
+    organic_history_strategy_spike_attacker or "rome"
+organic_history_strategy_spike_target =
+    organic_history_strategy_spike_target or "greece"
+organic_history_strategy_spike_target_city =
+    organic_history_strategy_spike_target_city or "Athens"
+organic_history_strategy_spike_war_bonus =
+    organic_history_strategy_spike_war_bonus or 6000
+organic_history_strategy_spike_conquest_pct =
+    organic_history_strategy_spike_conquest_pct or 800
+organic_history_strategy_spike_duration =
+    organic_history_strategy_spike_duration or 60
+organic_history_strategy_spike_offensive_units =
+    organic_history_strategy_spike_offensive_units or 10
+organic_history_strategy_spike_defenders =
+    organic_history_strategy_spike_defenders or 3
+organic_history_strategy_spike_ferries =
+    organic_history_strategy_spike_ferries or 0
+organic_history_strategy_spike_gold =
+    organic_history_strategy_spike_gold or 300
+organic_history_strategy_spike_force_war =
+    organic_history_strategy_spike_force_war or true
+organic_history_strategy_spike_started =
+    organic_history_strategy_spike_started or nil
+organic_history_strategy_spike_completed =
+    organic_history_strategy_spike_completed or false
 -- Phase 45 settlement containment (OFF by default; CONCLUDED NEGATIVE).
 -- Experiment: for listed over-expander actors, cap how many cities they may hold
 -- in explicitly-foreign regions (deep in another power's space, far outside their
@@ -889,6 +919,7 @@ function organic_history_turn_begin(turn, year)
   organic_history_check_near_east_handoffs(turn)
   organic_history_check_conquest_targets(turn)
   organic_history_check_objectives(turn)
+  organic_history_check_strategy_spike(turn)
   organic_history_check_core_consolidation(turn)
   organic_history_log_collapse_diagnostics(turn)
   organic_history_check_independent_absorption(turn)
@@ -9014,6 +9045,102 @@ function organic_history_player_for_actor_id(actor_id)
   end
 
   return nil
+end
+
+function organic_history_strategy_spike_city(player, name)
+  if player == nil then return nil end
+  for city in player:cities_iterate() do
+    if name == nil or name == "" or city.name == name then
+      return city
+    end
+  end
+  return nil
+end
+
+function organic_history_check_strategy_spike(turn)
+  if not organic_history_strategy_spike_enabled then
+    if organic_history_strategy_spike_started ~= nil
+       and edit.ai_strategy_clear ~= nil then
+      local attacker = organic_history_player_for_actor_id(
+          organic_history_strategy_spike_attacker)
+      if attacker ~= nil then edit.ai_strategy_clear(attacker) end
+      organic_history_strategy_spike_started = nil
+      organic_history_strategy_spike_completed = false
+    end
+    return
+  end
+  if organic_history_strategy_spike_completed then
+    return
+  end
+  if edit.ai_strategy_target == nil then
+    return
+  end
+  local attacker =
+      organic_history_player_for_actor_id(organic_history_strategy_spike_attacker)
+  local target =
+      organic_history_player_for_actor_id(organic_history_strategy_spike_target)
+  local city = organic_history_strategy_spike_city(
+      target, organic_history_strategy_spike_target_city)
+  if attacker == nil or target == nil or city == nil then
+    if attacker ~= nil then edit.ai_strategy_clear(attacker) end
+    if organic_history_strategy_spike_started ~= nil then
+      organic_history_strategy_spike_completed = true
+    end
+    log.normal('organic_history_strategy_spike turn=%d applied=false reason="missing_actor_or_city" attacker=%q target=%q city=%q',
+               turn, organic_history_strategy_spike_attacker,
+               organic_history_strategy_spike_target,
+               organic_history_strategy_spike_target_city)
+    return
+  end
+
+  if organic_history_strategy_spike_started == nil then
+    organic_history_strategy_spike_started = turn
+    local homecity = organic_history_strategy_spike_city(attacker, nil)
+    local created_offensive, skipped_offensive =
+        organic_history_bootstrap_create_units(
+            attacker, nil, homecity and homecity.tile or nil,
+            organic_history_strategy_spike_offensive_units,
+            {"AttackFastStartUnit", "AttackStrongStartUnit", "Hut",
+             "FirstBuild"})
+    local created_defenders, skipped_defenders =
+        organic_history_bootstrap_create_units(
+            attacker, homecity, homecity and homecity.tile or nil,
+            organic_history_strategy_spike_defenders,
+            {"DefendGoodStartUnit", "DefendGood", "DefendOkStartUnit",
+             "DefendOk", "FirstBuild"})
+    local created_ferries, skipped_ferries =
+        organic_history_bootstrap_create_units(
+            attacker, nil, homecity and homecity.tile or nil,
+            organic_history_strategy_spike_ferries,
+            {"Ferryboat", "FerryStartUnit"})
+    if attacker:gold() < organic_history_strategy_spike_gold then
+      edit.change_gold(attacker,
+          organic_history_strategy_spike_gold - attacker:gold())
+    end
+    if organic_history_strategy_spike_force_war
+       and attacker:diplstate(target) ~= "War" then
+      edit.enter_war(attacker, target)
+    end
+    log.normal('organic_history_strategy_spike turn=%d applied=true action="setup" attacker=%d target=%d city=%q offensive=%d defenders=%d ferries=%d skipped=%d',
+               turn, organic_history_player_id(attacker),
+               organic_history_player_id(target), city.name,
+               created_offensive, created_defenders, created_ferries,
+               skipped_offensive + skipped_defenders + skipped_ferries)
+  end
+
+  local expires = organic_history_strategy_spike_started
+      + organic_history_strategy_spike_duration
+  if turn <= expires then
+    local applied = edit.ai_strategy_target(
+        attacker, target, city, organic_history_strategy_spike_war_bonus,
+        organic_history_strategy_spike_conquest_pct, expires)
+    log.normal('organic_history_strategy_spike turn=%d applied=%s action="target" attacker=%d target=%d city=%q expires=%d',
+               turn, tostring(applied), organic_history_player_id(attacker),
+               organic_history_player_id(target), city.name, expires)
+  else
+    edit.ai_strategy_clear(attacker)
+    organic_history_strategy_spike_completed = true
+  end
 end
 
 function organic_history_player_by_id(player_id)

@@ -1,0 +1,23 @@
+{
+  "acceptedBaseline": false,
+  "baseline": "engine_real_combat_control",
+  "description": "Phase 62 overseas feasibility spike: focus Portugal's default AI on Tenochtitlan, provide transports and a finite expeditionary army, and require any capture to occur through normal ferrying, movement, and combat.",
+  "luaCommands": [
+    "lua cmd organic_history_strategy_spike_enabled = true",
+    "lua cmd organic_history_strategy_spike_attacker = \"portugal\"",
+    "lua cmd organic_history_strategy_spike_target = \"inca\"",
+    "lua cmd organic_history_strategy_spike_target_city = \"Cusco\"",
+    "lua cmd organic_history_strategy_spike_war_bonus = 8000",
+    "lua cmd organic_history_strategy_spike_conquest_pct = 1200",
+    "lua cmd organic_history_strategy_spike_duration = 120",
+    "lua cmd organic_history_strategy_spike_offensive_units = 8",
+    "lua cmd organic_history_strategy_spike_defenders = 2",
+    "lua cmd organic_history_strategy_spike_ferries = 4",
+    "lua cmd organic_history_strategy_spike_gold = 500",
+    "lua cmd organic_history_strategy_spike_force_war = true"
+  ],
+  "mode": "real_combat_feasibility",
+  "name": "phase62_overseas_strategy_spike",
+  "scope": "earth_1450_v1",
+  "validatedScenarios": []
+}

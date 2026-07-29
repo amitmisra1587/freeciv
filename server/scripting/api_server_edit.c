@@ -1271,6 +1271,50 @@ bool api_edit_enter_war(lua_State *L, Player *pplayer, Player *pplayer2)
 }
 
 /**********************************************************************//**
+  Set a temporary default-AI strategic focus for feasibility testing.
+**************************************************************************/
+bool api_edit_ai_strategy_target(lua_State *L, Player *pplayer,
+                                 Player *target, City *pcity,
+                                 int war_desire_bonus,
+                                 int conquest_worth_pct,
+                                 int expires)
+{
+  LUASCRIPT_CHECK_STATE(L, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, target, 3, Player, FALSE);
+
+  if (pplayer == target || !target->is_alive
+      || (pcity != NULL && city_owner(pcity) != target)
+      || conquest_worth_pct < 100 || conquest_worth_pct > 2000
+      || expires < game.info.turn) {
+    return FALSE;
+  }
+
+  pplayer->ai_common.strategy_target_player = player_number(target);
+  pplayer->ai_common.strategy_target_city
+    = pcity != NULL ? pcity->id : -1;
+  pplayer->ai_common.strategy_war_desire_bonus = war_desire_bonus;
+  pplayer->ai_common.strategy_conquest_worth_pct = conquest_worth_pct;
+  pplayer->ai_common.strategy_expires = expires;
+  return TRUE;
+}
+
+/**********************************************************************//**
+  Clear a temporary default-AI strategic focus.
+**************************************************************************/
+void api_edit_ai_strategy_clear(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L);
+  LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player);
+
+  pplayer->ai_common.strategy_target_player = -1;
+  pplayer->ai_common.strategy_target_city = -1;
+  pplayer->ai_common.strategy_war_desire_bonus = 0;
+  pplayer->ai_common.strategy_conquest_worth_pct = 100;
+  pplayer->ai_common.strategy_expires = -1;
+}
+
+/**********************************************************************//**
   Make player winner of the scenario
 **************************************************************************/
 void api_edit_player_victory(lua_State *L, Player *pplayer)

@@ -2915,6 +2915,81 @@ static void dai_set_defenders(struct ai_type *ait, struct player *pplayer)
 }
 
 /**********************************************************************//**
+  Coordinate a bounded set of real military units toward an externally
+  selected target city. City capture remains entirely engine-resolved.
+**************************************************************************/
+void dai_strategy_coordinate_units(struct ai_type *ait,
+                                   struct player *pplayer)
+{
+  const int target_city_id = pplayer->ai_common.strategy_target_city;
+  const int target_player_id = pplayer->ai_common.strategy_target_player;
+  struct city *target;
+  char target_name[MAX_LEN_CITYNAME];
+  int committed = 0;
+  int reached = 0;
+
+  if (pplayer->ai_common.strategy_expires < game.info.turn
+      || target_city_id < 0 || target_player_id < 0) {
+    return;
+  }
+
+  target = game_city_by_number(target_city_id);
+  if (target == nullptr
+      || player_number(city_owner(target)) != target_player_id
+      || player_diplstate_get(pplayer, city_owner(target))->type != DS_WAR) {
+    return;
+  }
+  sz_strlcpy(target_name, city_name_get(target));
+
+  unit_list_iterate_safe(pplayer->units, punit) {
+    const int unit_id = punit->id;
+    const struct unit_type *ptype = unit_type_get(punit);
+    struct unit_ai *unit_data = def_ai_unit_data(punit, ait);
+    bool at_target;
+
+    target = game_city_by_number(target_city_id);
+    if (target == nullptr
+        || player_number(city_owner(target)) != target_player_id) {
+      break;
+    }
+    if (committed >= 12
+        || punit->moves_left <= 0
+        || unit_has_orders(punit)
+        || !IS_ATTACKER(ptype)
+        || unit_is_cityfounder(punit)
+        || unit_data->task == AIUNIT_DEFEND_HOME) {
+      continue;
+    }
+
+    dai_unit_new_task(ait, punit, AIUNIT_ATTACK, city_tile(target));
+    committed++;
+    at_target = dai_gothere(ait, pplayer, punit, city_tile(target));
+    punit = game_unit_by_number(unit_id);
+    target = game_city_by_number(target_city_id);
+    if (punit != nullptr && target != nullptr
+        && player_number(city_owner(target)) == target_player_id
+        && is_tiles_adjacent(unit_tile(punit), city_tile(target))
+        && can_unit_attack_tile(punit, nullptr, city_tile(target))) {
+      (void) dai_unit_attack(ait, punit, city_tile(target));
+      punit = game_unit_by_number(unit_id);
+    }
+    if (punit != nullptr) {
+      if (at_target) {
+        reached++;
+      }
+      def_ai_unit_data(punit, ait)->done = TRUE;
+    }
+  } unit_list_iterate_safe_end;
+
+  if (committed > 0) {
+    log_normal("organic_history_strategy_ai turn=%d player=%d target=%d "
+               "city=\"%s\" committed=%d reached=%d",
+               game.info.turn, player_number(pplayer), target_player_id,
+               target_name, committed, reached);
+  }
+}
+
+/**********************************************************************//**
   Master manage unit function.
 
   A manage function should set the unit to 'done' when it should no
@@ -2941,6 +3016,7 @@ void dai_manage_units(struct ai_type *ait, struct player *pplayer)
   /* Find and set city defenders first - figure out which units are
    * allowed to leave home. */
   dai_set_defenders(ait, pplayer);
+  dai_strategy_coordinate_units(ait, pplayer);
 
   unit_list_iterate_safe(pplayer->units, punit) {
     if ((!unit_transported(punit)

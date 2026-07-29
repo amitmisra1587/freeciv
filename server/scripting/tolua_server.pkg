@@ -212,6 +212,12 @@ module edit {
     @ civil_war(lua_State *L, Player *pplayer, int probability);
   bool api_edit_enter_war
     @ enter_war(lua_State *L, Player *pplayer, Player *pplayer2);
+  bool api_edit_ai_strategy_target
+    @ ai_strategy_target(lua_State *L, Player *pplayer, Player *target,
+                         City *pcity, int war_desire_bonus,
+                         int conquest_worth_pct, int expires);
+  void api_edit_ai_strategy_clear
+    @ ai_strategy_clear(lua_State *L, Player *pplayer);
   void api_edit_unit_turn
     @ unit_turn(lua_State *L, Unit *punit, Direction dir);
   void api_edit_player_victory
