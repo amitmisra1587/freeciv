@@ -1252,7 +1252,8 @@ bool api_edit_enter_war(lua_State *L, Player *pplayer, Player *pplayer2)
   LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player, FALSE);
   LUASCRIPT_CHECK_ARG_NIL(L, pplayer2, 3, Player, FALSE);
 
-  if (pplayer == pplayer2 || !pplayer->is_alive || !pplayer2->is_alive
+  if (pplayer == pplayer2 || is_human(pplayer) || is_human(pplayer2)
+      || !pplayer->is_alive || !pplayer2->is_alive
       || players_on_same_team(pplayer, pplayer2)) {
     return FALSE;
   }
@@ -1268,6 +1269,23 @@ bool api_edit_enter_war(lua_State *L, Player *pplayer, Player *pplayer2)
   send_player_diplstate_c(NULL, NULL);
 
   return TRUE;
+}
+
+/**********************************************************************//**
+  Establish normal mutual contact between two players.
+**************************************************************************/
+bool api_edit_make_contact(lua_State *L, Player *pplayer, Player *pplayer2)
+{
+  LUASCRIPT_CHECK_STATE(L, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, pplayer2, 3, Player, FALSE);
+
+  if (pplayer == pplayer2 || is_human(pplayer) || is_human(pplayer2)
+      || !pplayer->is_alive || !pplayer2->is_alive) {
+    return FALSE;
+  }
+  make_contact(pplayer, pplayer2, nullptr);
+  return player_diplstate_get(pplayer, pplayer2)->type != DS_NO_CONTACT;
 }
 
 /**********************************************************************//**
@@ -1291,18 +1309,40 @@ bool api_edit_ai_strategy_set(lua_State *L, Player *pplayer,
 
   posture = ai_strategy_posture_by_name(posture_name);
   objective = ai_strategy_objective_by_name(objective_name);
-  if (posture <= AI_STRATEGY_NONE || posture >= AI_STRATEGY_POSTURE_COUNT
-      || objective <= AI_STRATEGY_OBJECTIVE_NONE
+  if (!is_ai(pplayer)
+      || posture <= AI_STRATEGY_NONE || posture >= AI_STRATEGY_POSTURE_COUNT
+      || objective < AI_STRATEGY_OBJECTIVE_NONE
       || objective >= AI_STRATEGY_OBJECTIVE_COUNT
       || objective == AI_STRATEGY_OBJECTIVE_REGION
-      || target == NULL || pplayer == target || !target->is_alive
-      || (objective == AI_STRATEGY_OBJECTIVE_PLAYER && pcity != NULL)
-      || (objective == AI_STRATEGY_OBJECTIVE_CITY
-          && (pcity == NULL || city_owner(pcity) != target))
       || intensity < 0 || intensity > 1000
       || conquest_worth_pct < 100 || conquest_worth_pct > 2000
       || expires < game.info.turn || campaign_id < 0) {
     return FALSE;
+  }
+  if (posture == AI_STRATEGY_PREPARE
+      || posture == AI_STRATEGY_OFFENSIVE) {
+    if (target == NULL || pplayer == target || !target->is_alive
+        || (objective != AI_STRATEGY_OBJECTIVE_PLAYER
+            && objective != AI_STRATEGY_OBJECTIVE_CITY)
+        || (objective == AI_STRATEGY_OBJECTIVE_PLAYER && pcity != NULL)
+        || (objective == AI_STRATEGY_OBJECTIVE_CITY
+            && (pcity == NULL || city_owner(pcity) != target))) {
+      return FALSE;
+    }
+  } else {
+    if (objective == AI_STRATEGY_OBJECTIVE_CITY
+        && (target == NULL || pcity == NULL || city_owner(pcity) != target)) {
+      return FALSE;
+    }
+    if (objective == AI_STRATEGY_OBJECTIVE_PLAYER
+        && (target == NULL || pplayer == target || !target->is_alive
+            || pcity != NULL)) {
+      return FALSE;
+    }
+    if (objective == AI_STRATEGY_OBJECTIVE_NONE
+        && (target != NULL || pcity != NULL)) {
+      return FALSE;
+    }
   }
 
   pplayer->ai_common.strategy_version = AI_STRATEGY_SAVE_VERSION;

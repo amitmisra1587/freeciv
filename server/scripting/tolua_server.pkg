@@ -212,6 +212,8 @@ module edit {
     @ civil_war(lua_State *L, Player *pplayer, int probability);
   bool api_edit_enter_war
     @ enter_war(lua_State *L, Player *pplayer, Player *pplayer2);
+  bool api_edit_make_contact
+    @ make_contact(lua_State *L, Player *pplayer, Player *pplayer2);
   bool api_edit_ai_strategy_target
     @ ai_strategy_target(lua_State *L, Player *pplayer, Player *target,
                          City *pcity, int war_desire_bonus,
@@ -604,6 +606,8 @@ module Player {
 
   int api_methods_love
     @ love (lua_State *L, Player *pplayer, Player *towards);
+  bool api_methods_player_is_ai
+    @ is_ai (lua_State *L, Player *pplayer);
   void api_methods_add_love
     @ add_love (lua_State *L, Player *pplayer, Player *towards, int amount);
   const char *api_methods_ai_strategy_posture

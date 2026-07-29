@@ -249,6 +249,17 @@ int api_methods_love(lua_State *L, Player *pplayer, Player *towards)
 }
 
 /**********************************************************************//**
+  Return whether the player is controlled by an AI.
+**************************************************************************/
+bool api_methods_player_is_ai(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, FALSE);
+  LUASCRIPT_CHECK_SELF(L, pplayer, FALSE);
+
+  return is_ai(pplayer);
+}
+
+/**********************************************************************//**
   Add player love towards another.
 **************************************************************************/
 void api_methods_add_love(lua_State *L, Player *pplayer, Player *towards,

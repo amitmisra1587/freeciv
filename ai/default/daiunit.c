@@ -2925,6 +2925,8 @@ void dai_strategy_coordinate_units(struct ai_type *ait,
   const int target_player_id = pplayer->ai_common.strategy_target_player;
   struct city *target;
   char target_name[MAX_LEN_CITYNAME];
+  const int max_committed = MAX(
+      1, (12 * pplayer->ai_common.strategy_intensity + 999) / 1000);
   int committed = 0;
   int reached = 0;
 
@@ -2953,7 +2955,7 @@ void dai_strategy_coordinate_units(struct ai_type *ait,
         || player_number(city_owner(target)) != target_player_id) {
       break;
     }
-    if (committed >= 12
+    if (committed >= max_committed
         || punit->moves_left <= 0
         || unit_has_orders(punit)
         || !IS_ATTACKER(ptype)

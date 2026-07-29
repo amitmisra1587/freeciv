@@ -1,0 +1,28 @@
+{
+  "acceptedBaseline": false,
+  "baseline": "engine_real_combat_control",
+  "description": "Phase 64 exhaustion fixture: begin a prepared Rome-Greece war, switch Rome to exhausted after five turns, and require the normal diplomacy AI to leave war.",
+  "luaCommands": [
+    "lua cmd organic_history_strategy_spike_enabled = true",
+    "lua cmd organic_history_strategy_spike_attacker = \"rome\"",
+    "lua cmd organic_history_strategy_spike_target = \"persia\"",
+    "lua cmd organic_history_strategy_spike_target_city = \"Parsa\"",
+    "lua cmd organic_history_strategy_spike_war_bonus = 5000",
+    "lua cmd organic_history_strategy_spike_conquest_pct = 400",
+    "lua cmd organic_history_strategy_spike_duration = 45",
+    "lua cmd organic_history_strategy_spike_war_delay = 0",
+    "lua cmd organic_history_strategy_spike_exhaust_after = 5",
+    "lua cmd organic_history_strategy_spike_intensity = 200",
+    "lua cmd organic_history_strategy_spike_offensive_units = 0",
+    "lua cmd organic_history_strategy_spike_defenders = 3",
+    "lua cmd organic_history_strategy_spike_ferries = 0",
+    "lua cmd organic_history_strategy_spike_gold = 200",
+    "lua cmd organic_history_strategy_spike_force_war = true",
+    "lua cmd organic_history_strategy_spike_remove_existing_offense = true",
+    "lua cmd local rome=find.player(4); local persia=find.player(6); rome:add_love(persia, -1000); persia:add_love(rome, 1000)"
+  ],
+  "mode": "strategy_exhaustion_feasibility",
+  "name": "phase64_exhaustion_strategy_spike",
+  "scope": "earth_ancient_v1",
+  "validatedScenarios": []
+}

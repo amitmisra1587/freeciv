@@ -1802,6 +1802,51 @@ static void adjust_ai_unit_choice(struct city *pcity,
   }
 }
 
+static void dai_strategy_adjust_military_choice(const struct player *pplayer,
+                                                struct adv_choice *choice)
+{
+  const int intensity = pplayer->ai_common.strategy_intensity;
+  const adv_want original_want = choice->want;
+
+  if (!player_ai_strategy_active(pplayer) || choice->want <= 0) {
+    return;
+  }
+
+  switch (pplayer->ai_common.strategy_posture) {
+  case AI_STRATEGY_PREPARE:
+  case AI_STRATEGY_OFFENSIVE:
+    if (choice->type == CT_ATTACKER) {
+      choice->want *= 1.0 + intensity / 1000.0;
+      if (choice->need_boat) {
+        choice->want *= 1.0 + intensity / 2000.0;
+      }
+    }
+    break;
+  case AI_STRATEGY_DEFEND:
+  case AI_STRATEGY_CONSOLIDATE:
+  case AI_STRATEGY_RECOVER:
+  case AI_STRATEGY_EXHAUSTED:
+    if (choice->type == CT_DEFENDER) {
+      choice->want *= 1.0 + intensity / 1000.0;
+    } else if (choice->type == CT_ATTACKER) {
+      choice->want *= MAX(0.15, 1.0 - intensity / 1200.0);
+    }
+    break;
+  case AI_STRATEGY_NONE:
+  case AI_STRATEGY_POSTURE_COUNT:
+    break;
+  }
+
+  if (choice->want != original_want) {
+    log_normal("organic_history_strategy_build turn=%d player=%d posture=\"%s\" "
+               "choice=\"%s\" original=%.2f adjusted=%.2f",
+               game.info.turn, player_number(pplayer),
+               ai_strategy_posture_name(pplayer->ai_common.strategy_posture),
+               adv_choice_rule_name(choice),
+               (double)original_want, (double)choice->want);
+  }
+}
+
 /**********************************************************************//**
   This function selects either a defender or an attacker to be built.
   It records its choice into adv_choice struct.
@@ -2070,6 +2115,8 @@ struct adv_choice *military_advisor_choose_build(struct ai_type *ait,
 
   /* Consider a hunter */
   dai_hunter_choice(ait, pplayer, pcity, choice, allow_gold_upkeep);
+
+  dai_strategy_adjust_military_choice(pplayer, choice);
 
   /* Consider veteran level enhancing buildings before non-urgent units */
   adjust_ai_unit_choice(pcity, choice);

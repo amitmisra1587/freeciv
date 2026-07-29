@@ -253,8 +253,18 @@ organic_history_strategy_spike_gold =
     organic_history_strategy_spike_gold or 300
 organic_history_strategy_spike_force_war =
     organic_history_strategy_spike_force_war or true
+organic_history_strategy_spike_war_delay =
+    organic_history_strategy_spike_war_delay or 0
+organic_history_strategy_spike_exhaust_after =
+    organic_history_strategy_spike_exhaust_after or -1
+organic_history_strategy_spike_intensity =
+    organic_history_strategy_spike_intensity or 1000
+organic_history_strategy_spike_remove_existing_offense =
+    organic_history_strategy_spike_remove_existing_offense or false
 organic_history_strategy_spike_started =
     organic_history_strategy_spike_started or nil
+organic_history_strategy_spike_war_started =
+    organic_history_strategy_spike_war_started or nil
 organic_history_strategy_spike_completed =
     organic_history_strategy_spike_completed or false
 -- Phase 45 settlement containment (OFF by default; CONCLUDED NEGATIVE).
@@ -9065,6 +9075,7 @@ function organic_history_check_strategy_spike(turn)
           organic_history_strategy_spike_attacker)
       if attacker ~= nil then edit.ai_strategy_clear(attacker) end
       organic_history_strategy_spike_started = nil
+      organic_history_strategy_spike_war_started = nil
       organic_history_strategy_spike_completed = false
     end
     return
@@ -9092,10 +9103,46 @@ function organic_history_check_strategy_spike(turn)
                organic_history_strategy_spike_target_city)
     return
   end
+  if not attacker:is_ai() or not target:is_ai() then
+    organic_history_strategy_spike_completed = true
+    log.normal('organic_history_strategy_spike turn=%d applied=false reason="ai_only_fixture" attacker=%d target=%d',
+               turn, organic_history_player_id(attacker),
+               organic_history_player_id(target))
+    return
+  end
 
   if organic_history_strategy_spike_started == nil then
+    local prepared = edit.ai_strategy_set(
+        attacker, "prepare", "city", target, city,
+        organic_history_strategy_spike_intensity,
+        organic_history_strategy_spike_war_bonus,
+        organic_history_strategy_spike_conquest_pct,
+        turn + organic_history_strategy_spike_duration, 62, -1)
+    if not prepared then
+      organic_history_strategy_spike_completed = true
+      log.normal('organic_history_strategy_spike turn=%d applied=false reason="directive_rejected" attacker=%d target=%d city_id=%d',
+                 turn, organic_history_player_id(attacker),
+                 organic_history_player_id(target), city.id)
+      return
+    end
     organic_history_strategy_spike_started = turn
     local homecity = organic_history_strategy_spike_city(attacker, nil)
+    if organic_history_strategy_spike_remove_existing_offense then
+      local remove = {}
+      for unit in attacker:units_iterate() do
+        local nonmil = false
+        if unit.utype ~= nil then
+          local ok, value = pcall(function()
+            return unit.utype:has_flag("NonMil")
+          end)
+          nonmil = ok and value
+        end
+        if not nonmil then remove[#remove + 1] = unit end
+      end
+      for _, unit in ipairs(remove) do
+        edit.unit_kill(unit, "editor", nil)
+      end
+    end
     local created_offensive, skipped_offensive =
         organic_history_bootstrap_create_units(
             attacker, nil, homecity and homecity.tile or nil,
@@ -9117,10 +9164,6 @@ function organic_history_check_strategy_spike(turn)
       edit.change_gold(attacker,
           organic_history_strategy_spike_gold - attacker:gold())
     end
-    if organic_history_strategy_spike_force_war
-       and attacker:diplstate(target) ~= "War" then
-      edit.enter_war(attacker, target)
-    end
     log.normal('organic_history_strategy_spike turn=%d applied=true action="setup" attacker=%d target=%d city=%q city_id=%d offensive=%d defenders=%d ferries=%d skipped=%d',
                turn, organic_history_player_id(attacker),
                organic_history_player_id(target), city.name, city.id,
@@ -9130,21 +9173,73 @@ function organic_history_check_strategy_spike(turn)
 
   local expires = organic_history_strategy_spike_started
       + organic_history_strategy_spike_duration
-  if turn <= expires then
-    local applied = edit.ai_strategy_set(
-        attacker, "offensive", "city", target, city, 1000,
+  if turn > expires then
+    edit.ai_strategy_clear(attacker)
+    organic_history_strategy_spike_completed = true
+    return
+  end
+
+  if organic_history_strategy_spike_force_war
+     and organic_history_strategy_spike_war_started == nil
+     and turn >= organic_history_strategy_spike_started
+                   + organic_history_strategy_spike_war_delay
+     and attacker:diplstate(target) ~= "War" then
+    edit.ai_strategy_set(
+        attacker, "prepare", "city", target, city,
+        organic_history_strategy_spike_intensity,
         organic_history_strategy_spike_war_bonus,
         organic_history_strategy_spike_conquest_pct, expires, 62, -1)
-    log.normal('organic_history_strategy_spike turn=%d applied=%s action="target" attacker=%d target=%d city=%q city_id=%d posture=%q objective=%q campaign=%d expires=%d',
+    local entered = false
+    if edit.make_contact ~= nil then
+      entered = edit.make_contact(attacker, target)
+          and attacker:diplstate(target) == "War"
+    end
+    if not entered and edit.enter_war ~= nil then
+      entered = edit.enter_war(attacker, target)
+    end
+    if entered and attacker:diplstate(target) == "War" then
+      organic_history_strategy_spike_war_started = turn
+      log.normal('organic_history_strategy_spike turn=%d applied=true action="war" attacker=%d target=%d',
+                 turn, organic_history_player_id(attacker),
+                 organic_history_player_id(target))
+    end
+  elseif attacker:diplstate(target) == "War"
+         and organic_history_strategy_spike_war_started == nil then
+    organic_history_strategy_spike_war_started = turn
+    log.normal('organic_history_strategy_spike turn=%d applied=true action="war" attacker=%d target=%d',
+               turn, organic_history_player_id(attacker),
+               organic_history_player_id(target))
+  end
+
+  if organic_history_strategy_spike_exhaust_after >= 0
+     and organic_history_strategy_spike_war_started ~= nil
+     and turn >= organic_history_strategy_spike_war_started
+                   + organic_history_strategy_spike_exhaust_after then
+    local applied = edit.ai_strategy_set(
+        attacker, "exhausted", "player", target, nil,
+        organic_history_strategy_spike_intensity, -8000,
+        100, expires, 63, -1)
+    log.normal('organic_history_strategy_spike turn=%d applied=%s action="exhausted" attacker=%d target=%d posture=%q objective=%q campaign=%d expires=%d',
                turn, tostring(applied), organic_history_player_id(attacker),
-               organic_history_player_id(target), city.name, city.id,
+               organic_history_player_id(target),
                attacker:ai_strategy_posture(),
                attacker:ai_strategy_objective(),
                attacker:ai_strategy_campaign(), expires)
-  else
-    edit.ai_strategy_clear(attacker)
-    organic_history_strategy_spike_completed = true
+    return
   end
+  local posture = organic_history_strategy_spike_war_started ~= nil
+      and "offensive" or "prepare"
+  local applied = edit.ai_strategy_set(
+      attacker, posture, "city", target, city,
+      organic_history_strategy_spike_intensity,
+      organic_history_strategy_spike_war_bonus,
+      organic_history_strategy_spike_conquest_pct, expires, 62, -1)
+  log.normal('organic_history_strategy_spike turn=%d applied=%s action="target" attacker=%d target=%d city=%q city_id=%d posture=%q objective=%q campaign=%d expires=%d',
+             turn, tostring(applied), organic_history_player_id(attacker),
+             organic_history_player_id(target), city.name, city.id,
+             attacker:ai_strategy_posture(),
+             attacker:ai_strategy_objective(),
+             attacker:ai_strategy_campaign(), expires)
 end
 
 function organic_history_player_by_id(player_id)

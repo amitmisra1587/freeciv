@@ -43,6 +43,7 @@ int api_methods_player_free_bulbs(lua_State *L, Player *pplayer);
 int api_methods_tag_score(lua_State *L, Player *pplayer, const char *tag);
 
 int api_methods_love(lua_State *L, Player *pplayer, Player *towards);
+bool api_methods_player_is_ai(lua_State *L, Player *pplayer);
 void api_methods_add_love(lua_State *L, Player *pplayer, Player *towards, int amount);
 void api_methods_cancel_pact(lua_State *L, Player *pplayer, Player *towards);
 const char *api_methods_ai_strategy_posture(lua_State *L, Player *pplayer);
