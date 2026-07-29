@@ -405,6 +405,89 @@ int api_methods_ai_strategy_integration_until(lua_State *L, Player *pplayer)
 }
 
 /**********************************************************************//**
+  Return turn when the current external AI campaign started.
+**************************************************************************/
+int api_methods_ai_strategy_started(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, -1);
+  LUASCRIPT_CHECK_SELF(L, pplayer, -1);
+  return pplayer->ai_common.strategy_started_turn;
+}
+
+/**********************************************************************//**
+  Return turn when the current external AI campaign entered war.
+**************************************************************************/
+int api_methods_ai_strategy_war_started(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, -1);
+  LUASCRIPT_CHECK_SELF(L, pplayer, -1);
+  return pplayer->ai_common.strategy_war_started_turn;
+}
+
+/**********************************************************************//**
+  Return real units lost since the current external AI campaign began.
+**************************************************************************/
+int api_methods_ai_strategy_units_lost(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, 0);
+  LUASCRIPT_CHECK_SELF(L, pplayer, 0);
+  return MAX(0, pplayer->score.units_lost
+                - pplayer->ai_common.strategy_start_units_lost);
+}
+
+/**********************************************************************//**
+  Return real enemy units killed since the current campaign began.
+**************************************************************************/
+int api_methods_ai_strategy_units_killed(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, 0);
+  LUASCRIPT_CHECK_SELF(L, pplayer, 0);
+  return MAX(0, pplayer->score.units_killed
+                - pplayer->ai_common.strategy_start_units_killed);
+}
+
+/**********************************************************************//**
+  Return unit count at the start of the current external AI campaign.
+**************************************************************************/
+int api_methods_ai_strategy_start_units(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, 0);
+  LUASCRIPT_CHECK_SELF(L, pplayer, 0);
+  return pplayer->ai_common.strategy_start_unit_count;
+}
+
+/**********************************************************************//**
+  Return city count at the start of the current external AI campaign.
+**************************************************************************/
+int api_methods_ai_strategy_start_cities(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, 0);
+  LUASCRIPT_CHECK_SELF(L, pplayer, 0);
+  return pplayer->ai_common.strategy_start_city_count;
+}
+
+/**********************************************************************//**
+  Return city-count change since the current external AI campaign began.
+**************************************************************************/
+int api_methods_ai_strategy_city_delta(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, 0);
+  LUASCRIPT_CHECK_SELF(L, pplayer, 0);
+  return city_list_size(pplayer->cities)
+         - pplayer->ai_common.strategy_start_city_count;
+}
+
+/**********************************************************************//**
+  Return the initial maximum intensity of the current campaign.
+**************************************************************************/
+int api_methods_ai_strategy_peak_intensity(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, 0);
+  LUASCRIPT_CHECK_SELF(L, pplayer, 0);
+  return pplayer->ai_common.strategy_peak_intensity;
+}
+
+/**********************************************************************//**
   Try to cancel a pact between players.
 **************************************************************************/
 void api_methods_cancel_pact(lua_State *L, Player *pplayer, Player *towards)

@@ -644,6 +644,22 @@ module Player {
     @ ai_strategy_campaign (lua_State *L, Player *pplayer);
   int api_methods_ai_strategy_integration_until
     @ ai_strategy_integration_until (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_started
+    @ ai_strategy_started (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_war_started
+    @ ai_strategy_war_started (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_units_lost
+    @ ai_strategy_units_lost (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_units_killed
+    @ ai_strategy_units_killed (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_start_units
+    @ ai_strategy_start_units (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_start_cities
+    @ ai_strategy_start_cities (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_city_delta
+    @ ai_strategy_city_delta (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_peak_intensity
+    @ ai_strategy_peak_intensity (lua_State *L, Player *pplayer);
   void api_methods_cancel_pact
     @ cancel_pact (lua_State *L, Player *pplayer, Player *towards);
 }

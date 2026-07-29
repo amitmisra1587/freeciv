@@ -1763,8 +1763,10 @@ static void dai_strategy_plan_offensive_war(struct ai_type *ait,
 
   target = player_by_number(pplayer->ai_common.strategy_target_player);
   if (target == nullptr || !target->is_alive || target == pplayer
-      || NEVER_MET(pplayer, target) || players_on_same_team(pplayer, target)
-      || WAR(pplayer, target)) {
+      || NEVER_MET(pplayer, target) || players_on_same_team(pplayer, target)) {
+    return;
+  }
+  if (WAR(pplayer, target)) {
     return;
   }
 

@@ -59,5 +59,13 @@ int api_methods_ai_strategy_conquest_pct(lua_State *L, Player *pplayer);
 int api_methods_ai_strategy_expires(lua_State *L, Player *pplayer);
 int api_methods_ai_strategy_campaign(lua_State *L, Player *pplayer);
 int api_methods_ai_strategy_integration_until(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_started(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_war_started(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_units_lost(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_units_killed(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_start_units(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_start_cities(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_city_delta(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_peak_intensity(lua_State *L, Player *pplayer);
 
 #endif /* FC__API_SERVER_GAME_METHODS_H */

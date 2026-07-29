@@ -1,0 +1,22 @@
+{
+  "acceptedBaseline": false,
+  "baseline": "condition_driven_strategy_control",
+  "description": "Phase 66 condition fixture: a Rome-Persia campaign exhausts from real war duration before its offensive deadline, obtains a normal AI ceasefire, and enters recovery.",
+  "luaCommands": [
+    "lua cmd organic_history_strategy_market_enabled = true",
+    "lua cmd organic_history_strategy_actor_filter_csv = \"rome\"",
+    "lua cmd organic_history_strategy_market_offensive_turns = 50",
+    "lua cmd organic_history_strategy_market_crisis_limit = 1",
+    "lua cmd organic_history_strategy_market_mandate_floor = 0",
+    "lua cmd organic_history_strategy_market_max_new_campaigns = 1",
+    "lua cmd organic_history_strategy_exhaustion_threshold = 0.17",
+    "lua cmd organic_history_strategy_exhaustion_duration_turns = 4",
+    "lua cmd organic_history_strategy_exhaustion_temper_floor = 0.10",
+    "lua cmd organic_history_strategy_exhaustion_intensity_step = 50",
+    "lua cmd local rome=find.player(4); local persia=find.player(6); local city=nil; for c in persia:cities_iterate() do if c.name == \"Parsa\" then city=c end end; persia:add_love(rome, 1000); edit.ai_strategy_set_organic(rome, \"prepare\", \"city\", persia, city, 786, 6000, 671, game.current_turn() + 3, 166001, -1); edit.make_contact(rome, persia)"
+  ],
+  "mode": "condition_driven_exhaustion",
+  "name": "phase66_condition_exhaustion_spike",
+  "scope": "earth_ancient_v1",
+  "validatedScenarios": []
+}

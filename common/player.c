@@ -633,6 +633,13 @@ void player_ai_strategy_clear(struct player *pplayer)
   pplayer->ai_common.strategy_campaign_id = 0;
   pplayer->ai_common.strategy_integration_until = -1;
   pplayer->ai_common.strategy_planned_war_target = -1;
+  pplayer->ai_common.strategy_started_turn = -1;
+  pplayer->ai_common.strategy_war_started_turn = -1;
+  pplayer->ai_common.strategy_start_units_lost = 0;
+  pplayer->ai_common.strategy_start_units_killed = 0;
+  pplayer->ai_common.strategy_start_unit_count = 0;
+  pplayer->ai_common.strategy_start_city_count = 0;
+  pplayer->ai_common.strategy_peak_intensity = 0;
 }
 
 /**********************************************************************//**

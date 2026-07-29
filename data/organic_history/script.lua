@@ -303,6 +303,23 @@ organic_history_strategy_market_campaign_base =
     organic_history_strategy_market_campaign_base or 100000
 organic_history_strategy_actor_filter_csv =
     organic_history_strategy_actor_filter_csv or ""
+if organic_history_strategy_exhaustion_enabled == nil then
+  organic_history_strategy_exhaustion_enabled = true
+end
+organic_history_strategy_exhaustion_threshold =
+    organic_history_strategy_exhaustion_threshold or 0.62
+organic_history_strategy_exhaustion_duration_turns =
+    organic_history_strategy_exhaustion_duration_turns or 20
+organic_history_strategy_exhaustion_distance_sq =
+    organic_history_strategy_exhaustion_distance_sq or 625
+organic_history_strategy_exhaustion_temper_floor =
+    organic_history_strategy_exhaustion_temper_floor or 0.30
+organic_history_strategy_exhaustion_intensity_step =
+    organic_history_strategy_exhaustion_intensity_step or 75
+organic_history_strategy_recovery_ready =
+    organic_history_strategy_recovery_ready or 0.68
+organic_history_strategy_recovery_crisis_limit =
+    organic_history_strategy_recovery_crisis_limit or 0.35
 -- Phase 45 settlement containment (OFF by default; CONCLUDED NEGATIVE).
 -- Experiment: for listed over-expander actors, cap how many cities they may hold
 -- in explicitly-foreign regions (deep in another power's space, far outside their
@@ -1037,6 +1054,19 @@ function organic_history_war_count(player)
 
   for other in players_iterate() do
     if other.id ~= player.id and player:diplstate(other) == "War" then
+      wars = wars + 1
+    end
+  end
+
+  return wars
+end
+
+function organic_history_live_war_count(player)
+  local wars = 0
+
+  for other in players_iterate() do
+    if other.id ~= player.id and other.is_alive
+       and player:diplstate(other) == "War" then
       wars = wars + 1
     end
   end
@@ -9176,6 +9206,91 @@ function organic_history_strategy_market_city_defenders(city, owner)
   return defenders
 end
 
+function organic_history_strategy_exhaustion_for(turn, player, actor_id)
+  local metadata = organic_history_actor_metadata_for(player)
+  local state = organic_history_state_capacity[player.id] or {}
+  local mandate_state = organic_history_mandates[player.id] or {}
+  local mandate = mandate_state.mandate or state.mandate or 0.5
+  local overextension = state.overextension or 0
+  local losses = player:ai_strategy_units_lost()
+  local kills = player:ai_strategy_units_killed()
+  local start_units = math.max(1, player:ai_strategy_start_units())
+  local start_cities = math.max(1, player:ai_strategy_start_cities())
+  local city_delta = player:ai_strategy_city_delta()
+  local war_started = player:ai_strategy_war_started()
+  local war_turns = war_started >= 0 and math.max(0, turn - war_started) or 0
+  local core_tile = organic_history_actor_core_tile(metadata)
+  local distant = 0
+  local units = player:num_units()
+  local unhappy = 0
+  local cities = player:num_cities()
+
+  if core_tile ~= nil then
+    for unit in player:units_iterate() do
+      local tile = unit.tile
+
+      if tile ~= nil
+         and tile:sq_distance(core_tile)
+             > organic_history_strategy_exhaustion_distance_sq then
+        distant = distant + 1
+      end
+    end
+  end
+  for city in player:cities_iterate() do
+    if city:is_unhappy() then
+      unhappy = unhappy + 1
+    end
+  end
+
+  local loss_ratio = organic_history_clamp(
+      losses / math.max(3, start_units), 0, 1)
+  local duration_ratio = organic_history_clamp(
+      war_turns / math.max(1, organic_history_strategy_exhaustion_duration_turns),
+      0, 1)
+  local distant_ratio = organic_history_clamp(
+      distant / math.max(1, units), 0, 1)
+  local treasury_floor = math.max(20, cities * 12)
+  local treasury_burden = organic_history_clamp(
+      (treasury_floor - player:gold()) / treasury_floor, 0, 1)
+  local unhappy_ratio = organic_history_clamp(
+      unhappy / math.max(1, cities), 0, 1)
+  local city_loss_ratio = organic_history_clamp(
+      math.max(0, -city_delta) / start_cities, 0, 1)
+  local live_wars = organic_history_live_war_count(player)
+  local multiwar = organic_history_clamp((live_wars - 1) / 2, 0, 1)
+  local mandate_deficit = organic_history_clamp(1 - mandate, 0, 1)
+  local capture_credit = organic_history_clamp(
+      math.max(0, city_delta) / start_cities, 0, 0.5)
+  local kill_credit = organic_history_clamp(
+      kills / math.max(3, start_units), 0, 0.5)
+  local score = organic_history_clamp(
+      loss_ratio * 0.25
+      + duration_ratio * 0.20
+      + distant_ratio * 0.10
+      + treasury_burden * 0.10
+      + unhappy_ratio * 0.10
+      + city_loss_ratio * 0.10
+      + multiwar * 0.07
+      + mandate_deficit * 0.04
+      + overextension * 0.04
+      - capture_credit * 0.08
+      - kill_credit * 0.08, 0, 1)
+
+  log.normal('organic_history_strategy_exhaustion turn=%d player=%d actor=%q campaign=%d score=%.3f losses=%d kills=%d loss_ratio=%.3f war_turns=%d duration=%.3f distant=%d distant_ratio=%.3f gold=%d treasury=%.3f unhappy=%d unhappy_ratio=%.3f city_delta=%d city_loss=%.3f wars=%d multiwar=%.3f mandate=%.3f overextension=%.3f capture_credit=%.3f kill_credit=%.3f',
+             turn, player.id, actor_id, player:ai_strategy_campaign(), score,
+             losses, kills, loss_ratio, war_turns, duration_ratio, distant,
+             distant_ratio, player:gold(), treasury_burden, unhappy,
+             unhappy_ratio, city_delta, city_loss_ratio,
+             live_wars, multiwar, mandate,
+             overextension, capture_credit, kill_credit)
+  return {
+    score = score,
+    war_turns = war_turns,
+    losses = losses,
+    kills = kills
+  }
+end
+
 function organic_history_strategy_market_candidate(player, actor_id)
   local claims = organic_history_active_actor_region_claims()[actor_id]
   local lifecycle_type, lifecycle = organic_history_actor_lifecycle(actor_id)
@@ -9380,19 +9495,57 @@ function organic_history_strategy_market_transition(turn, player, actor_id)
           intensity, 0, 100,
           turn + organic_history_strategy_market_recover_turns,
           campaign_id, integration_until, "offensive_target_changed", nil)
-    elseif turn >= expires then
-      if relation == "War" then
+    else
+      local exhaustion = nil
+
+      if organic_history_strategy_exhaustion_enabled
+         and relation == "War" then
+        exhaustion =
+            organic_history_strategy_exhaustion_for(turn, player, actor_id)
+      end
+      if turn >= expires then
+        if relation == "War" then
+          return organic_history_strategy_market_apply(
+              turn, player, actor_id, "exhausted", "exhausted", "player",
+              target, nil, intensity, -8000, 100,
+              turn + organic_history_strategy_market_exhausted_turns,
+              campaign_id, integration_until, "offensive_timeout", nil)
+        end
+        return organic_history_strategy_market_apply(
+            turn, player, actor_id, "recover", "recover", "none", nil, nil,
+            intensity, 0, 100,
+            turn + organic_history_strategy_market_recover_turns,
+            campaign_id, integration_until, "offensive_timeout_no_war", nil)
+      end
+      if exhaustion ~= nil
+         and exhaustion.score
+             >= organic_history_strategy_exhaustion_threshold then
         return organic_history_strategy_market_apply(
             turn, player, actor_id, "exhausted", "exhausted", "player",
             target, nil, intensity, -8000, 100,
             turn + organic_history_strategy_market_exhausted_turns,
-            campaign_id, integration_until, "offensive_timeout", nil)
+            campaign_id, integration_until, "exhaustion_threshold", nil)
       end
-      return organic_history_strategy_market_apply(
-          turn, player, actor_id, "recover", "recover", "none", nil, nil,
-          intensity, 0, 100,
-          turn + organic_history_strategy_market_recover_turns,
-          campaign_id, integration_until, "offensive_timeout_no_war", nil)
+      if exhaustion ~= nil
+         and exhaustion.score
+             >= organic_history_strategy_exhaustion_temper_floor then
+        local peak = math.max(intensity,
+                              player:ai_strategy_peak_intensity())
+        local adjusted = math.max(
+            200, math.floor(peak * (1 - exhaustion.score * 0.65)))
+
+        if adjusted <= intensity
+                       - organic_history_strategy_exhaustion_intensity_step then
+          return organic_history_strategy_market_apply(
+              turn, player, actor_id, "temper", "offensive", "city",
+              target, city, adjusted,
+              math.floor(organic_history_strategy_market_war_bonus
+                         * adjusted / math.max(1, peak)),
+              math.min(900, 200 + math.floor(adjusted * 0.6)),
+              expires, campaign_id, integration_until,
+              "exhaustion_intensity", nil)
+        end
+      end
     end
     return true
   elseif posture == "consolidate" then
@@ -9426,18 +9579,45 @@ function organic_history_strategy_market_transition(turn, player, actor_id)
           intensity, 0, 100,
           turn + organic_history_strategy_market_recover_turns,
           campaign_id, integration_until, "defense_complete", nil)
-    elseif turn >= expires then
-      return organic_history_strategy_market_apply(
-          turn, player, actor_id, "defend", "defend", "player", target, nil,
-          intensity, 0, 100,
-          turn + organic_history_strategy_market_defend_turns,
-          campaign_id, integration_until, "defense_continues", nil)
+    else
+      local exhaustion = nil
+
+      if organic_history_strategy_exhaustion_enabled then
+        exhaustion =
+            organic_history_strategy_exhaustion_for(turn, player, actor_id)
+      end
+      if exhaustion ~= nil
+         and exhaustion.score
+             >= organic_history_strategy_exhaustion_threshold then
+        return organic_history_strategy_market_apply(
+            turn, player, actor_id, "exhausted", "exhausted", "player",
+            target, nil, intensity, -8000, 100,
+            turn + organic_history_strategy_market_exhausted_turns,
+            campaign_id, integration_until, "defensive_exhaustion", nil)
+      elseif turn >= expires then
+        return organic_history_strategy_market_apply(
+            turn, player, actor_id, "defend", "defend", "player", target, nil,
+            intensity, 0, 100,
+            turn + organic_history_strategy_market_defend_turns,
+            campaign_id, integration_until, "defense_continues", nil)
+      end
     end
     return true
   elseif posture == "recover" then
-    if turn >= expires then
+    local state = organic_history_state_capacity[player.id] or {}
+    local recovery_started =
+        expires - organic_history_strategy_market_recover_turns
+    local recovered = turn >= recovery_started + 2
+        and organic_history_strategy_market_war_enemy(player) == nil
+        and (state.recovery or 0)
+            >= organic_history_strategy_recovery_ready
+        and (state.crisis or 1)
+            <= organic_history_strategy_recovery_crisis_limit
+        and player:gold() >= math.max(20, player:num_cities() * 8)
+
+    if turn >= expires or recovered then
       organic_history_strategy_market_clear(turn, player, actor_id,
-                                            "recovery_complete")
+          recovered and "recovery_conditions_met" or "recovery_complete")
     end
     return true
   end

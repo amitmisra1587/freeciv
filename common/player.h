@@ -168,6 +168,13 @@ struct player_ai {
   int strategy_campaign_id;
   int strategy_integration_until;
   int strategy_planned_war_target;
+  int strategy_started_turn;
+  int strategy_war_started_turn;
+  int strategy_start_units_lost;
+  int strategy_start_units_killed;
+  int strategy_start_unit_count;
+  int strategy_start_city_count;
+  int strategy_peak_intensity;
 };
 
 /* Diplomatic states (how one player views another).

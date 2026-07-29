@@ -2968,6 +2968,36 @@ static void sg_load_players(struct loaddata *loading)
     sg_load_player_main(loading, pplayer);
     sg_load_player_cities(loading, pplayer);
     sg_load_player_units(loading, pplayer);
+    if (pplayer->ai_common.strategy_start_units_lost < 0) {
+      pplayer->ai_common.strategy_start_units_lost
+        = pplayer->score.units_lost;
+    }
+    if (pplayer->ai_common.strategy_start_units_killed < 0) {
+      pplayer->ai_common.strategy_start_units_killed
+        = pplayer->score.units_killed;
+    }
+    if (pplayer->ai_common.strategy_start_unit_count < 0) {
+      pplayer->ai_common.strategy_start_unit_count
+        = unit_list_size(pplayer->units);
+    }
+    if (pplayer->ai_common.strategy_start_city_count < 0) {
+      pplayer->ai_common.strategy_start_city_count
+        = city_list_size(pplayer->cities);
+    }
+    if (pplayer->ai_common.strategy_peak_intensity < 0) {
+      pplayer->ai_common.strategy_peak_intensity
+        = pplayer->ai_common.strategy_intensity;
+    }
+    if (pplayer->ai_common.strategy_war_started_turn < 0
+        && pplayer->ai_common.strategy_target_player >= 0) {
+      struct player *target = player_by_number(
+          pplayer->ai_common.strategy_target_player);
+
+      if (target != NULL
+          && player_diplstate_get(pplayer, target)->type == DS_WAR) {
+        pplayer->ai_common.strategy_war_started_turn = game.info.turn;
+      }
+    }
     sg_load_player_attributes(loading, pplayer);
 
     /* Check the success of the functions above. */
@@ -3354,6 +3384,26 @@ static void sg_load_player_main(struct loaddata *loading,
     plr->ai_common.strategy_planned_war_target = secfile_lookup_int_default(
         loading->file, -1,
         "player%d.ai.strategy_planned_war_target", plrno);
+    plr->ai_common.strategy_started_turn = secfile_lookup_int_default(
+        loading->file, -1, "player%d.ai.strategy_started_turn", plrno);
+    plr->ai_common.strategy_war_started_turn = secfile_lookup_int_default(
+        loading->file, -1,
+        "player%d.ai.strategy_war_started_turn", plrno);
+    plr->ai_common.strategy_start_units_lost = secfile_lookup_int_default(
+        loading->file, -1,
+        "player%d.ai.strategy_start_units_lost", plrno);
+    plr->ai_common.strategy_start_units_killed = secfile_lookup_int_default(
+        loading->file, -1,
+        "player%d.ai.strategy_start_units_killed", plrno);
+    plr->ai_common.strategy_start_unit_count = secfile_lookup_int_default(
+        loading->file, -1,
+        "player%d.ai.strategy_start_unit_count", plrno);
+    plr->ai_common.strategy_start_city_count = secfile_lookup_int_default(
+        loading->file, -1,
+        "player%d.ai.strategy_start_city_count", plrno);
+    plr->ai_common.strategy_peak_intensity = secfile_lookup_int_default(
+        loading->file, -1,
+        "player%d.ai.strategy_peak_intensity", plrno);
     if (plr->ai_common.strategy_posture < AI_STRATEGY_NONE
         || plr->ai_common.strategy_posture >= AI_STRATEGY_POSTURE_COUNT
         || plr->ai_common.strategy_source < AI_STRATEGY_SOURCE_NONE

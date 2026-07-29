@@ -1,0 +1,22 @@
+{
+  "acceptedBaseline": false,
+  "baseline": "condition_driven_strategy_control",
+  "description": "Phase 66 loss fixture: a prepared Rome-Greece campaign receives a deterministic opponent-attributed unit loss after its baseline and can exhaust only from the engine loss counter.",
+  "luaCommands": [
+    "lua cmd organic_history_strategy_market_enabled = true",
+    "lua cmd organic_history_strategy_actor_filter_csv = \"rome\"",
+    "lua cmd organic_history_strategy_market_offensive_turns = 80",
+    "lua cmd organic_history_strategy_market_crisis_limit = 1",
+    "lua cmd organic_history_strategy_market_mandate_floor = 0",
+    "lua cmd organic_history_strategy_exhaustion_threshold = 0.05",
+    "lua cmd organic_history_strategy_exhaustion_duration_turns = 1000",
+    "lua cmd organic_history_strategy_exhaustion_temper_floor = 0.04",
+    "lua cmd organic_history_strategy_exhaustion_intensity_step = 50",
+    "lua cmd local rome=find.player(4); local greece=find.player(5); local roma=nil; local athens=nil; for c in rome:cities_iterate() do if c.name == \"Roma\" then roma=c end end; for c in greece:cities_iterate() do if c.name == \"Athens\" then athens=c end end; edit.change_city_size(athens, 8, greece); organic_history_bootstrap_create_units(rome, nil, roma.tile, 4, {\"AttackFastStartUnit\", \"AttackStrongStartUnit\", \"Hut\", \"FirstBuild\"}); organic_history_bootstrap_create_units(rome, roma, roma.tile, 3, {\"DefendGoodStartUnit\", \"DefendGood\", \"DefendOkStartUnit\", \"DefendOk\", \"FirstBuild\"}); organic_history_bootstrap_create_units(greece, nil, athens.tile, 20, {\"DefendGoodStartUnit\", \"DefendGood\", \"DefendOkStartUnit\", \"DefendOk\", \"FirstBuild\"}); if rome:gold() < 300 then edit.change_gold(rome, 300 - rome:gold()) end; edit.ai_strategy_set_organic(rome, \"prepare\", \"city\", greece, athens, 1000, 8000, 1200, game.current_turn() + 2, 166002, -1); edit.make_contact(rome, greece)",
+    "lua cmd function phase66_inject_combat_loss(turn) if turn == 2 then local rome=find.player(4); local greece=find.player(5); local victim=nil; for unit in rome:units_iterate() do local nonmil=false; if unit.utype ~= nil then local ok,value=pcall(function() return unit.utype:has_flag(\"NonMil\") end); nonmil=ok and value end; if not nonmil then victim=unit; break end end; if victim ~= nil then edit.unit_kill(victim, \"killed\", greece) end end end; signal.connect(\"turn_begin\", \"phase66_inject_combat_loss\")"
+  ],
+  "mode": "real_loss_exhaustion",
+  "name": "phase66_loss_exhaustion_spike",
+  "scope": "earth_ancient_v1",
+  "validatedScenarios": []
+}

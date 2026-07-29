@@ -409,7 +409,6 @@ static bool do_capture_units(struct player *pplayer,
     }
     utype = unit_type_get(to_capture);
     really_lost = lost_with_city && !utype_has_flag(utype, UTYF_NOHOME);
-    uplayer->score.units_lost++;
     if (!really_lost) {
       /* A hack: if the captured unit is lost with a capturer's city,
        * we link the old unit, otherwise the new one */

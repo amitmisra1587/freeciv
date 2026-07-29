@@ -842,11 +842,30 @@ static void maybe_claim_base(struct tile *ptile, struct player *new_owner,
   }
 }
 
+static void record_strategy_war_start(struct player *pplayer,
+                                      struct player *pplayer2)
+{
+  if (player_ai_strategy_active(pplayer)
+      && pplayer->ai_common.strategy_target_player
+         == player_number(pplayer2)
+      && pplayer->ai_common.strategy_war_started_turn < 0) {
+    pplayer->ai_common.strategy_war_started_turn = game.info.turn;
+  }
+  if (player_ai_strategy_active(pplayer2)
+      && pplayer2->ai_common.strategy_target_player
+         == player_number(pplayer)
+      && pplayer2->ai_common.strategy_war_started_turn < 0) {
+    pplayer2->ai_common.strategy_war_started_turn = game.info.turn;
+  }
+}
+
 /**********************************************************************//**
   Two players enter war.
 **************************************************************************/
 void enter_war(struct player *pplayer, struct player *pplayer2)
 {
+  record_strategy_war_start(pplayer, pplayer2);
+
   /* Claim bases where units are already standing */
   whole_map_iterate(&(wld.map), ptile) {
     struct player *old_owner = extra_owner(ptile);
@@ -2326,6 +2345,9 @@ void make_contact(struct player *pplayer1, struct player *pplayer2,
                                                           pplayer2);
 
     set_diplstate_type(ds_plr1plr2, ds_plr2plr1, new_state);
+    if (new_state == DS_WAR) {
+      record_strategy_war_start(pplayer1, pplayer2);
+    }
     ds_plr1plr2->first_contact_turn = game.info.turn;
     ds_plr2plr1->first_contact_turn = game.info.turn;
     notify_player(pplayer1, ptile, E_FIRST_CONTACT, ftc_server,

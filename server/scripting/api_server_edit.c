@@ -1299,6 +1299,7 @@ static bool api_edit_ai_strategy_set_source(
 {
   enum ai_strategy_posture posture;
   enum ai_strategy_objective objective;
+  bool new_campaign;
 
   LUASCRIPT_CHECK_STATE(L, FALSE);
   LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player, FALSE);
@@ -1343,6 +1344,29 @@ static bool api_edit_ai_strategy_set_source(
         && (target != NULL || pcity != NULL)) {
       return FALSE;
     }
+  }
+
+  new_campaign = pplayer->ai_common.strategy_source != source
+                 || pplayer->ai_common.strategy_campaign_id != campaign_id
+                 || pplayer->ai_common.strategy_posture == AI_STRATEGY_NONE;
+  if (new_campaign) {
+    pplayer->ai_common.strategy_started_turn = game.info.turn;
+    pplayer->ai_common.strategy_war_started_turn
+      = target != NULL
+        && player_diplstate_get(pplayer, target)->type == DS_WAR
+        ? game.info.turn : -1;
+    pplayer->ai_common.strategy_start_units_lost
+      = pplayer->score.units_lost;
+    pplayer->ai_common.strategy_start_units_killed
+      = pplayer->score.units_killed;
+    pplayer->ai_common.strategy_start_unit_count
+      = unit_list_size(pplayer->units);
+    pplayer->ai_common.strategy_start_city_count
+      = city_list_size(pplayer->cities);
+    pplayer->ai_common.strategy_peak_intensity = intensity;
+  } else {
+    pplayer->ai_common.strategy_peak_intensity
+      = MAX(pplayer->ai_common.strategy_peak_intensity, intensity);
   }
 
   pplayer->ai_common.strategy_version = AI_STRATEGY_SAVE_VERSION;
