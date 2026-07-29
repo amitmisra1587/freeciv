@@ -399,6 +399,50 @@ OWNERSHIP_CHANGE_FIELDS = [
     "reason",
     "success",
 ]
+STRATEGY_STATE_FIELDS = [
+    "turn",
+    "player",
+    "actor",
+    "action",
+    "posture",
+    "reason",
+    "target",
+    "city_id",
+    "campaign",
+    "intensity",
+    "expires",
+    "integration_until",
+    "score",
+    "claim",
+    "region",
+    "distance_sq",
+    "applied",
+]
+STRATEGY_EXHAUSTION_FIELDS = [
+    "turn",
+    "player",
+    "actor",
+    "campaign",
+    "score",
+    "losses",
+    "kills",
+    "war_turns",
+    "duration",
+    "distant",
+    "distant_ratio",
+    "gold",
+    "treasury",
+    "unhappy",
+    "unhappy_ratio",
+    "city_delta",
+    "city_loss",
+    "wars",
+    "multiwar",
+    "mandate",
+    "overextension",
+    "capture_credit",
+    "kill_credit",
+]
 
 
 def main() -> int:
@@ -509,6 +553,7 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
         "secession": log_metrics["secession"],
         "secessionDetails": log_metrics["secessionDetails"],
         "ownershipChanges": log_metrics["ownershipChanges"],
+        "dynamicQuality": log_metrics["dynamicQuality"],
         "contactDiagnostics": log_metrics["contactDiagnostics"],
         "mechanics": log_metrics["mechanics"],
         "finalPlayers": final_players,
@@ -574,6 +619,11 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         "arrival": 0,
         "oceanCrossing": 0,
         "contact": 0,
+        "strategyState": 0,
+        "strategyExhaustion": 0,
+        "strategyPeace": 0,
+        "declineStage": 0,
+        "integrationLock": 0,
     }
     mechanics = {
         "civilWarChecks": 0,
@@ -731,6 +781,9 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
     ownership_categories: dict[str, int] = {}
     ownership_reasons: dict[str, int] = {}
     ownership_changes: list[dict[str, Any]] = []
+    strategy_states: list[dict[str, Any]] = []
+    strategy_exhaustion: list[dict[str, Any]] = []
+    decline_stages: dict[str, int] = {}
     for log_path in sorted(run_dir.glob("server_*.log")):
         for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
             if "organic_history turn_begin" in line:
@@ -746,6 +799,24 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
                 increment_count(ownership_categories, fields.get("category"))
                 increment_count(ownership_reasons, fields.get("reason"))
                 ownership_changes.append(fields)
+            if "organic_history_strategy_state" in line:
+                counts["strategyState"] += 1
+                strategy_states.append(
+                    parse_line_fields(line, STRATEGY_STATE_FIELDS)
+                )
+            if "organic_history_strategy_exhaustion" in line:
+                counts["strategyExhaustion"] += 1
+                strategy_exhaustion.append(
+                    parse_line_fields(line, STRATEGY_EXHAUSTION_FIELDS)
+                )
+            if "organic_history_strategy_peace" in line:
+                counts["strategyPeace"] += 1
+            if "organic_history_decline_stage" in line:
+                counts["declineStage"] += 1
+                fields = parse_line_fields(line, ["stage"])
+                increment_count(decline_stages, fields.get("stage"))
+            if "organic_history_integration_lock" in line:
+                counts["integrationLock"] += 1
             if "organic_history_region" in line:
                 counts["region"] += 1
             if "organic_history_prestige" in line:
@@ -1143,6 +1214,17 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
                                   and mechanics["civilWarTriggered"] == 0)
     mean_stress = (sum(stress_values) / len(stress_values)
                    if stress_values else 0.0)
+    metadata = read_json(run_dir / "run_metadata.json")
+    final_turn = int(metadata.get("finalTurnSeen") or 0)
+    dynamic_quality = summarize_dynamic_quality(
+        ownership_changes,
+        strategy_states,
+        strategy_exhaustion,
+        final_turn,
+    )
+    dynamic_quality["declineStages"] = dict(sorted(decline_stages.items()))
+    dynamic_quality["peaceEvents"] = counts["strategyPeace"]
+    dynamic_quality["integrationLocks"] = counts["integrationLock"]
     return {
         "counts": counts,
         "stress": {
@@ -1316,6 +1398,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
             "reasons": dict(sorted(ownership_reasons.items())),
             "events": ownership_changes,
         },
+        "dynamicQuality": dynamic_quality,
     }
 
 
@@ -1329,6 +1412,191 @@ def write_run_metrics_csv(summary: dict[str, Any], csv_output: Path) -> None:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
+
+
+def summarize_dynamic_quality(
+    ownership_changes: list[dict[str, Any]],
+    strategy_states: list[dict[str, Any]],
+    strategy_exhaustion: list[dict[str, Any]],
+    final_turn: int,
+) -> dict[str, Any]:
+    successful = [
+        event for event in ownership_changes
+        if event.get("success") is not False
+    ]
+    normal_conquest = [
+        event for event in successful
+        if event.get("category") in ("engine_combat", "scripted_conquest")
+    ]
+    real_combat = [
+        event for event in normal_conquest
+        if event.get("category") == "engine_combat"
+    ]
+    political = [
+        event for event in successful
+        if str(event.get("category", "")).startswith("political_")
+    ]
+    events_by_city: dict[int, list[dict[str, Any]]] = {}
+    for event in successful:
+        city_id = int(event.get("city_id", -1))
+        if city_id >= 0:
+            events_by_city.setdefault(city_id, []).append(event)
+    for events in events_by_city.values():
+        events.sort(key=lambda event: int(event.get("turn", 0)))
+
+    retention: dict[str, dict[str, Any]] = {}
+    for horizon in (5, 10, 20):
+        eligible = 0
+        retained = 0
+        for event in real_combat:
+            capture_turn = int(event.get("turn", 0))
+            city_id = int(event.get("city_id", -1))
+            winner = int(event.get("winner", -1))
+            if city_id < 0 or capture_turn + horizon > final_turn:
+                continue
+            eligible += 1
+            later = [
+                change for change in events_by_city.get(city_id, [])
+                if capture_turn < int(change.get("turn", 0))
+                <= capture_turn + horizon
+            ]
+            if not later or int(later[-1].get("winner", -1)) == winner:
+                retained += 1
+        retention[str(horizon)] = {
+            "eligible": eligible,
+            "retained": retained,
+            "rate": round(retained / eligible, 3) if eligible else None,
+        }
+
+    ping_pong = 0
+    repeat_changes = 0
+    max_changes = 0
+    for events in events_by_city.values():
+        max_changes = max(max_changes, len(events))
+        if len(events) > 1:
+            repeat_changes += len(events) - 1
+        for previous, current in zip(events, events[1:]):
+            if (int(current.get("turn", 0)) - int(previous.get("turn", 0))
+                    <= 20
+                    and current.get("winner") == previous.get("loser")):
+                ping_pong += 1
+
+    attacker_counts: dict[str, int] = {}
+    for event in real_combat:
+        increment_count(attacker_counts, event.get("winner"))
+    total_real = len(real_combat)
+    top_attacker_share = (
+        max(attacker_counts.values()) / total_real
+        if total_real and attacker_counts else 0.0
+    )
+    attacker_hhi = (
+        sum((count / total_real) ** 2 for count in attacker_counts.values())
+        if total_real else 0.0
+    )
+
+    state_actions: dict[str, int] = {}
+    state_reasons: dict[str, int] = {}
+    campaigns: dict[int, dict[str, Any]] = {}
+    for state in strategy_states:
+        increment_count(state_actions, state.get("action"))
+        increment_count(state_reasons, state.get("reason"))
+        campaign_id = int(state.get("campaign", 0))
+        if campaign_id <= 0:
+            continue
+        campaign = campaigns.setdefault(campaign_id, {
+            "campaign": campaign_id,
+            "player": state.get("player"),
+            "actor": state.get("actor"),
+            "target": state.get("target"),
+            "city_id": state.get("city_id"),
+            "startTurn": int(state.get("turn", 0)),
+            "endTurn": int(state.get("turn", 0)),
+            "actions": [],
+            "reasons": [],
+            "captures": 0,
+        })
+        campaign["endTurn"] = max(campaign["endTurn"],
+                                  int(state.get("turn", 0)))
+        campaign["actions"].append(state.get("action"))
+        campaign["reasons"].append(state.get("reason"))
+        if int(state.get("city_id", -1)) >= 0:
+            campaign["city_id"] = state.get("city_id")
+        if int(state.get("target", -1)) >= 0:
+            campaign["target"] = state.get("target")
+
+    for campaign in campaigns.values():
+        player = campaign.get("player")
+        start_turn = int(campaign["startTurn"])
+        end_turn = int(campaign["endTurn"])
+        campaign["captures"] = sum(
+            1 for event in real_combat
+            if event.get("winner") == player
+            and start_turn <= int(event.get("turn", 0)) <= end_turn + 1
+        )
+
+    failed_reasons = {
+        "prepare_target_lost",
+        "prepare_target_changed",
+        "offensive_target_lost",
+        "offensive_target_changed",
+        "offensive_timeout",
+        "offensive_timeout_no_war",
+    }
+    failed_objectives = sum(
+        count for reason, count in state_reasons.items()
+        if reason in failed_reasons
+    )
+    exhaustion_scores = [
+        float(event.get("score", 0.0)) for event in strategy_exhaustion
+    ]
+
+    normal_count = len(normal_conquest)
+    successful_count = len(successful)
+    return {
+        "ownership": {
+            "successfulChanges": successful_count,
+            "normalConquest": normal_count,
+            "engineCombatCaptures": total_real,
+            "scriptedConquestCaptures": normal_count - total_real,
+            "realCombatShare": round(total_real / normal_count, 3)
+            if normal_count else None,
+            "politicalTransfers": len(political),
+            "politicalShare": round(len(political) / successful_count, 3)
+            if successful_count else None,
+        },
+        "retention": retention,
+        "churn": {
+            "repeatOwnershipChanges": repeat_changes,
+            "pingPongWithin20Turns": ping_pong,
+            "maxChangesForOneCity": max_changes,
+        },
+        "concentration": {
+            "attackers": dict(sorted(attacker_counts.items())),
+            "topAttackerShare": round(top_attacker_share, 3),
+            "attackerHHI": round(attacker_hhi, 3),
+        },
+        "campaigns": {
+            "count": len(campaigns),
+            "actions": dict(sorted(state_actions.items())),
+            "reasons": dict(sorted(state_reasons.items())),
+            "failedObjectives": failed_objectives,
+            "withCaptures": sum(
+                1 for campaign in campaigns.values()
+                if campaign["captures"] > 0
+            ),
+            "captures": sum(
+                int(campaign["captures"]) for campaign in campaigns.values()
+            ),
+            "details": sorted(campaigns.values(),
+                              key=lambda campaign: campaign["campaign"]),
+        },
+        "exhaustion": {
+            "samples": len(exhaustion_scores),
+            "mean": round(mean(exhaustion_scores), 3),
+            "max": round(max(exhaustion_scores), 3)
+            if exhaustion_scores else 0,
+        },
+    }
 
 
 def compact_summary(summary: dict[str, Any]) -> dict[str, Any]:
@@ -1357,6 +1625,7 @@ def compact_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "secession": summary.get("secession"),
         "secessionDetails": summary.get("secessionDetails"),
         "ownershipChanges": summary.get("ownershipChanges"),
+        "dynamicQuality": summary.get("dynamicQuality"),
         "contactDiagnostics": summary.get("contactDiagnostics"),
         "mechanics": summary.get("mechanics"),
     }

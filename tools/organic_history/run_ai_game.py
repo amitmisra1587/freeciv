@@ -308,16 +308,37 @@ def ruleset_from_serv(path: Path) -> str | None:
     return None
 
 
-def load_profile_commands(path: Path | None) -> list[str]:
+def load_profile_commands(
+    path: Path | None,
+    loading: set[Path] | None = None,
+) -> list[str]:
     if path is None:
         return []
 
-    resolved = path if path.is_absolute() else ROOT / path
+    resolved = (path if path.is_absolute() else ROOT / path).resolve()
+    loading = set() if loading is None else loading
+    if resolved in loading:
+        raise SystemExit(f"ERROR: cyclic profile inheritance at {resolved}.")
+    loading.add(resolved)
     profile = json.loads(resolved.read_text(encoding="utf-8"))
+    inherited: list[str] = []
+    parents = profile.get("extends", [])
+    if isinstance(parents, str):
+        parents = [parents]
+    if not isinstance(parents, list) or not all(
+        isinstance(parent, str) for parent in parents
+    ):
+        raise SystemExit(f"ERROR: profile {resolved} extends must be a string or string list.")
+    for parent in parents:
+        parent_path = Path(parent)
+        if not parent_path.is_absolute():
+            parent_path = resolved.parent / parent_path
+        inherited.extend(load_profile_commands(parent_path, loading))
     commands = profile.get("luaCommands", [])
     if not isinstance(commands, list) or not all(isinstance(command, str) for command in commands):
         raise SystemExit(f"ERROR: profile {resolved} must contain a luaCommands string list.")
-    return commands
+    loading.remove(resolved)
+    return inherited + commands
 
 
 def find_server(build_dir: Path) -> Path | None:

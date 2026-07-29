@@ -11,6 +11,8 @@ import subprocess
 import sys
 from typing import Any
 
+from run_ai_game import load_profile_commands
+
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -56,7 +58,7 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     profile = read_json(args.profile) if args.profile else {}
-    mechanic_commands = profile.get("luaCommands")
+    mechanic_commands = load_profile_commands(args.profile)
     if not mechanic_commands:
         thresholds = read_json(args.thresholds) if args.thresholds else {}
         recommended = thresholds.get("recommended", {})
@@ -69,7 +71,7 @@ def main() -> int:
             f"lua cmd organic_history_civil_war_cooldown = {int(recommended.get('civilWarCooldown', 40))}",
         ]
     baseline_profile = read_json(args.baseline_profile) if args.baseline_profile else {}
-    baseline_commands = baseline_profile.get("luaCommands", [])
+    baseline_commands = load_profile_commands(args.baseline_profile)
     manifest = {
         "rulesetServ": str(args.ruleset_serv),
         "seeds": args.seeds,
