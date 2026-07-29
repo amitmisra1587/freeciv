@@ -1,0 +1,22 @@
+{
+  "acceptedBaseline": false,
+  "baseline": "political_transfer_control",
+  "description": "Phase 67 political-transfer contract fixture: bounded same-region clusters, retained cores, reverse locks, and recovery immunity.",
+  "luaCommands": [
+    "lua cmd organic_history_political_transfer_contract_enabled = true",
+    "lua cmd organic_history_political_transfer_lock_turns = 20",
+    "lua cmd organic_history_political_recovery_turns = 12",
+    "lua cmd organic_history_political_max_cluster = 1",
+    "lua cmd organic_history_political_min_retained_core = 1",
+    "lua cmd organic_history_decisive_collapse_enabled = false",
+    "lua cmd organic_history_independent_absorb_enabled = false",
+    "lua cmd organic_history_conquest_death_enabled = false",
+    "lua cmd local steppe=find.player(5); local franks=find.player(0); local besh=nil; local sarai=nil; local kara=nil; for city in steppe:cities_iterate() do if city.name == \"Beshbalik\" then besh=city elseif city.name == \"Sarai\" then sarai=city elseif city.name == \"Karakorum\" then kara=city end end; organic_history_transfer_city(besh, franks, \"political_secession\", \"phase67_cluster\"); organic_history_transfer_city(sarai, franks, \"political_secession\", \"phase67_cluster\"); organic_history_transfer_city(sarai, franks, \"political_secession\", \"phase67_second\"); organic_history_transfer_city(kara, franks, \"political_secession\", \"phase67_last_core\"); organic_history_transfer_city(besh, steppe, \"political_succession\", \"phase67_reverse\")",
+    "lua cmd local chola=find.player(3); local franks=find.player(0); local first=nil; for city in chola:cities_iterate() do first=city; break end; organic_history_transfer_city(first, franks, \"political_succession\", \"phase67_recovery\")",
+    "lua cmd function phase67_recovery_attempt(turn) if turn == 2 then local chola=find.player(3); local franks=find.player(0); for city in chola:cities_iterate() do organic_history_transfer_city(city, franks, \"political_secession\", \"phase67_recovery_followup\"); return end end end; signal.connect(\"turn_begin\", \"phase67_recovery_attempt\")"
+  ],
+  "mode": "political_transfer_contract",
+  "name": "phase67_political_transfer_contract",
+  "scope": "earth_medieval_v1",
+  "validatedScenarios": []
+}

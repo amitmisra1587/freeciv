@@ -117,6 +117,13 @@ adv_want dai_action_value_unit_vs_city(struct action *paction,
   fc_assert_ret_val(action_get_actor_kind(paction) == AAK_UNIT, 0);
   fc_assert_ret_val(action_get_target_kind(paction) == ATK_CITY, 0);
 
+  if (action_has_result(paction, ACTRES_SPY_INCITE_CITY)
+      && target_city->server.organic_history_integration_until
+         >= game.info.turn
+      && target_city->server.organic_history_integration_until > 0) {
+    return -1;
+  }
+
   utility = 0;
 
   /* If tech theft is impossible when expected. */

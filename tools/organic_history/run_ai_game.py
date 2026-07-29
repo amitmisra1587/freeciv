@@ -191,6 +191,7 @@ def main() -> int:
         for category in (
             "political_civil_war",
             "political_collapse",
+            "political_peaceful_handoff",
             "political_secession",
             "political_succession",
         )

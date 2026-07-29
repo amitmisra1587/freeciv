@@ -76,6 +76,10 @@
 static int dai_strategy_conquest_worth_pct(const struct player *pplayer,
                                            const struct city *pcity)
 {
+  if (pcity->server.organic_history_integration_until >= game.info.turn
+      && pcity->server.organic_history_integration_until > 0) {
+    return 10;
+  }
   if (!player_ai_strategy_active(pplayer)
       || pplayer->ai_common.strategy_posture != AI_STRATEGY_OFFENSIVE
       || pplayer->ai_common.strategy_target_player

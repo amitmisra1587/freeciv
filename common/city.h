@@ -447,6 +447,9 @@ struct city {
 
       bool debug;                   /* not saved */
 
+      int organic_history_integration_until;
+      int organic_history_previous_owner_plus1;
+
       struct adv_city *adv;
       void *ais[FREECIV_AI_MOD_LAST];
 

@@ -210,10 +210,15 @@ module edit {
                       int effect);
   Player *api_edit_civil_war
     @ civil_war(lua_State *L, Player *pplayer, int probability);
+  bool api_edit_civil_war_roll
+    @ civil_war_roll(lua_State *L, Player *pplayer, int probability);
   bool api_edit_enter_war
     @ enter_war(lua_State *L, Player *pplayer, Player *pplayer2);
   bool api_edit_make_contact
     @ make_contact(lua_State *L, Player *pplayer, Player *pplayer2);
+  bool api_edit_city_integration_lock
+    @ city_integration_lock(lua_State *L, City *pcity,
+                            Player *previous_owner, int until);
   bool api_edit_ai_strategy_target
     @ ai_strategy_target(lua_State *L, Player *pplayer, Player *target,
                          City *pcity, int war_desire_bonus,
@@ -662,6 +667,13 @@ module Player {
     @ ai_strategy_peak_intensity (lua_State *L, Player *pplayer);
   void api_methods_cancel_pact
     @ cancel_pact (lua_State *L, Player *pplayer, Player *towards);
+}
+
+module City {
+  int api_methods_city_integration_until
+    @ history_integration_until (lua_State *L, City *pcity);
+  Player *api_methods_city_previous_owner
+    @ history_previous_owner (lua_State *L, City *pcity);
 }
 
 $[

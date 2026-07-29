@@ -1,0 +1,21 @@
+{
+  "acceptedBaseline": false,
+  "baseline": "political_transfer_control",
+  "description": "Phase 67 decline fixture: persistent administrative and autonomy warnings precede a bounded political release after save/load.",
+  "luaCommands": [
+    "lua cmd organic_history_political_transfer_contract_enabled = true",
+    "lua cmd organic_history_political_max_cluster = 1",
+    "lua cmd organic_history_political_min_retained_core = 1",
+    "lua cmd organic_history_decisive_collapse_enabled = true",
+    "lua cmd organic_history_decisive_collapse_sustained_turns = 4",
+    "lua cmd organic_history_decisive_collapse_risk_threshold = 0",
+    "lua cmd organic_history_decisive_collapse_min_cities = 2",
+    "lua cmd organic_history_decisive_collapse_cooldown = 15",
+    "lua cmd organic_history_decisive_collapse_shed_fraction = 0.75",
+    "lua cmd local steppe=find.player(5); local risk={era_over_capacity=true, collapse_risk=1, total=steppe:num_cities(), core_pop=100, era_load_ratio=1}; local claims={core={\"europe\"}, historical={}, contested={}}; organic_history_political_decline_set(\"steppe\", 0); organic_history_check_decisive_collapse(1, steppe, \"steppe\", risk, claims); organic_history_check_decisive_collapse(2, steppe, \"steppe\", risk, claims); organic_history_check_decisive_collapse(3, steppe, \"steppe\", risk, claims)"
+  ],
+  "mode": "political_decline_warning",
+  "name": "phase67_decline_warning_spike",
+  "scope": "earth_medieval_v1",
+  "validatedScenarios": []
+}

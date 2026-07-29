@@ -1244,6 +1244,21 @@ Player *api_edit_civil_war(lua_State *L, Player *pplayer, int probability)
 }
 
 /**********************************************************************//**
+  Perform the normal civil-war probability roll without splitting cities.
+**************************************************************************/
+bool api_edit_civil_war_roll(lua_State *L, Player *pplayer, int probability)
+{
+  LUASCRIPT_CHECK_STATE(L, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player, FALSE);
+
+  if (probability < 0) {
+    return civil_war_triggered(pplayer);
+  }
+
+  return fc_rand(100) < probability;
+}
+
+/**********************************************************************//**
   Set two players at war.
 **************************************************************************/
 bool api_edit_enter_war(lua_State *L, Player *pplayer, Player *pplayer2)
@@ -1289,6 +1304,26 @@ bool api_edit_make_contact(lua_State *L, Player *pplayer, Player *pplayer2)
   }
   make_contact(pplayer, pplayer2, nullptr);
   return player_diplstate_get(pplayer, pplayer2)->type != DS_NO_CONTACT;
+}
+
+/**********************************************************************//**
+  Protect a recently transferred city from immediate strategic retargeting.
+**************************************************************************/
+bool api_edit_city_integration_lock(lua_State *L, City *pcity,
+                                    Player *previous_owner, int until)
+{
+  LUASCRIPT_CHECK_STATE(L, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, pcity, 2, City, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, previous_owner, 3, Player, FALSE);
+
+  if (city_owner(pcity) == previous_owner || until < game.info.turn) {
+    return FALSE;
+  }
+
+  pcity->server.organic_history_integration_until = until;
+  pcity->server.organic_history_previous_owner_plus1
+    = player_number(previous_owner) + 1;
+  return TRUE;
 }
 
 static bool api_edit_ai_strategy_set_source(

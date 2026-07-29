@@ -67,5 +67,7 @@ int api_methods_ai_strategy_start_units(lua_State *L, Player *pplayer);
 int api_methods_ai_strategy_start_cities(lua_State *L, Player *pplayer);
 int api_methods_ai_strategy_city_delta(lua_State *L, Player *pplayer);
 int api_methods_ai_strategy_peak_intensity(lua_State *L, Player *pplayer);
+int api_methods_city_integration_until(lua_State *L, City *pcity);
+Player *api_methods_city_previous_owner(lua_State *L, City *pcity);
 
 #endif /* FC__API_SERVER_GAME_METHODS_H */

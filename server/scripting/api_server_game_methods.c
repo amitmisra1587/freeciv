@@ -488,6 +488,30 @@ int api_methods_ai_strategy_peak_intensity(lua_State *L, Player *pplayer)
 }
 
 /**********************************************************************//**
+  Return the end turn of a city's organic-history integration lock.
+**************************************************************************/
+int api_methods_city_integration_until(lua_State *L, City *pcity)
+{
+  LUASCRIPT_CHECK_STATE(L, 0);
+  LUASCRIPT_CHECK_SELF(L, pcity, 0);
+  return pcity->server.organic_history_integration_until;
+}
+
+/**********************************************************************//**
+  Return the previous owner recorded by a city's integration lock.
+**************************************************************************/
+Player *api_methods_city_previous_owner(lua_State *L, City *pcity)
+{
+  int player_id;
+
+  LUASCRIPT_CHECK_STATE(L, NULL);
+  LUASCRIPT_CHECK_SELF(L, pcity, NULL);
+
+  player_id = pcity->server.organic_history_previous_owner_plus1 - 1;
+  return player_id >= 0 ? player_by_number(player_id) : NULL;
+}
+
+/**********************************************************************//**
   Try to cancel a pact between players.
 **************************************************************************/
 void api_methods_cancel_pact(lua_State *L, Player *pplayer, Player *towards)

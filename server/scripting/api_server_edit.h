@@ -108,8 +108,11 @@ bool api_edit_tile_hide(lua_State *L, Tile *ptile, Player *pplayer);
 void api_edit_climate_change(lua_State *L, enum climate_change_type type,
                              int effect);
 Player *api_edit_civil_war(lua_State *L, Player *pplayer, int probability);
+bool api_edit_civil_war_roll(lua_State *L, Player *pplayer, int probability);
 bool api_edit_enter_war(lua_State *L, Player *pplayer, Player *pplayer2);
 bool api_edit_make_contact(lua_State *L, Player *pplayer, Player *pplayer2);
+bool api_edit_city_integration_lock(lua_State *L, City *pcity,
+                                    Player *previous_owner, int until);
 bool api_edit_ai_strategy_target(lua_State *L, Player *pplayer,
                                  Player *target, City *pcity,
                                  int war_desire_bonus,

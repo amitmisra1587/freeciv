@@ -99,6 +99,8 @@ static struct tile *find_best_tile_to_paradrop_to(struct ai_type *ait,
   square_iterate(nmap, unit_tile(punit), range, ptile) {
     acity = tile_city(ptile);
     if (acity && pplayers_at_war(unit_owner(punit), city_owner(acity))
+        && (acity->server.organic_history_integration_until < game.info.turn
+            || acity->server.organic_history_integration_until <= 0)
         && (unit_list_size(ptile->units) == 0)) {
       if (!map_is_known_and_seen(ptile, pplayer, V_MAIN)
           && has_handicap(pplayer, H_FOG)) {

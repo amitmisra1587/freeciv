@@ -3964,6 +3964,13 @@ static bool sg_load_player_city(struct loaddata *loading, struct player *plr,
     secfile_lookup_int_default(loading->file, 0, "%s.rapture", citystr);
   pcity->steal =
     secfile_lookup_int_default(loading->file, 0, "%s.steal", citystr);
+  pcity->server.organic_history_integration_until =
+    secfile_lookup_int_default(
+        loading->file, 0, "%s.organic_history_integration_until", citystr);
+  pcity->server.organic_history_previous_owner_plus1 =
+    secfile_lookup_int_default(
+        loading->file, 0,
+        "%s.organic_history_previous_owner_plus1", citystr);
 
   /* Before did_buy for undocumented hack */
   pcity->turn_founded =

@@ -473,7 +473,10 @@ static void find_city_to_diplomat(struct player *pplayer, struct unit *punit,
     }
 
     incite_cost = city_incite_cost(pplayer, acity);
-    can_incite = (incite_cost < INCITE_IMPOSSIBLE_COST)
+    can_incite = (acity->server.organic_history_integration_until
+                  < game.info.turn
+                  || acity->server.organic_history_integration_until <= 0)
+        && (incite_cost < INCITE_IMPOSSIBLE_COST)
         && (is_action_possible_on_city(ACTION_SPY_INCITE_CITY,
                                        pplayer, acity)
             || is_action_possible_on_city(ACTION_SPY_INCITE_CITY_ESC,

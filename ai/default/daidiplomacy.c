@@ -542,6 +542,13 @@ static int dai_goldequiv_clause(struct ai_type *ait,
       worth = 0;
       DIPLO_LOG(ait, LOG_DEBUG, pplayer, aplayer,
                 "city destroyed during negotiations");
+    } else if (offer->server.organic_history_integration_until
+               >= game.info.turn
+               && offer->server.organic_history_integration_until > 0) {
+      worth = -BIG_NUMBER;
+      dai_diplo_notify(aplayer,
+                       _("*%s (AI)* %s is still being integrated."),
+                       player_name(pplayer), city_name_get(offer));
     } else if (give) {
       /* AI must be crazy to trade away its cities */
       worth -= city_gold_worth(nmap, offer);

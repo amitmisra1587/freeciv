@@ -488,9 +488,16 @@ static int dai_rampage_want(struct unit *punit, struct tile *ptile)
 {
   struct player *pplayer = unit_owner(punit);
   struct unit *pdef;
+  struct city *pcity = tile_city(ptile);
   struct civ_map *nmap = &(wld.map);
 
   CHECK_UNIT(punit);
+
+  if (pcity != nullptr
+      && pcity->server.organic_history_integration_until >= game.info.turn
+      && pcity->server.organic_history_integration_until > 0) {
+    return 0;
+  }
 
   if (can_unit_attack_tile(punit, nullptr, ptile)
       && (pdef = get_defender(nmap, punit, ptile, nullptr))
@@ -528,8 +535,6 @@ static int dai_rampage_want(struct unit *punit, struct tile *ptile)
     }
   } else if (0 == unit_list_size(ptile->units)) {
     /* No defender. */
-    struct city *pcity = tile_city(ptile);
-
     /* ...and free foreign city waiting for us. Who would resist! */
     if (pcity != nullptr
         && pplayers_at_war(pplayer, city_owner(pcity))
@@ -1388,6 +1393,10 @@ adv_want find_something_to_kill(struct ai_type *ait, struct player *pplayer,
     city_list_iterate(aplayer->cities, acity) {
       struct tile *atile = city_tile(acity);
 
+      if (acity->server.organic_history_integration_until >= game.info.turn
+          && acity->server.organic_history_integration_until > 0) {
+        continue;
+      }
       if (!is_native_tile(punit_type, atile)
           && !can_attack_non_native(punit_type)) {
         /* Can't attack this city. It is on land. */
@@ -1741,6 +1750,10 @@ static void dai_military_attack_barbarian(struct ai_type *ait,
 
   if ((pc = find_closest_city(unit_tile(punit), nullptr, pplayer, FALSE,
                               only_continent, FALSE, FALSE, TRUE, nullptr))) {
+    if (pc->server.organic_history_integration_until >= game.info.turn
+        && pc->server.organic_history_integration_until > 0) {
+      return;
+    }
     if (can_unit_exist_at_tile(&(wld.map), punit, unit_tile(punit))) {
       UNIT_LOG(LOG_DEBUG, punit, "Barbarian heading to conquer %s",
                city_name_get(pc));
@@ -2939,6 +2952,8 @@ void dai_strategy_coordinate_units(struct ai_type *ait,
   target = game_city_by_number(target_city_id);
   if (target == nullptr
       || player_number(city_owner(target)) != target_player_id
+      || (target->server.organic_history_integration_until >= game.info.turn
+          && target->server.organic_history_integration_until > 0)
       || player_diplstate_get(pplayer, city_owner(target))->type != DS_WAR) {
     return;
   }

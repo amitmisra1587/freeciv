@@ -471,6 +471,25 @@ organic_history_claim_conversion_max_per_actor =
     organic_history_claim_conversion_max_per_actor or 99
 organic_history_claim_conversion_lock_turns =
     organic_history_claim_conversion_lock_turns or 20
+if organic_history_political_transfer_contract_enabled == nil then
+  organic_history_political_transfer_contract_enabled = false
+end
+organic_history_political_transfer_lock_turns =
+    organic_history_political_transfer_lock_turns or 20
+organic_history_political_recovery_turns =
+    organic_history_political_recovery_turns or 12
+organic_history_political_max_cluster =
+    organic_history_political_max_cluster or 3
+organic_history_political_min_retained_core =
+    organic_history_political_min_retained_core or 1
+organic_history_political_recovery_csv =
+    organic_history_political_recovery_csv or ""
+organic_history_political_decline_streaks_csv =
+    organic_history_political_decline_streaks_csv or ""
+organic_history_political_decline_last_csv =
+    organic_history_political_decline_last_csv or ""
+organic_history_political_batch_csv =
+    organic_history_political_batch_csv or ""
 organic_history_fallback_successor_spawn_enabled =
     organic_history_fallback_successor_spawn_enabled or false
 organic_history_fallback_successor_cooldown =
@@ -551,6 +570,8 @@ organic_history_bootstrap_applied = organic_history_bootstrap_applied or {}
 organic_history_tech_floor_applied = organic_history_tech_floor_applied or {}
 organic_history_claim_conversion_locked = organic_history_claim_conversion_locked or {}
 organic_history_claim_conversion_actor_counts = organic_history_claim_conversion_actor_counts or {}
+organic_history_political_transfer_batches = {}
+organic_history_political_batch_hydrated_turn = -1
 organic_history_fallback_successor_last_turn = organic_history_fallback_successor_last_turn or {}
 organic_history_fallback_successor_spawns_this_turn = 0
 organic_history_homeland_defense_last_turn = organic_history_homeland_defense_last_turn or {}
@@ -960,6 +981,9 @@ function organic_history_turn_begin(turn, year)
   organic_history_partial_contraction_success_this_turn = false
   organic_history_fallback_successor_spawns_this_turn = 0
   organic_history_homeland_defense_spawns_this_turn = 0
+  organic_history_political_transfer_batches = {}
+  organic_history_political_batch_csv = ""
+  organic_history_political_batch_hydrated_turn = turn
   organic_history_map_dimensions_cache = nil
   organic_history_global_scenario_metadata_active_cache = nil
   organic_history_process_containment_queue(turn)
@@ -1025,6 +1049,305 @@ function organic_history_ownership_category(reason)
   return "engine_other"
 end
 
+function organic_history_political_category(category)
+  return category ~= nil and string.sub(category, 1, 10) == "political_"
+end
+
+function organic_history_political_recovery_records()
+  local records = {}
+
+  for player_id, start_turn, until_turn in string.gmatch(
+      organic_history_political_recovery_csv, "(-?%d+):(-?%d+):(-?%d+)") do
+    records[tonumber(player_id)] = {
+      start_turn = tonumber(start_turn),
+      until_turn = tonumber(until_turn)
+    }
+  end
+
+  return records
+end
+
+function organic_history_political_recovery_set(player, turn)
+  if player == nil then
+    return
+  end
+
+  local records = organic_history_political_recovery_records()
+  records[player.id] = {
+    start_turn = turn,
+    until_turn = turn + organic_history_political_recovery_turns
+  }
+  local ids = {}
+  for player_id, _ in pairs(records) do
+    table.insert(ids, player_id)
+  end
+  table.sort(ids)
+  local encoded = {}
+  for _, player_id in ipairs(ids) do
+    local record = records[player_id]
+
+    if record.until_turn >= turn then
+      table.insert(encoded, string.format(
+          "%d:%d:%d", player_id, record.start_turn, record.until_turn))
+    end
+  end
+  organic_history_political_recovery_csv = table.concat(encoded, ";")
+end
+
+function organic_history_political_recovery_active(player, turn)
+  if player == nil then
+    return false, -1
+  end
+
+  local record = organic_history_political_recovery_records()[player.id]
+
+  return record ~= nil and turn > record.start_turn
+         and turn <= record.until_turn,
+         record ~= nil and record.until_turn or -1
+end
+
+function organic_history_political_decline_records()
+  local records = {}
+
+  for actor_id, streak in string.gmatch(
+      organic_history_political_decline_streaks_csv,
+      "([^,:;]+):(%d+)") do
+    records[actor_id] = tonumber(streak)
+  end
+
+  return records
+end
+
+function organic_history_political_decline_set(actor_id, streak)
+  local records = organic_history_political_decline_records()
+  records[actor_id] = math.max(0, streak or 0)
+  local actor_ids = {}
+  for id, value in pairs(records) do
+    if value > 0 then
+      table.insert(actor_ids, id)
+    end
+  end
+  table.sort(actor_ids)
+  local encoded = {}
+  for _, id in ipairs(actor_ids) do
+    table.insert(encoded, string.format("%s:%d", id, records[id]))
+  end
+  organic_history_political_decline_streaks_csv =
+      table.concat(encoded, ";")
+end
+
+function organic_history_political_decline_get(actor_id)
+  return organic_history_political_decline_records()[actor_id] or 0
+end
+
+function organic_history_political_decline_last_records()
+  local records = {}
+
+  for actor_id, last_turn in string.gmatch(
+      organic_history_political_decline_last_csv,
+      "([^,:;]+):(-?%d+)") do
+    records[actor_id] = tonumber(last_turn)
+  end
+
+  return records
+end
+
+function organic_history_political_decline_last_set(actor_id, turn)
+  local records = organic_history_political_decline_last_records()
+  records[actor_id] = turn
+  local actor_ids = {}
+  for id, _ in pairs(records) do
+    table.insert(actor_ids, id)
+  end
+  table.sort(actor_ids)
+  local encoded = {}
+  for _, id in ipairs(actor_ids) do
+    table.insert(encoded, string.format("%s:%d", id, records[id]))
+  end
+  organic_history_political_decline_last_csv = table.concat(encoded, ";")
+end
+
+function organic_history_political_decline_last_get(actor_id)
+  return organic_history_political_decline_last_records()[actor_id]
+end
+
+function organic_history_political_retains_core(city, loser, category)
+  if loser == nil or city == nil then
+    return false, 0, "missing_party"
+  end
+  if category == "political_peaceful_handoff"
+     and loser.id == organic_history_independent_player_id then
+    return true, 0, "independent_handoff"
+  end
+  if loser:num_cities() <= 1 then
+    return false, 0, "last_city"
+  end
+
+  local metadata = organic_history_actor_metadata_for(loser)
+  if metadata == nil or metadata.core_region == nil then
+    return true, loser:num_cities() - 1, "retained_state"
+  end
+
+  local core_cities = 0
+  local transfer_is_core =
+      organic_history_region_for_city(city) == metadata.core_region
+  for owned_city in loser:cities_iterate() do
+    if organic_history_region_for_city(owned_city) == metadata.core_region then
+      core_cities = core_cities + 1
+    end
+  end
+
+  if core_cities == 0 then
+    local retained_state = loser:num_cities() - 1
+
+    return retained_state >= organic_history_political_min_retained_core,
+           retained_state, "de_facto_core"
+  end
+
+  local retained = core_cities - (transfer_is_core and 1 or 0)
+  return retained >= organic_history_political_min_retained_core,
+         retained, transfer_is_core and "core_city" or "peripheral_city"
+end
+
+function organic_history_political_batch_hydrate(turn)
+  if organic_history_political_batch_hydrated_turn == turn
+     and next(organic_history_political_transfer_batches) ~= nil then
+    return
+  end
+
+  organic_history_political_transfer_batches = {}
+  for saved_turn, loser_id, winner_id, count, reason, region in string.gmatch(
+      organic_history_political_batch_csv,
+      "(%d+):(-?%d+):(-?%d+):(%d+):([^:;]+):([^:;]+)") do
+    if tonumber(saved_turn) == turn then
+      local key = string.format("%d:%s", tonumber(loser_id), reason)
+
+      organic_history_political_transfer_batches[key] = {
+        turn = turn,
+        loser = tonumber(loser_id),
+        winner = tonumber(winner_id),
+        count = tonumber(count),
+        reason = reason,
+        region = region
+      }
+    end
+  end
+  organic_history_political_batch_hydrated_turn = turn
+end
+
+function organic_history_political_batch_save(turn)
+  local keys = {}
+  for key, _ in pairs(organic_history_political_transfer_batches) do
+    table.insert(keys, key)
+  end
+  table.sort(keys)
+  local encoded = {}
+  for _, key in ipairs(keys) do
+    local batch = organic_history_political_transfer_batches[key]
+    table.insert(encoded, string.format(
+        "%d:%d:%d:%d:%s:%s", turn, batch.loser, batch.winner,
+        batch.count, batch.reason, batch.region))
+  end
+  organic_history_political_batch_csv = table.concat(encoded, ";")
+end
+
+function organic_history_political_batch_check(turn, city, loser, new_owner,
+                                                reason)
+  organic_history_political_batch_hydrate(turn)
+  local key = string.format("%d:%s", loser.id, reason or "unspecified")
+  local region_id = organic_history_region_for_city(city)
+  local batch = organic_history_political_transfer_batches[key]
+
+  if batch ~= nil then
+    if batch.winner ~= new_owner.id then
+      return false, key, region_id, "recipient_changed"
+    elseif batch.region ~= region_id then
+      return false, key, region_id, "cluster_region_changed"
+    elseif batch.count >= organic_history_political_max_cluster then
+      return false, key, region_id, "cluster_cap"
+    end
+  end
+
+  return true, key, region_id, "coherent"
+end
+
+function organic_history_political_batch_commit(turn, key, region_id,
+                                                 loser, new_owner, reason)
+  organic_history_political_batch_hydrate(turn)
+  local batch = organic_history_political_transfer_batches[key]
+
+  if batch == nil then
+    batch = {
+      turn = turn,
+      loser = loser.id,
+      winner = new_owner.id,
+      region = region_id,
+      reason = reason or "unspecified",
+      count = 0
+    }
+    organic_history_political_transfer_batches[key] = batch
+  end
+  batch.count = batch.count + 1
+  organic_history_political_batch_save(turn)
+end
+
+function organic_history_political_transfer_preflight(
+    turn, city, loser, new_owner, category, reason)
+  local integration_until = city:history_integration_until()
+  if integration_until >= turn and integration_until > 0 then
+    local previous_owner = city:history_previous_owner()
+    local reverse = new_owner ~= nil and previous_owner ~= nil
+        and previous_owner.id == new_owner.id
+
+    return false, {
+      skip_reason = reverse and "reverse_transfer" or "integration_lock",
+      integration_until = integration_until
+    }
+  end
+
+  if not organic_history_political_transfer_contract_enabled then
+    return true, {skip_reason = "contract_disabled"}
+  end
+
+  local independent_handoff = category == "political_peaceful_handoff"
+      and loser.id == organic_history_independent_player_id
+  if organic_history_political_category(category) then
+    local recovering, recovery_until =
+        organic_history_political_recovery_active(loser, turn)
+    if recovering and not independent_handoff then
+      return false, {
+        skip_reason = "recovery_immunity",
+        recovery_until = recovery_until
+      }
+    end
+
+    local retains_core, retained_core, core_reason =
+        organic_history_political_retains_core(city, loser, category)
+    if not retains_core then
+      return false, {
+        skip_reason = "retained_core",
+        retained_core = retained_core,
+        core_reason = core_reason
+      }
+    end
+
+    if new_owner ~= nil then
+      local coherent, _, region_id, cluster_reason =
+          organic_history_political_batch_check(
+              turn, city, loser, new_owner, reason)
+
+      if not coherent then
+        return false, {
+          skip_reason = cluster_reason,
+          region_id = region_id
+        }
+      end
+    end
+  end
+
+  return true, {skip_reason = "eligible"}
+end
+
 function organic_history_transfer_city(city, new_owner, category, reason)
   if city == nil or new_owner == nil then
     return false
@@ -1034,7 +1357,63 @@ function organic_history_transfer_city(city, new_owner, category, reason)
   local loser = city.owner
   local loser_id = organic_history_player_id(loser)
   local winner_id = organic_history_player_id(new_owner)
+  local political = organic_history_political_category(category)
+  local batch_key = nil
+  local batch_region = "unknown"
+
+  local eligible, detail = organic_history_political_transfer_preflight(
+      turn, city, loser, new_owner, category, reason)
+  if not eligible then
+    log.normal('organic_history_political_transfer turn=%d city=%q city_id=%d loser=%d winner=%d category=%q reason=%q applied=false skip_reason=%q integration_until=%d recovery_until=%d retained_core=%d core_reason=%q',
+               turn, city_name, city.id, loser_id, winner_id,
+               category or "script_other", reason or "unspecified",
+               detail.skip_reason or "ineligible",
+               detail.integration_until or -1,
+               detail.recovery_until or -1,
+               detail.retained_core or -1,
+               detail.core_reason or "none")
+    return false
+  end
+
+  if organic_history_political_transfer_contract_enabled then
+    if political then
+      local coherent, key, region_id, cluster_reason =
+          organic_history_political_batch_check(
+              turn, city, loser, new_owner, reason)
+      if not coherent then
+        log.normal('organic_history_political_transfer turn=%d city=%q city_id=%d loser=%d winner=%d category=%q reason=%q applied=false skip_reason=%q region=%q',
+                   turn, city_name, city.id, loser_id, winner_id,
+                   category, reason or "unspecified", cluster_reason,
+                   region_id)
+        return false
+      end
+      batch_key = key
+      batch_region = region_id
+    end
+  end
+
   local transferred = edit.transfer_city(city, new_owner)
+  if transferred and organic_history_political_transfer_contract_enabled then
+    edit.city_integration_lock(
+        city, loser, turn + organic_history_political_transfer_lock_turns)
+    if political then
+      if category ~= "political_peaceful_handoff"
+         or loser.id ~= organic_history_independent_player_id then
+        organic_history_political_recovery_set(loser, turn)
+      end
+      organic_history_political_batch_commit(
+          turn, batch_key, batch_region, loser, new_owner, reason)
+    end
+    log.normal('organic_history_political_transfer turn=%d city=%q city_id=%d loser=%d winner=%d category=%q reason=%q applied=true integration_until=%d recovery_until=%d region=%q',
+               turn, city_name, city.id, loser_id, winner_id,
+               category or "script_other", reason or "unspecified",
+               city:history_integration_until(),
+               political and (category ~= "political_peaceful_handoff"
+                              or loser.id
+                                 ~= organic_history_independent_player_id)
+                 and turn + organic_history_political_recovery_turns or -1,
+               batch_region)
+  end
   log.normal('organic_history_ownership_change turn=%d city=%q city_id=%d loser=%d winner=%d source="script" category=%q reason=%q success=%s',
              turn, city_name, city.id, loser_id, winner_id,
              category or "script_other", reason or "unspecified",
@@ -8110,23 +8489,36 @@ function organic_history_try_partial_contraction_release(turn, player, actor_id,
        or (entry.detail.region == cluster_region
            and organic_history_player_id(entry.recipient)
                == cluster_recipient_id) then
-      local candidate_successor, candidate_successor_actor_id,
-          candidate_successor_name, candidate_successor_nation_name =
-          organic_history_partial_contraction_successor(
-              player, actor_id, entry.detail, entry.city, turn)
-      if candidate_successor ~= nil
-         and organic_history_transfer_city(
+      local eligible = true
+      if organic_history_political_transfer_contract_enabled then
+        eligible = organic_history_political_transfer_preflight(
+           turn, entry.city, player, entry.recipient,
+           "political_secession", "partial_contraction")
+      end
+      if eligible then
+        local candidate_successor, candidate_successor_actor_id,
+           candidate_successor_name, candidate_successor_nation_name =
+           organic_history_partial_contraction_successor(
+               player, actor_id, entry.detail, entry.city, turn)
+        if candidate_successor ~= nil then
+          local transferred_city = organic_history_transfer_city(
              entry.city, candidate_successor, "political_secession",
-             "partial_contraction") then
-        transferred = transferred + 1
-        table.insert(transferred_names, entry.city.name)
-        if successor == nil then
-          successor = candidate_successor
-          successor_actor_id = candidate_successor_actor_id
-          successor_name = candidate_successor_name
-          successor_nation_name = candidate_successor_nation_name
-          first_candidate = entry.detail
-          first_city = entry.city
+             "partial_contraction")
+
+          if transferred_city then
+           transferred = transferred + 1
+           table.insert(transferred_names, entry.city.name)
+           if successor == nil then
+             successor = candidate_successor
+             successor_actor_id = candidate_successor_actor_id
+             successor_name = candidate_successor_name
+             successor_nation_name = candidate_successor_nation_name
+             first_candidate = entry.detail
+             first_city = entry.city
+           end
+          elseif candidate_successor:num_cities() == 0 then
+           candidate_successor:lose(nil)
+          end
         end
       end
     end
@@ -8272,16 +8664,45 @@ function organic_history_check_decisive_collapse(turn, player, actor_id, risk,
       and risk.total >= organic_history_decisive_collapse_min_cities
   if not eligible then
     organic_history_decisive_collapse_streaks[key] = 0
+    if organic_history_political_transfer_contract_enabled then
+      organic_history_political_decline_set(key, 0)
+    end
     return
   end
-  organic_history_decisive_collapse_streaks[key] =
-      (organic_history_decisive_collapse_streaks[key] or 0) + 1
-  if organic_history_decisive_collapse_streaks[key]
-      < organic_history_decisive_collapse_sustained_turns then
+  local streak
+  if organic_history_political_transfer_contract_enabled then
+    streak = organic_history_political_decline_get(key) + 1
+    organic_history_political_decline_set(key, streak)
+  else
+    streak = (organic_history_decisive_collapse_streaks[key] or 0) + 1
+  end
+  organic_history_decisive_collapse_streaks[key] = streak
+  local stage = "administrative_pressure"
+  if streak >= organic_history_decisive_collapse_sustained_turns then
+    stage = "bounded_release"
+  elseif streak
+         == organic_history_decisive_collapse_sustained_turns - 1 then
+    stage = "separatism_warning"
+  elseif streak > 1 then
+    stage = "autonomy_warning"
+  end
+  if organic_history_political_transfer_contract_enabled then
+    log.normal('organic_history_decline_stage turn=%d actor=%q stage=%q streak=%d threshold=%d cities=%d collapse_risk=%.3f era_over_capacity=%s',
+               turn, actor_id, stage, streak,
+               organic_history_decisive_collapse_sustained_turns,
+               risk.total or player:num_cities(), risk.collapse_risk or 0,
+               tostring(risk.era_over_capacity))
+  end
+  if streak < organic_history_decisive_collapse_sustained_turns then
     return
   end
-  if turn < (organic_history_decisive_collapse_last[key] or -999999)
-      + organic_history_decisive_collapse_cooldown then
+  local last_collapse = organic_history_decisive_collapse_last[key]
+      or -999999
+  if organic_history_political_transfer_contract_enabled then
+    last_collapse = organic_history_political_decline_last_get(key)
+        or -999999
+  end
+  if turn < last_collapse + organic_history_decisive_collapse_cooldown then
     return
   end
 
@@ -8311,9 +8732,6 @@ function organic_history_check_decisive_collapse(turn, player, actor_id, risk,
       end
     end
   end
-  local indep = organic_history_get_independent_player()
-  if indep == nil then return end
-
   -- Die once the accessible/core holdings are gone.
   local die
   if geo then
@@ -8328,38 +8746,89 @@ function organic_history_check_decisive_collapse(turn, player, actor_id, risk,
   else
     table.sort(noncore, function(a, b) return a.w < b.w end)
   end
+  if organic_history_political_transfer_contract_enabled then
+    local eligible_release = false
+
+    for _, entry in ipairs(noncore) do
+      local eligible = organic_history_political_transfer_preflight(
+          turn, entry.city, player, nil, "political_collapse",
+          "decisive_collapse_fragment")
+
+      if eligible then
+        eligible_release = true
+        break
+      end
+    end
+    if die and not eligible_release then
+      for _, city in ipairs(core_cities) do
+        local eligible = organic_history_political_transfer_preflight(
+            turn, city, player, nil, "political_collapse",
+            "decisive_collapse_core")
+
+        if eligible then
+          eligible_release = true
+          break
+        end
+      end
+    end
+    if not eligible_release then
+      log.normal('organic_history_decisive_collapse turn=%d actor=%q action="deferred" reason="transfer_contract" cities_before=%d shed=0 core_pop=%.1f collapse_risk=%.3f era_load=%.2f',
+                 turn, actor_id, risk.total, risk.core_pop or 0,
+                 risk.collapse_risk, risk.era_load_ratio or 0)
+      return
+    end
+  end
+
+  local indep = organic_history_get_independent_player()
+  if indep == nil then return end
   local shed_target = die and #noncore
       or math.ceil(organic_history_decisive_collapse_shed_fraction * #noncore)
   local shed = 0
+  local died = false
   for _, entry in ipairs(noncore) do
     if shed >= shed_target then break end
-    local ok = pcall(function()
+    local called, transferred = pcall(function()
       return organic_history_transfer_city(
           entry.city, indep, "political_collapse",
           "decisive_collapse_fragment")
     end)
-    if ok then shed = shed + 1 end
+    if called and transferred then shed = shed + 1 end
   end
   if die then
     for _, city in ipairs(core_cities) do
-      pcall(function()
-        organic_history_transfer_city(city, indep, "political_collapse",
-                                      "decisive_collapse_core")
+      local called, transferred = pcall(function()
+        return organic_history_transfer_city(
+            city, indep, "political_collapse", "decisive_collapse_core")
       end)
+      if called and transferred then shed = shed + 1 end
     end
-    -- Remove remaining units so the player dies cleanly (death needs 0 cities
-    -- AND 0 units); otherwise it lingers city-less with an army and trips the
-    -- engine's player-death assertions.
-    local units = {}
-    for u in player:units_iterate() do table.insert(units, u) end
-    for _, u in ipairs(units) do
-      pcall(function() edit.unit_kill(u, "retired", nil) end)
+    died = player:num_cities() == 0
+    if died then
+      -- Remove remaining units so the player dies cleanly (death needs 0
+      -- cities and 0 units).
+      local units = {}
+      for u in player:units_iterate() do table.insert(units, u) end
+      for _, u in ipairs(units) do
+        pcall(function() edit.unit_kill(u, "retired", nil) end)
+      end
     end
   end
+  if shed <= 0 then
+    log.normal('organic_history_decisive_collapse turn=%d actor=%q action="deferred" reason="no_transfer" cities_before=%d shed=0 core_pop=%.1f collapse_risk=%.3f era_load=%.2f',
+               turn, actor_id, risk.total, risk.core_pop or 0,
+               risk.collapse_risk, risk.era_load_ratio or 0)
+    return
+  end
   organic_history_decisive_collapse_last[key] = turn
+  if organic_history_political_transfer_contract_enabled then
+    organic_history_political_decline_last_set(key, turn)
+  end
   organic_history_decisive_collapse_streaks[key] = 0
+  if organic_history_political_transfer_contract_enabled then
+    organic_history_political_decline_set(key, 0)
+  end
   log.normal('organic_history_decisive_collapse turn=%d actor=%q action=%q cities_before=%d shed=%d core_pop=%.1f collapse_risk=%.3f era_load=%.2f',
-             turn, actor_id, die and "death" or "fragment", risk.total, shed,
+             turn, actor_id, died and "death" or "fragment", risk.total, shed,
              risk.core_pop or 0, risk.collapse_risk, risk.era_load_ratio or 0)
 end
 
@@ -8397,11 +8866,14 @@ function organic_history_check_independent_absorption(turn)
       end
     end
     if best_owner ~= nil and best_d ~= nil and best_d <= r2 then
-      local ok = pcall(function()
+      local category =
+          organic_history_political_transfer_contract_enabled
+          and "political_peaceful_handoff" or "scripted_absorption"
+      local called, transferred = pcall(function()
         return organic_history_transfer_city(
-            c, best_owner, "scripted_absorption", "independent_absorption")
+            c, best_owner, category, "independent_absorption")
       end)
-      if ok then
+      if called and transferred then
         absorbed = absorbed + 1
         log.normal('organic_history_independent_absorption turn=%d city=%q absorbed_by=%d sq_dist=%d',
                    turn, c.name, organic_history_player_id(best_owner), best_d)
@@ -8454,11 +8926,11 @@ function organic_history_check_conquest_death(turn)
           end
         end
         if best ~= nil then
-          local ok = pcall(function()
+          local called, transferred = pcall(function()
             return organic_history_transfer_city(
                 wc, best, "scripted_conquest", "conquest_death")
           end)
-          if ok then flipped = flipped + 1 end
+          if called and transferred then flipped = flipped + 1 end
         end
       end
       if flipped > 0 then
@@ -8940,8 +9412,6 @@ function organic_history_successor_nation(player)
     end
     table.insert(candidates, organic_history_rule_name(player.nation))
     table.insert(candidates, "Confederate")
-    table.insert(candidates, "Barbarian")
-    table.insert(candidates, "Pirate")
 
     for _, nation_name in ipairs(candidates) do
       local nation = find.nation_type(nation_name)
@@ -8972,7 +9442,26 @@ function organic_history_secession_log(kind, turn, player, stress, extra)
              organic_history_civil_war_stress_threshold, extra or "")
 end
 
-function organic_history_secession_candidate_city(player)
+function organic_history_city_has_game_loss_unit(city, player)
+  for unit in city.tile:units_iterate() do
+    if unit.owner ~= nil and unit.owner.id == player.id
+       and unit.utype ~= nil then
+      local ok, game_loss = pcall(function()
+        return unit.utype:has_flag("GameLoss")
+      end)
+
+      if ok and game_loss then
+        return true
+      end
+    end
+  end
+
+  return false
+end
+
+function organic_history_secession_candidate_city(player, turn,
+                                                   transfer_category,
+                                                   transfer_reason)
   local best_city = nil
   local best_score = -1
   local best_region = "unknown"
@@ -8986,9 +9475,15 @@ function organic_history_secession_candidate_city(player)
   end
 
   for city in player:cities_iterate() do
-    if not city:is_primary_capital()
+    local eligible = true
+    if organic_history_political_transfer_contract_enabled then
+      eligible = organic_history_political_transfer_preflight(
+          turn, city, player, nil, transfer_category, transfer_reason)
+    end
+    if eligible and not city:is_primary_capital()
        and not city:is_capital()
-       and not city:is_gov_center() then
+       and not city:is_gov_center()
+       and not organic_history_city_has_game_loss_unit(city, player) then
       local state = organic_history_city_pressure[organic_history_city_key(city)] or {}
       local unrest = state.unrest or 0
       local autonomy = state.autonomy or 0
@@ -9021,12 +9516,18 @@ function organic_history_secession_candidate_city(player)
 end
 
 function organic_history_try_secession_fallback(turn, player, base_stress,
-                                                dynastic, stress, cities)
-  if not organic_history_secession_fallback_enabled then
+                                                dynastic, stress, cities,
+                                                forced, transfer_category,
+                                                transfer_reason)
+  forced = forced or false
+  transfer_category = transfer_category or "political_secession"
+  transfer_reason = transfer_reason or "secession"
+  if not organic_history_secession_fallback_enabled and not forced then
     organic_history_secession_log("secession_candidate", turn, player, stress,
                                   'eligible=false reason="disabled"')
     return nil
-  elseif organic_history_large_earth_active() and organic_history_emergence_enabled then
+  elseif organic_history_large_earth_active()
+         and organic_history_emergence_enabled and not forced then
     organic_history_secession_log("secession_candidate", turn, player, stress,
                                   'eligible=false reason="global_emergence_deferred"')
     return nil
@@ -9034,7 +9535,7 @@ function organic_history_try_secession_fallback(turn, player, base_stress,
     organic_history_secession_log("secession_candidate", turn, player, stress,
                                   'eligible=false reason="turn_success_limit"')
     return nil
-  elseif cities < organic_history_secession_min_cities then
+  elseif cities < organic_history_secession_min_cities and not forced then
     organic_history_secession_log("secession_candidate", turn, player, stress,
                                   'eligible=false reason="small_state" cities='
                                   .. cities)
@@ -9049,7 +9550,8 @@ function organic_history_try_secession_fallback(turn, player, base_stress,
   end
 
   local city, city_score, city_region, city_core, peripheral =
-      organic_history_secession_candidate_city(player)
+      organic_history_secession_candidate_city(
+          player, turn, transfer_category, transfer_reason)
   if city == nil then
     organic_history_secession_log("secession_candidate", turn, player, stress,
                                   'eligible=false reason="no_candidate_city" cities='
@@ -9068,10 +9570,30 @@ function organic_history_try_secession_fallback(turn, player, base_stress,
                                 .. " base_stress=" .. base_stress
                                 .. " dynastic_bonus=" .. dynastic.bonus)
 
+  if organic_history_political_transfer_contract_enabled then
+    local eligible, detail = organic_history_political_transfer_preflight(
+        turn, city, player, nil, transfer_category, transfer_reason)
+
+    if not eligible then
+      organic_history_secession_log(
+          "secession_noop", turn, player, stress,
+          'reason="transfer_contract" contract_reason='
+          .. string.format("%q", detail.skip_reason or "ineligible")
+          .. " city=" .. string.format("%q", city.name))
+      return nil
+    end
+  end
+
   local successor_name = organic_history_successor_name(player, turn, city)
   local successor_nation, successor_nation_name =
       organic_history_successor_nation(player)
   local successor = edit.create_player(successor_name, successor_nation, "classic")
+  if successor == nil then
+    successor = edit.create_player(successor_name, nil, "classic")
+    if successor ~= nil then
+      successor_nation_name = organic_history_rule_name(successor.nation)
+    end
+  end
   if successor == nil then
     organic_history_secession_log("secession_noop", turn, player, stress,
                                   'reason="create_player_failed" successor='
@@ -9082,8 +9604,11 @@ function organic_history_try_secession_fallback(turn, player, base_stress,
   end
 
   local ok = organic_history_transfer_city(
-      city, successor, "political_secession", "secession")
+      city, successor, transfer_category, transfer_reason)
   if not ok then
+    if successor:num_cities() == 0 then
+      successor:lose(nil)
+    end
     organic_history_secession_log("secession_noop", turn, player, stress,
                                   'reason="transfer_failed" city='
                                   .. string.format("%q", city.name)
@@ -9339,6 +9864,7 @@ function organic_history_strategy_market_candidate(player, actor_id)
             organic_history_strategy_market_distance_sq(player, city)
 
         if claim_weight > 0
+           and city:history_integration_until() < game.current_turn()
            and distance_sq <= organic_history_strategy_market_max_distance_sq then
           local defenders =
               organic_history_strategy_market_city_defenders(city, target)
@@ -10289,6 +10815,32 @@ function organic_history_apply_dynastic_transfer(turn, actor_id, actor,
     end
   end
 
+  local eligible_candidates = {}
+  local rejected_reason = "none"
+  local planned_successor = organic_history_find_actor_player(actor)
+  local transfer_reason = "dynastic_transfer_" .. actor_id
+
+  for _, candidate in ipairs(transfer_candidates) do
+    local eligible, detail = organic_history_political_transfer_preflight(
+        turn, candidate, candidate.owner, planned_successor,
+        "political_succession", transfer_reason)
+
+    if eligible then
+      table.insert(eligible_candidates, candidate)
+    else
+      rejected_reason = detail.skip_reason or "ineligible"
+    end
+  end
+  transfer_candidates = eligible_candidates
+  city = transfer_candidates[1]
+  if city == nil then
+    organic_history_dynastic_transfer_log(
+        turn, actor_id, "noop", "transfer_contract_rejected",
+        active_extra .. " contract_reason="
+        .. string.format("%q", rejected_reason))
+    return false
+  end
+
   if city == nil then
     organic_history_dynastic_transfer_log(turn, actor_id, "noop",
                                           "missing_transfer_city",
@@ -10314,6 +10866,7 @@ function organic_history_apply_dynastic_transfer(turn, actor_id, actor,
   local bootstrap_tile = nil
   local transfer_limit = math.min(assessment.transfer_cap or 1,
                                   #transfer_candidates)
+  local transfer_reason = "dynastic_transfer_" .. actor_id
 
   for _, transfer_city in ipairs(transfer_candidates) do
     if transferred >= transfer_limit then
@@ -10322,7 +10875,7 @@ function organic_history_apply_dynastic_transfer(turn, actor_id, actor,
 
     local ok = organic_history_transfer_city(
         transfer_city, successor, "political_succession",
-        "dynastic_transfer")
+        transfer_reason)
     if ok then
       transferred = transferred + 1
       table.insert(transferred_names, transfer_city.name)
@@ -10628,6 +11181,11 @@ function organic_history_check_civil_wars(turn)
     local stress = dynastic.effective_stress
     local last_turn = organic_history_civil_war_last_turn[player.id] or -999999
     local cooldown_until = last_turn + organic_history_civil_war_cooldown
+    local recovering, recovery_until = false, -1
+    if organic_history_political_transfer_contract_enabled then
+      recovering, recovery_until =
+          organic_history_political_recovery_active(player, turn)
+    end
 
     if organic_history_player_excluded(player) then
       organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
@@ -10641,6 +11199,14 @@ function organic_history_check_civil_wars(turn)
       organic_history_civil_war_log("civil_war_skip", turn, player, stress,
                                     'reason="not_alive" base_stress=' .. base_stress
                                     .. " dynastic_bonus=" .. dynastic.bonus)
+    elseif recovering then
+      organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
+                                         "skip", "recovery_immunity")
+      organic_history_civil_war_log(
+          "civil_war_skip", turn, player, stress,
+          'reason="recovery_immunity" recovery_until=' .. recovery_until
+          .. " base_stress=" .. base_stress
+          .. " dynastic_bonus=" .. dynastic.bonus)
     elseif turn < organic_history_civil_war_min_turn then
       organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
                                          "skip", "early_turn")
@@ -10684,17 +11250,26 @@ function organic_history_check_civil_wars(turn)
                                     .. " base_stress=" .. base_stress
                                     .. " dynastic_bonus=" .. dynastic.bonus)
       organic_history_civil_war_last_turn[player.id] = turn
-      successor = player:civil_war(organic_history_civil_war_probability)
+      if organic_history_political_transfer_contract_enabled then
+        if edit.civil_war_roll(
+            player, organic_history_civil_war_probability) then
+          successor = organic_history_try_secession_fallback(
+              turn, player, base_stress, dynastic, stress, cities, true,
+              "political_civil_war", "civil_war_bounded")
+        end
+      else
+        successor = player:civil_war(organic_history_civil_war_probability)
+      end
       if successor == nil then
         organic_history_dynastic_probe_log(turn, player, base_stress, dynastic,
                                            "noop", "no_successor")
         organic_history_civil_war_log("civil_war_noop", turn, player, stress,
                                       'result="no_successor" base_stress=' .. base_stress
                                       .. " dynastic_bonus=" .. dynastic.bonus)
-        successor = organic_history_try_secession_fallback(turn, player,
-                                                           base_stress,
-                                                           dynastic, stress,
-                                                           cities)
+        if not organic_history_political_transfer_contract_enabled then
+          successor = organic_history_try_secession_fallback(
+              turn, player, base_stress, dynastic, stress, cities)
+        end
         if successor ~= nil then
           organic_history_dynastic_probe_log(turn, player, base_stress,
                                              dynastic, "fallback_triggered",
@@ -10916,6 +11491,22 @@ function organic_history_city_transferred(city, loser, winner, reason)
              turn, city.name, city.id, organic_history_player_id(loser),
              organic_history_player_id(winner),
              organic_history_ownership_category(reason), reason or "unknown")
+
+  local lock_reason = reason == "conquest" or reason == "incited"
+      or reason == "trade" or reason == "civil_war"
+  if organic_history_political_transfer_contract_enabled and lock_reason
+     and loser ~= nil and winner ~= nil
+     and edit.city_integration_lock ~= nil then
+    edit.city_integration_lock(
+        city, loser, turn + organic_history_political_transfer_lock_turns)
+    if reason == "civil_war" then
+      organic_history_political_recovery_set(loser, turn)
+    end
+    log.normal('organic_history_integration_lock turn=%d city=%q city_id=%d loser=%d winner=%d reason=%q integration_until=%d',
+               turn, city.name, city.id, organic_history_player_id(loser),
+               organic_history_player_id(winner), reason or "unknown",
+               city:history_integration_until())
+  end
 
   if not organic_history_claim_conversion_enabled then
     return

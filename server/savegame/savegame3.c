@@ -5432,6 +5432,13 @@ static bool sg_load_player_city(struct loaddata *loading, struct player *plr,
     secfile_lookup_int_default(loading->file, 0, "%s.rapture", citystr);
   pcity->steal =
     secfile_lookup_int_default(loading->file, 0, "%s.steal", citystr);
+  pcity->server.organic_history_integration_until =
+    secfile_lookup_int_default(
+        loading->file, 0, "%s.organic_history_integration_until", citystr);
+  pcity->server.organic_history_previous_owner_plus1 =
+    secfile_lookup_int_default(
+        loading->file, 0,
+        "%s.organic_history_previous_owner_plus1", citystr);
 
   sg_warn_ret_val(secfile_lookup_int(loading->file, &pcity->turn_founded,
                                      "%s.turn_founded", citystr),
@@ -5940,6 +5947,12 @@ static void sg_save_player_cities(struct savedata *saving,
     secfile_insert_int(saving->file, pcity->anarchy, "%s.anarchy", buf);
     secfile_insert_int(saving->file, pcity->rapture, "%s.rapture", buf);
     secfile_insert_int(saving->file, pcity->steal, "%s.steal", buf);
+    secfile_insert_int(
+        saving->file, pcity->server.organic_history_integration_until,
+        "%s.organic_history_integration_until", buf);
+    secfile_insert_int(
+        saving->file, pcity->server.organic_history_previous_owner_plus1,
+        "%s.organic_history_previous_owner_plus1", buf);
     secfile_insert_int(saving->file, pcity->turn_founded, "%s.turn_founded",
                        buf);
     secfile_insert_int(saving->file, pcity->acquire_t, "%s.acquire_t", buf);
