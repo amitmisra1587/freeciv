@@ -180,6 +180,25 @@ def main() -> int:
     metadata["organicMetricLogCount"] = combined_log.count("organic_history_metric")
     metadata["organicStabilityLogCount"] = combined_log.count("organic_history_stability")
     metadata["organicEventLogCount"] = combined_log.count("organic_history_event")
+    metadata["organicOwnershipChangeLogCount"] = combined_log.count(
+        "organic_history_ownership_change"
+    )
+    metadata["organicEngineCombatCaptureLogCount"] = combined_log.count(
+        'category="engine_combat"'
+    )
+    metadata["organicPoliticalTransferLogCount"] = sum(
+        combined_log.count(f'category="{category}"')
+        for category in (
+            "political_civil_war",
+            "political_collapse",
+            "political_secession",
+            "political_succession",
+        )
+    )
+    metadata["organicScriptedConquestLogCount"] = sum(
+        combined_log.count(f'category="{category}"')
+        for category in ("scripted_absorption", "scripted_conquest")
+    )
     metadata["organicRegionLogCount"] = combined_log.count("organic_history_region")
     metadata["organicPrestigeLogCount"] = combined_log.count("organic_history_prestige")
     metadata["organicCityPressureLogCount"] = combined_log.count("organic_history_city_pressure")

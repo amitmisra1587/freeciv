@@ -388,6 +388,16 @@ CONTACT_FIELDS = [
     "actor_a_cities",
     "actor_b_cities",
 ]
+OWNERSHIP_CHANGE_FIELDS = [
+    "turn",
+    "city",
+    "loser",
+    "winner",
+    "source",
+    "category",
+    "reason",
+    "success",
+]
 
 
 def main() -> int:
@@ -497,6 +507,7 @@ def analyze_run(run_dir: Path) -> dict[str, Any]:
         "mandate": log_metrics["mandate"],
         "secession": log_metrics["secession"],
         "secessionDetails": log_metrics["secessionDetails"],
+        "ownershipChanges": log_metrics["ownershipChanges"],
         "contactDiagnostics": log_metrics["contactDiagnostics"],
         "mechanics": log_metrics["mechanics"],
         "finalPlayers": final_players,
@@ -521,6 +532,7 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
         "metric": 0,
         "stability": 0,
         "event": 0,
+        "ownershipChange": 0,
         "mechanic": 0,
         "region": 0,
         "prestige": 0,
@@ -714,6 +726,10 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
     contact_regions: dict[str, int] = {}
     first_new_world_arrival: dict[str, Any] | None = None
     first_ocean_crossing: dict[str, Any] | None = None
+    ownership_sources: dict[str, int] = {}
+    ownership_categories: dict[str, int] = {}
+    ownership_reasons: dict[str, int] = {}
+    ownership_changes: list[dict[str, Any]] = []
     for log_path in sorted(run_dir.glob("server_*.log")):
         for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
             if "organic_history turn_begin" in line:
@@ -722,6 +738,13 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
                 counts["metric"] += 1
             if "organic_history_event" in line:
                 counts["event"] += 1
+            if "organic_history_ownership_change" in line:
+                counts["ownershipChange"] += 1
+                fields = parse_line_fields(line, OWNERSHIP_CHANGE_FIELDS)
+                increment_count(ownership_sources, fields.get("source"))
+                increment_count(ownership_categories, fields.get("category"))
+                increment_count(ownership_reasons, fields.get("reason"))
+                ownership_changes.append(fields)
             if "organic_history_region" in line:
                 counts["region"] += 1
             if "organic_history_prestige" in line:
@@ -1286,6 +1309,12 @@ def parse_log_metrics(run_dir: Path) -> dict[str, Any]:
             "firstNewWorldArrival": first_new_world_arrival,
             "firstOceanCrossing": first_ocean_crossing,
         },
+        "ownershipChanges": {
+            "sources": dict(sorted(ownership_sources.items())),
+            "categories": dict(sorted(ownership_categories.items())),
+            "reasons": dict(sorted(ownership_reasons.items())),
+            "events": ownership_changes,
+        },
     }
 
 
@@ -1326,6 +1355,7 @@ def compact_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "mandate": summary.get("mandate"),
         "secession": summary.get("secession"),
         "secessionDetails": summary.get("secessionDetails"),
+        "ownershipChanges": summary.get("ownershipChanges"),
         "contactDiagnostics": summary.get("contactDiagnostics"),
         "mechanics": summary.get("mechanics"),
     }

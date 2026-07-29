@@ -164,6 +164,19 @@ python3 tools/organic_history/run_campaign.py \
 
 `--max-load-average 0` disables the guard, which is the default for short gates.
 
+Run the ownership diagnostics gate after changing city-transfer mechanics or
+ownership-change reporting:
+
+```bash
+tools/organic_history/ownership_diagnostics_gate.sh
+```
+
+The Lua ruleset emits `organic_history_ownership_change` for every observed
+engine transfer and every script-initiated transfer. Categories distinguish
+real combat (`engine_combat`), political transfers such as succession or
+secession, and legacy scripted conquest/absorption. `analyze_campaign.py`
+exposes these counts and events under `ownershipChanges`.
+
 Run the Phase 29 diagnostics-only lifecycle probe after editing lifecycle probe
 profiles, contact/discovery diagnostics, or probe reporting:
 

@@ -914,6 +914,39 @@ function organic_history_player_id(player)
   return player.id
 end
 
+function organic_history_ownership_category(reason)
+  if reason == "conquest" then
+    return "engine_combat"
+  elseif reason == "incited" then
+    return "engine_incited"
+  elseif reason == "trade" then
+    return "diplomatic_trade"
+  elseif reason == "civil_war" then
+    return "political_civil_war"
+  elseif reason == "death-back_to_original"
+      or reason == "death-barbarians_get" then
+    return "system_death"
+  end
+  return "engine_other"
+end
+
+function organic_history_transfer_city(city, new_owner, category, reason)
+  if city == nil or new_owner == nil then
+    return false
+  end
+  local turn = game.current_turn()
+  local city_name = city.name
+  local loser = city.owner
+  local loser_id = organic_history_player_id(loser)
+  local winner_id = organic_history_player_id(new_owner)
+  local transferred = edit.transfer_city(city, new_owner)
+  log.normal('organic_history_ownership_change turn=%d city=%q loser=%d winner=%d source="script" category=%q reason=%q success=%s',
+             turn, city_name, loser_id, winner_id,
+             category or "script_other", reason or "unspecified",
+             tostring(transferred))
+  return transferred
+end
+
 function organic_history_rule_name(item)
   if item == nil then
     return "none"
@@ -7974,7 +8007,9 @@ function organic_history_try_partial_contraction_release(turn, player, actor_id,
           organic_history_partial_contraction_successor(
               player, actor_id, entry.detail, entry.city, turn)
       if candidate_successor ~= nil
-         and edit.transfer_city(entry.city, candidate_successor) then
+         and organic_history_transfer_city(
+             entry.city, candidate_successor, "political_secession",
+             "partial_contraction") then
         transferred = transferred + 1
         table.insert(transferred_names, entry.city.name)
         if successor == nil then
@@ -8190,12 +8225,19 @@ function organic_history_check_decisive_collapse(turn, player, actor_id, risk,
   local shed = 0
   for _, entry in ipairs(noncore) do
     if shed >= shed_target then break end
-    local ok = pcall(function() return edit.transfer_city(entry.city, indep) end)
+    local ok = pcall(function()
+      return organic_history_transfer_city(
+          entry.city, indep, "political_collapse",
+          "decisive_collapse_fragment")
+    end)
     if ok then shed = shed + 1 end
   end
   if die then
     for _, city in ipairs(core_cities) do
-      pcall(function() edit.transfer_city(city, indep) end)
+      pcall(function()
+        organic_history_transfer_city(city, indep, "political_collapse",
+                                      "decisive_collapse_core")
+      end)
     end
     -- Remove remaining units so the player dies cleanly (death needs 0 cities
     -- AND 0 units); otherwise it lingers city-less with an army and trips the
@@ -8247,7 +8289,10 @@ function organic_history_check_independent_absorption(turn)
       end
     end
     if best_owner ~= nil and best_d ~= nil and best_d <= r2 then
-      local ok = pcall(function() return edit.transfer_city(c, best_owner) end)
+      local ok = pcall(function()
+        return organic_history_transfer_city(
+            c, best_owner, "scripted_absorption", "independent_absorption")
+      end)
       if ok then
         absorbed = absorbed + 1
         log.normal('organic_history_independent_absorption turn=%d city=%q absorbed_by=%d sq_dist=%d',
@@ -8301,7 +8346,10 @@ function organic_history_check_conquest_death(turn)
           end
         end
         if best ~= nil then
-          local ok = pcall(function() return edit.transfer_city(wc, best) end)
+          local ok = pcall(function()
+            return organic_history_transfer_city(
+                wc, best, "scripted_conquest", "conquest_death")
+          end)
           if ok then flipped = flipped + 1 end
         end
       end
@@ -8925,7 +8973,8 @@ function organic_history_try_secession_fallback(turn, player, base_stress,
     return nil
   end
 
-  local ok = edit.transfer_city(city, successor)
+  local ok = organic_history_transfer_city(
+      city, successor, "political_secession", "secession")
   if not ok then
     organic_history_secession_log("secession_noop", turn, player, stress,
                                   'reason="transfer_failed" city='
@@ -9335,7 +9384,9 @@ function organic_history_apply_dynastic_transfer(turn, actor_id, actor,
       break
     end
 
-    local ok = edit.transfer_city(transfer_city, successor)
+    local ok = organic_history_transfer_city(
+        transfer_city, successor, "political_succession",
+        "dynastic_transfer")
     if ok then
       transferred = transferred + 1
       table.insert(transferred_names, transfer_city.name)
@@ -9925,6 +9976,10 @@ function organic_history_city_transferred(city, loser, winner, reason)
   log.normal('organic_history_event type=city_transferred turn=%d city=%q loser=%d winner=%d reason=%q',
              turn, city.name, organic_history_player_id(loser),
              organic_history_player_id(winner), reason)
+  log.normal('organic_history_ownership_change turn=%d city=%q loser=%d winner=%d source="engine" category=%q reason=%q success=true',
+             turn, city.name, organic_history_player_id(loser),
+             organic_history_player_id(winner),
+             organic_history_ownership_category(reason), reason or "unknown")
 
   if not organic_history_claim_conversion_enabled then
     return
