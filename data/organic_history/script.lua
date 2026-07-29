@@ -227,6 +227,106 @@ organic_history_player_first_seen =
     organic_history_player_first_seen or {}
 organic_history_conquest_death_last =
     organic_history_conquest_death_last or {}
+-- ===========================================================================
+-- MILITARY MOBILIZATION + CAMPAIGN MODEL (Tier 1; all OFF by default)
+-- ---------------------------------------------------------------------------
+-- Makes conquest *earned* without simulating logistics, using ONE new
+-- abstraction (manpower) plus a distance multiplier on military upkeep that
+-- reuses the geography accessibility function (organic_history_city_admin_cost).
+--   * manpower: armies cost PEOPLE, not hammers. A national pool fed by
+--     population; raising a unit (unit_built) draws it down, and a unit that
+--     cannot be manned is disbanded. Replacing casualties depletes the pool,
+--     so prolonged / over-large wars hurt.
+--   * distance upkeep: own-territory 1x, friendly 1.5x, foreign 3x,
+--     oversea / deep-inland up to 5x (discounted for sea-access from a coastal
+--     core -- Mediterranean as a highway). Charged in gold each turn; when the
+--     treasury cannot pay, the farthest units attrite/melt (Napoleon retreat).
+--   * military might: a TRUE strength estimate (units + cities + pop + gold +
+--     manpower) and a PERCEIVED one per observer -- lagged + deterministically
+--     biased, so civs misjudge rivals and over-reach (Persia vs Macedon).
+--   * campaigns: a unified, decisive-one-turn conquest. We decide (manpower +
+--     perception heuristic), pick a reachable rival city, and resolve the
+--     contest THAT turn (attacker mobilization vs the defender's funded local
+--     defense) -> transfer_city on a win, attrition on a repel. A captured
+--     city's economy funds the next push (self-funding cascade). Resolved in
+--     Lua (bypassing engine combat / the weak tactical AI).
+-- All deterministic (no math.random) to stay reproducible on this branch.
+organic_history_manpower_enabled = organic_history_manpower_enabled or false
+organic_history_manpower_per_pop = organic_history_manpower_per_pop or 0.3
+-- Pool cap is deliberately low relative to a campaign's cost, so a conquest
+-- spree EXHAUSTS the mobilizable men and forces a multi-turn consolidation
+-- pause before the next push (the historical pacing). Manpower -- not defense
+-- strength -- is the binding throttle.
+organic_history_manpower_pool_cap = organic_history_manpower_pool_cap or 24
+organic_history_manpower_mobilization_early =
+    organic_history_manpower_mobilization_early or 0.35
+organic_history_manpower_mobilization_late =
+    organic_history_manpower_mobilization_late or 0.9
+organic_history_manpower_unit_cost = organic_history_manpower_unit_cost or 2
+organic_history_manpower_disband_enabled =
+    organic_history_manpower_disband_enabled or false
+-- Distance-scaled military upkeep (gold), charged each turn on real units.
+organic_history_mil_upkeep_enabled = organic_history_mil_upkeep_enabled or false
+organic_history_mil_upkeep_base_gold =
+    organic_history_mil_upkeep_base_gold or 1
+organic_history_mil_upkeep_mult_own = organic_history_mil_upkeep_mult_own or 1.0
+organic_history_mil_upkeep_mult_friendly =
+    organic_history_mil_upkeep_mult_friendly or 1.5
+organic_history_mil_upkeep_mult_foreign =
+    organic_history_mil_upkeep_mult_foreign or 3.0
+organic_history_mil_upkeep_oversea_factor =
+    organic_history_mil_upkeep_oversea_factor or 5.0
+organic_history_mil_upkeep_far_cost = organic_history_mil_upkeep_far_cost or 10
+organic_history_mil_attrition_hp = organic_history_mil_attrition_hp or 3
+organic_history_mil_attrition_max_per_player =
+    organic_history_mil_attrition_max_per_player or 4
+-- Military might (true) + perception (lagged, error-prone) tracking.
+organic_history_mil_might = organic_history_mil_might or {}
+organic_history_mil_might_history = organic_history_mil_might_history or {}
+organic_history_mil_might_w_units = organic_history_mil_might_w_units or 1.0
+organic_history_mil_might_w_cities = organic_history_mil_might_w_cities or 1.5
+organic_history_mil_might_w_pop = organic_history_mil_might_w_pop or 0.3
+organic_history_mil_might_w_gold = organic_history_mil_might_w_gold or 0.02
+organic_history_mil_might_w_manpower =
+    organic_history_mil_might_w_manpower or 0.2
+organic_history_perception_lag = organic_history_perception_lag or 4
+organic_history_perception_error = organic_history_perception_error or 0.35
+organic_history_perception_safety_margin =
+    organic_history_perception_safety_margin or 1.15
+organic_history_perception_correction =
+    organic_history_perception_correction or {}
+-- Unified campaign system.
+organic_history_campaign_enabled = organic_history_campaign_enabled or false
+organic_history_campaign_reach = organic_history_campaign_reach or 12
+organic_history_campaign_cities_per_turn =
+    organic_history_campaign_cities_per_turn or 2
+organic_history_campaign_cooldown = organic_history_campaign_cooldown or 3
+organic_history_campaign_min_manpower =
+    organic_history_campaign_min_manpower or 8
+organic_history_campaign_manpower_cost =
+    organic_history_campaign_manpower_cost or 8
+-- Manpower cost of a conquest scales with how far it is projected (men lost in
+-- transit / needed to garrison) -- deep campaigns drain the pool faster.
+organic_history_campaign_cost_reach_scale =
+    organic_history_campaign_cost_reach_scale or 6
+-- Projected force is capped by mobilized manpower (you cannot field more force
+-- than you can raise men for) -- this makes manpower the binding throttle, not
+-- raw economic might.
+organic_history_campaign_force_per_manpower =
+    organic_history_campaign_force_per_manpower or 2.5
+organic_history_campaign_loot_gold = organic_history_campaign_loot_gold or 25
+organic_history_campaign_might_weight =
+    organic_history_campaign_might_weight or 0.8
+organic_history_campaign_defender_base =
+    organic_history_campaign_defender_base or 3
+organic_history_campaign_supply_scale =
+    organic_history_campaign_supply_scale or 5
+organic_history_campaign_wall_bonus = organic_history_campaign_wall_bonus or 5
+organic_history_campaign_declare_war =
+    organic_history_campaign_declare_war or true
+organic_history_manpower_pool = organic_history_manpower_pool or {}
+organic_history_manpower_capacity = organic_history_manpower_capacity or {}
+organic_history_campaign_last = organic_history_campaign_last or {}
 -- Phase 45 settlement containment (OFF by default; CONCLUDED NEGATIVE).
 -- Experiment: for listed over-expander actors, cap how many cities they may hold
 -- in explicitly-foreign regions (deep in another power's space, far outside their
@@ -889,6 +989,7 @@ function organic_history_turn_begin(turn, year)
   organic_history_check_near_east_handoffs(turn)
   organic_history_check_conquest_targets(turn)
   organic_history_check_objectives(turn)
+  organic_history_check_military(turn)
   organic_history_check_core_consolidation(turn)
   organic_history_log_collapse_diagnostics(turn)
   organic_history_check_independent_absorption(turn)
@@ -899,6 +1000,7 @@ function organic_history_turn_begin(turn, year)
 end
 
 signal.connect('turn_begin', 'organic_history_turn_begin')
+signal.connect('unit_built', 'organic_history_on_unit_built')
 
 function organic_history_player_name(player)
   if player == nil then
@@ -8321,6 +8423,445 @@ function organic_history_check_conquest_death(turn)
       end
     end
   end
+end
+
+-- ===========================================================================
+-- MILITARY MOBILIZATION + CAMPAIGN MODEL (implementation; see config block)
+-- ===========================================================================
+
+function organic_history_military_active()
+  return organic_history_manpower_enabled
+      or organic_history_mil_upkeep_enabled
+      or organic_history_campaign_enabled
+end
+
+-- An on-map combat unit (not a Settler/Worker/Migrant etc.).
+function organic_history_unit_is_military(unit)
+  if unit == nil then return false end
+  local utype = unit.utype
+  if utype == nil then return false end
+  local okf, nonmil = pcall(function() return utype:has_flag("NonMil") end)
+  if okf and nonmil then return false end
+  return true
+end
+
+-- A player the military model applies to (alive, not the Free-Cities
+-- independent, not an excluded barbarian/animal nation).
+function organic_history_military_player(player)
+  if player == nil or not player.is_alive then return false end
+  local pid = organic_history_player_id(player)
+  if pid == organic_history_independent_player_id then return false end
+  if organic_history_player_excluded(player) then return false end
+  return true
+end
+
+-- Era-scaled mobilization rate (low Bronze Age -> higher later).
+function organic_history_manpower_mobilization_rate(turn)
+  local lo = organic_history_manpower_mobilization_early
+  local hi = organic_history_manpower_mobilization_late
+  local t0 = organic_history_overextension_era_ramp_start_turn
+  local t1 = organic_history_overextension_era_ramp_end_turn
+  local p = organic_history_clamp((turn - t0) / math.max(1, t1 - t0), 0, 1)
+  return lo + (hi - lo) * p
+end
+
+-- Per-turn manpower regen from population (sum of city sizes).
+function organic_history_update_manpower(turn)
+  if not organic_history_manpower_enabled then return end
+  local rate = organic_history_manpower_mobilization_rate(turn)
+  for player in players_iterate() do
+    if organic_history_military_player(player) then
+      local pid = organic_history_player_id(player)
+      local pop = 0
+      for city in player:cities_iterate() do
+        pop = pop + (city.size or 1)
+      end
+      local capacity = pop * organic_history_manpower_per_pop
+      local pool = (organic_history_manpower_pool[pid] or capacity)
+          + capacity * rate
+      if pool > organic_history_manpower_pool_cap then
+        pool = organic_history_manpower_pool_cap
+      end
+      organic_history_manpower_pool[pid] = pool
+      organic_history_manpower_capacity[pid] = capacity
+    end
+  end
+end
+
+-- unit_built signal: armies cost people. Draw down the pool; if it cannot man
+-- the unit, disband it (only when disband is enabled).
+function organic_history_on_unit_built(unit, city)
+  if not organic_history_manpower_enabled then return end
+  if not organic_history_unit_is_military(unit) then return end
+  local player = unit.owner
+  if not organic_history_military_player(player) then return end
+  local pid = organic_history_player_id(player)
+  local pool = organic_history_manpower_pool[pid] or 0
+  local cost = organic_history_manpower_unit_cost
+  if pool >= cost then
+    organic_history_manpower_pool[pid] = pool - cost
+  elseif organic_history_manpower_disband_enabled then
+    pcall(function() unit:kill("disbanded", nil) end)
+  else
+    organic_history_manpower_pool[pid] = 0
+  end
+end
+
+-- Territory + distance multiplier for a unit's gold upkeep.
+function organic_history_unit_upkeep_multiplier(unit, player, core_tile,
+                                                core_coastal)
+  local tile = nil
+  local okt, t = pcall(function() return unit:tile() end)
+  if okt then tile = t end
+  if tile == nil then return organic_history_mil_upkeep_mult_own end
+  local mult = organic_history_mil_upkeep_mult_own
+  local owner = tile.owner
+  if owner == nil then
+    mult = organic_history_mil_upkeep_mult_foreign
+  elseif owner.id == player.id then
+    mult = organic_history_mil_upkeep_mult_own
+  elseif player:diplstate(owner) == "War" then
+    mult = organic_history_mil_upkeep_mult_foreign
+  else
+    mult = organic_history_mil_upkeep_mult_friendly
+  end
+  -- oversea / deep-inland: accessibility of the unit's tile from the core.
+  if core_tile ~= nil then
+    local dist = math.sqrt(tile:sq_distance(core_tile))
+    local access = organic_history_geo_admin_inland_factor
+    if core_coastal and organic_history_tile_is_coastal(tile) then
+      access = organic_history_geo_admin_sea_factor
+    end
+    local far = dist * access
+    if far > organic_history_mil_upkeep_far_cost then
+      local f = 1 + (far - organic_history_mil_upkeep_far_cost)
+          / math.max(1, organic_history_mil_upkeep_far_cost)
+      if f > organic_history_mil_upkeep_oversea_factor then
+        f = organic_history_mil_upkeep_oversea_factor
+      end
+      mult = mult * f
+    end
+  end
+  return mult
+end
+
+-- Per-turn distance-scaled military upkeep (gold) + melt-away attrition.
+function organic_history_check_military_upkeep(turn)
+  if not organic_history_mil_upkeep_enabled then return end
+  for player in players_iterate() do
+    if organic_history_military_player(player) then
+      local core_tile = organic_history_player_core_tile(player)
+      local core_coastal = (core_tile ~= nil)
+          and organic_history_tile_is_coastal(core_tile) or false
+      local total = 0
+      local costly = {}
+      for unit in player:units_iterate() do
+        if organic_history_unit_is_military(unit) then
+          local cost = organic_history_mil_upkeep_base_gold
+              * organic_history_unit_upkeep_multiplier(unit, player, core_tile,
+                                                       core_coastal)
+          total = total + cost
+          costly[#costly + 1] = {unit = unit, cost = cost, id = unit.id}
+        end
+      end
+      if total > 0 then
+        local gold = player:gold()
+        pcall(function()
+          edit.change_gold(player, -math.floor(total + 0.5))
+        end)
+        if total > gold then
+          table.sort(costly, function(a, b)
+            if a.cost ~= b.cost then return a.cost > b.cost end
+            return a.id < b.id
+          end)
+          local n = 0
+          for _, item in ipairs(costly) do
+            if n >= organic_history_mil_attrition_max_per_player then break end
+            pcall(function()
+              item.unit:add_hitpoints(-organic_history_mil_attrition_hp,
+                                      "hp_loss", nil)
+            end)
+            n = n + 1
+          end
+        end
+      end
+    end
+  end
+end
+
+-- True military might: a deliberate economic proxy (we cannot read unit combat
+-- stats, and an estimate is the point).
+function organic_history_compute_mil_might(player)
+  local units = 0
+  for unit in player:units_iterate() do
+    if organic_history_unit_is_military(unit) then units = units + 1 end
+  end
+  local pop = 0
+  for city in player:cities_iterate() do pop = pop + (city.size or 1) end
+  local pid = organic_history_player_id(player)
+  return organic_history_mil_might_w_units * units
+      + organic_history_mil_might_w_cities * player:num_cities()
+      + organic_history_mil_might_w_pop * pop
+      + organic_history_mil_might_w_gold * player:gold()
+      + organic_history_mil_might_w_manpower
+          * (organic_history_manpower_pool[pid] or 0)
+end
+
+function organic_history_update_mil_might(turn)
+  for player in players_iterate() do
+    if organic_history_military_player(player) then
+      local pid = organic_history_player_id(player)
+      local m = organic_history_compute_mil_might(player)
+      organic_history_mil_might[pid] = m
+      local hist = organic_history_mil_might_history[pid]
+      if hist == nil then
+        hist = {}
+        organic_history_mil_might_history[pid] = hist
+      end
+      hist[#hist + 1] = m
+      while #hist > organic_history_perception_lag + 2 do
+        table.remove(hist, 1)
+      end
+    end
+  end
+end
+
+-- Deterministic fract(sin) hash in [0,1) (Lua 5.1: no bitwise, no random).
+function organic_history_hash01(a, b, c)
+  local s = math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453
+  return s - math.floor(s)
+end
+
+-- Per-pair perception bias, drifting slowly with the turn.
+function organic_history_perception_bias(observer_id, target_id, turn)
+  local bucket = math.floor(turn / 6)
+  local h = organic_history_hash01(observer_id + 1, target_id + 1, bucket + 1)
+  return (h * 2 - 1) * organic_history_perception_error
+end
+
+-- Might of `target` as `observer` perceives it: lagged true value, biased, plus
+-- any learned correction from a failed assault.
+function organic_history_perceived_might(observer, target, turn)
+  local oid = organic_history_player_id(observer)
+  local tid = organic_history_player_id(target)
+  local base = organic_history_mil_might[tid] or 0
+  local hist = organic_history_mil_might_history[tid]
+  if hist ~= nil and #hist > 0 then
+    local idx = #hist - organic_history_perception_lag
+    if idx < 1 then idx = 1 end
+    base = hist[idx]
+  end
+  local corr = 0
+  local ctab = organic_history_perception_correction[oid]
+  if ctab ~= nil then corr = ctab[tid] or 0 end
+  local p = base * (1 + organic_history_perception_bias(oid, tid, turn)) + corr
+  if p < 0 then p = 0 end
+  return p
+end
+
+function organic_history_perception_learn(observer, target, amount)
+  local oid = organic_history_player_id(observer)
+  local tid = organic_history_player_id(target)
+  local ctab = organic_history_perception_correction[oid]
+  if ctab == nil then
+    ctab = {}
+    organic_history_perception_correction[oid] = ctab
+  end
+  ctab[tid] = (ctab[tid] or 0) + amount
+end
+
+-- Local, observable defense of a city (size it can man + walls + terrain +
+-- garrison). The rival's broader might (reinforcements) is added separately.
+function organic_history_city_defense_local(city)
+  local d = (city.size or 1) + organic_history_campaign_defender_base
+  local ok, has = pcall(function()
+    return city:has_building(find.building_type("Walls"))
+  end)
+  if ok and has then d = d + organic_history_campaign_wall_bonus end
+  local tile = city.tile
+  if tile ~= nil then
+    if tile.terrain ~= nil then
+      local okn, name = pcall(function() return tile.terrain:rule_name() end)
+      if okn and (name == "Hills" or name == "Mountains") then d = d + 2 end
+    end
+    local g = 0
+    for u in tile:units_iterate() do
+      if organic_history_unit_is_military(u) then g = g + 1 end
+    end
+    d = d + g
+  end
+  return d
+end
+
+-- Attacker force projected onto a target tile: own might attenuated by distance
+-- (sea-discounted) -- the supply factor.
+function organic_history_attacker_force(my_might, pool, target_tile, core_tile,
+                                        core_coastal)
+  -- force is capped by mobilized manpower: you cannot field more than you can
+  -- raise men for. A paper-mighty but manpower-poor civ projects little.
+  local base = math.min(my_might,
+      pool * organic_history_campaign_force_per_manpower)
+  if core_tile ~= nil and target_tile ~= nil then
+    local dist = math.sqrt(target_tile:sq_distance(core_tile))
+    local access = organic_history_geo_admin_inland_factor
+    if core_coastal and organic_history_tile_is_coastal(target_tile) then
+      access = organic_history_geo_admin_sea_factor
+    end
+    base = base / (1 + (dist * access) / organic_history_campaign_supply_scale)
+  end
+  return base
+end
+
+-- Decisive one-turn resolution of a single campaign target.
+function organic_history_resolve_campaign(turn, attacker, cand)
+  local target = cand.target
+  local city = cand.city
+  local aid = organic_history_player_id(attacker)
+  local tid = organic_history_player_id(target)
+  -- mobilization manpower is spent regardless of outcome (distance-scaled).
+  organic_history_manpower_pool[aid] = math.max(0,
+      (organic_history_manpower_pool[aid] or 0)
+      - (cand.mp_cost or organic_history_campaign_manpower_cost))
+  -- true resolution: defender reinforces with its real might.
+  local def_resolve = cand.def_local
+      + organic_history_campaign_might_weight * (organic_history_mil_might[tid] or 0)
+  local outcome = "repelled"
+  if cand.force >= def_resolve then
+    outcome = "captured"
+    if organic_history_campaign_declare_war and edit.enter_war ~= nil
+       and attacker:diplstate(target) ~= "War" then
+      pcall(function() edit.enter_war(attacker, target) end)
+    end
+    local ok = pcall(function() return edit.transfer_city(city, attacker) end)
+    if ok then
+      pcall(function()
+        edit.change_gold(attacker, organic_history_campaign_loot_gold)
+      end)
+      if target:num_cities() == 0 then
+        local units = {}
+        for u in target:units_iterate() do table.insert(units, u) end
+        for _, u in ipairs(units) do
+          pcall(function() edit.unit_kill(u, "retired", nil) end)
+        end
+      end
+    else
+      outcome = "repelled"
+    end
+  else
+    -- repel: attacker learns the rival was stronger than it believed.
+    organic_history_perception_learn(attacker, target,
+        organic_history_campaign_might_weight
+        * (organic_history_mil_might[tid] or 0) * 0.5)
+  end
+  log.normal('organic_history_campaign turn=%d attacker=%d target=%d city=%q region=%q outcome=%q reach=%.1f attacker_force=%.2f def_local=%.2f perceived=%.2f def_resolve=%.2f',
+             turn, aid, tid, city.name,
+             organic_history_region_for_city(city), outcome, cand.reach,
+             cand.force, cand.def_local, cand.perc, def_resolve)
+end
+
+-- The unified campaign system: decide (manpower + perception) -> pick a
+-- reachable rival city -> resolve decisively -> self-funding cascade.
+function organic_history_check_campaigns(turn)
+  if not organic_history_campaign_enabled then return end
+  if not organic_history_large_earth_active() then return end
+  local actors = {}
+  for player in players_iterate() do
+    if organic_history_military_player(player) then
+      actors[#actors + 1] = player
+    end
+  end
+  for _, attacker in ipairs(actors) do
+    local aid = organic_history_player_id(attacker)
+    local last = organic_history_campaign_last[aid] or -999999
+    local pool = organic_history_manpower_pool[aid] or 0
+    if turn >= last + organic_history_campaign_cooldown
+       and pool >= organic_history_campaign_min_manpower
+       and attacker:num_cities() > 0 then
+      local core_tile = organic_history_player_core_tile(attacker)
+      local core_coastal = (core_tile ~= nil)
+          and organic_history_tile_is_coastal(core_tile) or false
+      local my_might = organic_history_mil_might[aid] or 0
+      local staging = {}
+      for c in attacker:cities_iterate() do staging[#staging + 1] = c.tile end
+      local candidates = {}
+      for _, target in ipairs(actors) do
+        if target ~= attacker then
+          for city in target:cities_iterate() do
+            local reach = nil
+            local city_coastal = organic_history_tile_is_coastal(city.tile)
+            for _, st in ipairs(staging) do
+              local d = math.sqrt(city.tile:sq_distance(st))
+              if city_coastal and organic_history_tile_is_coastal(st) then
+                d = d * organic_history_geo_admin_sea_factor
+              end
+              if reach == nil or d < reach then reach = d end
+            end
+            if reach ~= nil and reach <= organic_history_campaign_reach then
+              local force = organic_history_attacker_force(
+                  my_might, pool, city.tile, core_tile, core_coastal)
+              local def_local = organic_history_city_defense_local(city)
+              local perc = organic_history_perceived_might(attacker, target,
+                                                           turn)
+              local def_decide = def_local
+                  + organic_history_campaign_might_weight * perc
+              local margin = force
+                  - def_decide * organic_history_perception_safety_margin
+              local mp_cost = organic_history_campaign_manpower_cost
+                  * (1 + reach / organic_history_campaign_cost_reach_scale)
+              if margin > 0 then
+                candidates[#candidates + 1] = {
+                  target = target, city = city, reach = reach, force = force,
+                  def_local = def_local, perc = perc, margin = margin,
+                  mp_cost = mp_cost, value = (city.size or 1)
+                }
+              end
+            end
+          end
+        end
+      end
+      if #candidates > 0 then
+        table.sort(candidates, function(a, b)
+          local sa = a.margin + a.value
+          local sb = b.margin + b.value
+          if sa ~= sb then return sa > sb end
+          return a.city.id < b.city.id
+        end)
+        local taken = 0
+        for _, cand in ipairs(candidates) do
+          if taken >= organic_history_campaign_cities_per_turn then break end
+          if (organic_history_manpower_pool[aid] or 0) >= cand.mp_cost then
+            organic_history_resolve_campaign(turn, attacker, cand)
+            taken = taken + 1
+          end
+        end
+        if taken > 0 then organic_history_campaign_last[aid] = turn end
+      end
+    end
+  end
+end
+
+function organic_history_log_military(turn)
+  if not organic_history_military_active() then return end
+  for player in players_iterate() do
+    if organic_history_military_player(player) then
+      local pid = organic_history_player_id(player)
+      log.normal('organic_history_manpower turn=%d player=%d pool=%.1f capacity=%.1f',
+                 turn, pid, organic_history_manpower_pool[pid] or 0,
+                 organic_history_manpower_capacity[pid] or 0)
+      log.normal('organic_history_mil_might turn=%d player=%d might=%.2f',
+                 turn, pid, organic_history_mil_might[pid] or 0)
+    end
+  end
+end
+
+-- Master per-turn orchestrator (slotted into turn_begin in the conquest window).
+function organic_history_check_military(turn)
+  if not organic_history_military_active() then return end
+  organic_history_update_manpower(turn)
+  organic_history_update_mil_might(turn)
+  organic_history_check_military_upkeep(turn)
+  organic_history_check_campaigns(turn)
+  organic_history_log_military(turn)
 end
 
 function organic_history_log_collapse_diagnostics(turn)
