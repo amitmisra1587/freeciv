@@ -971,8 +971,8 @@ function organic_history_transfer_city(city, new_owner, category, reason)
   local loser_id = organic_history_player_id(loser)
   local winner_id = organic_history_player_id(new_owner)
   local transferred = edit.transfer_city(city, new_owner)
-  log.normal('organic_history_ownership_change turn=%d city=%q loser=%d winner=%d source="script" category=%q reason=%q success=%s',
-             turn, city_name, loser_id, winner_id,
+  log.normal('organic_history_ownership_change turn=%d city=%q city_id=%d loser=%d winner=%d source="script" category=%q reason=%q success=%s',
+             turn, city_name, city.id, loser_id, winner_id,
              category or "script_other", reason or "unspecified",
              tostring(transferred))
   return transferred
@@ -9072,7 +9072,7 @@ function organic_history_check_strategy_spike(turn)
   if organic_history_strategy_spike_completed then
     return
   end
-  if edit.ai_strategy_target == nil then
+  if edit.ai_strategy_set == nil then
     return
   end
   local attacker =
@@ -9121,9 +9121,9 @@ function organic_history_check_strategy_spike(turn)
        and attacker:diplstate(target) ~= "War" then
       edit.enter_war(attacker, target)
     end
-    log.normal('organic_history_strategy_spike turn=%d applied=true action="setup" attacker=%d target=%d city=%q offensive=%d defenders=%d ferries=%d skipped=%d',
+    log.normal('organic_history_strategy_spike turn=%d applied=true action="setup" attacker=%d target=%d city=%q city_id=%d offensive=%d defenders=%d ferries=%d skipped=%d',
                turn, organic_history_player_id(attacker),
-               organic_history_player_id(target), city.name,
+               organic_history_player_id(target), city.name, city.id,
                created_offensive, created_defenders, created_ferries,
                skipped_offensive + skipped_defenders + skipped_ferries)
   end
@@ -9131,12 +9131,16 @@ function organic_history_check_strategy_spike(turn)
   local expires = organic_history_strategy_spike_started
       + organic_history_strategy_spike_duration
   if turn <= expires then
-    local applied = edit.ai_strategy_target(
-        attacker, target, city, organic_history_strategy_spike_war_bonus,
-        organic_history_strategy_spike_conquest_pct, expires)
-    log.normal('organic_history_strategy_spike turn=%d applied=%s action="target" attacker=%d target=%d city=%q expires=%d',
+    local applied = edit.ai_strategy_set(
+        attacker, "offensive", "city", target, city, 1000,
+        organic_history_strategy_spike_war_bonus,
+        organic_history_strategy_spike_conquest_pct, expires, 62, -1)
+    log.normal('organic_history_strategy_spike turn=%d applied=%s action="target" attacker=%d target=%d city=%q city_id=%d posture=%q objective=%q campaign=%d expires=%d',
                turn, tostring(applied), organic_history_player_id(attacker),
-               organic_history_player_id(target), city.name, expires)
+               organic_history_player_id(target), city.name, city.id,
+               attacker:ai_strategy_posture(),
+               attacker:ai_strategy_objective(),
+               attacker:ai_strategy_campaign(), expires)
   else
     edit.ai_strategy_clear(attacker)
     organic_history_strategy_spike_completed = true
@@ -10103,8 +10107,8 @@ function organic_history_city_transferred(city, loser, winner, reason)
   log.normal('organic_history_event type=city_transferred turn=%d city=%q loser=%d winner=%d reason=%q',
              turn, city.name, organic_history_player_id(loser),
              organic_history_player_id(winner), reason)
-  log.normal('organic_history_ownership_change turn=%d city=%q loser=%d winner=%d source="engine" category=%q reason=%q success=true',
-             turn, city.name, organic_history_player_id(loser),
+  log.normal('organic_history_ownership_change turn=%d city=%q city_id=%d loser=%d winner=%d source="engine" category=%q reason=%q success=true',
+             turn, city.name, city.id, organic_history_player_id(loser),
              organic_history_player_id(winner),
              organic_history_ownership_category(reason), reason or "unknown")
 

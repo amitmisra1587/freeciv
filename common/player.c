@@ -535,6 +535,100 @@ struct player *player_new(struct player_slot *pslot)
   return pplayer;
 }
 
+/**********************************************************************//**
+  Return stable rule name for an external AI strategy posture.
+**************************************************************************/
+const char *ai_strategy_posture_name(enum ai_strategy_posture posture)
+{
+  static const char *const names[AI_STRATEGY_POSTURE_COUNT] = {
+    "none", "recover", "defend", "consolidate",
+    "prepare", "offensive", "exhausted"
+  };
+
+  return posture >= AI_STRATEGY_NONE && posture < AI_STRATEGY_POSTURE_COUNT
+         ? names[posture] : names[AI_STRATEGY_NONE];
+}
+
+/**********************************************************************//**
+  Resolve an external AI strategy posture rule name.
+**************************************************************************/
+enum ai_strategy_posture ai_strategy_posture_by_name(const char *name)
+{
+  enum ai_strategy_posture posture;
+
+  if (name == nullptr) {
+    return AI_STRATEGY_NONE;
+  }
+  for (posture = AI_STRATEGY_NONE;
+       posture < AI_STRATEGY_POSTURE_COUNT; posture++) {
+    if (!fc_strcasecmp(name, ai_strategy_posture_name(posture))) {
+      return posture;
+    }
+  }
+  return AI_STRATEGY_POSTURE_COUNT;
+}
+
+/**********************************************************************//**
+  Return stable rule name for an external AI strategy objective.
+**************************************************************************/
+const char *ai_strategy_objective_name(enum ai_strategy_objective objective)
+{
+  static const char *const names[AI_STRATEGY_OBJECTIVE_COUNT] = {
+    "none", "player", "city", "region"
+  };
+
+  return objective >= AI_STRATEGY_OBJECTIVE_NONE
+         && objective < AI_STRATEGY_OBJECTIVE_COUNT
+         ? names[objective] : names[AI_STRATEGY_OBJECTIVE_NONE];
+}
+
+/**********************************************************************//**
+  Resolve an external AI strategy objective rule name.
+**************************************************************************/
+enum ai_strategy_objective ai_strategy_objective_by_name(const char *name)
+{
+  enum ai_strategy_objective objective;
+
+  if (name == nullptr) {
+    return AI_STRATEGY_OBJECTIVE_NONE;
+  }
+  for (objective = AI_STRATEGY_OBJECTIVE_NONE;
+       objective < AI_STRATEGY_OBJECTIVE_COUNT; objective++) {
+    if (!fc_strcasecmp(name, ai_strategy_objective_name(objective))) {
+      return objective;
+    }
+  }
+  return AI_STRATEGY_OBJECTIVE_COUNT;
+}
+
+/**********************************************************************//**
+  Reset external AI strategy state to its inert defaults.
+**************************************************************************/
+void player_ai_strategy_clear(struct player *pplayer)
+{
+  pplayer->ai_common.strategy_version = AI_STRATEGY_SAVE_VERSION;
+  pplayer->ai_common.strategy_posture = AI_STRATEGY_NONE;
+  pplayer->ai_common.strategy_objective = AI_STRATEGY_OBJECTIVE_NONE;
+  pplayer->ai_common.strategy_target_player = -1;
+  pplayer->ai_common.strategy_target_city = -1;
+  pplayer->ai_common.strategy_intensity = 0;
+  pplayer->ai_common.strategy_war_desire_bonus = 0;
+  pplayer->ai_common.strategy_conquest_worth_pct = 100;
+  pplayer->ai_common.strategy_expires = -1;
+  pplayer->ai_common.strategy_campaign_id = 0;
+  pplayer->ai_common.strategy_integration_until = -1;
+}
+
+/**********************************************************************//**
+  Return whether the external AI strategy is active this turn.
+**************************************************************************/
+bool player_ai_strategy_active(const struct player *pplayer)
+{
+  return pplayer->ai_common.strategy_version == AI_STRATEGY_SAVE_VERSION
+         && pplayer->ai_common.strategy_posture != AI_STRATEGY_NONE
+         && pplayer->ai_common.strategy_expires >= game.info.turn;
+}
+
 /*******************************************************************//**
   Set player structure to its default values.
   No initialisation to ruleset-dependent values should be done here.
@@ -595,11 +689,7 @@ static void player_defaults(struct player *pplayer)
   pplayer->ai_common.fuzzy = 0;
   pplayer->ai_common.expand = 100;
   pplayer->ai_common.barbarian_type = NOT_A_BARBARIAN;
-  pplayer->ai_common.strategy_target_player = -1;
-  pplayer->ai_common.strategy_target_city = -1;
-  pplayer->ai_common.strategy_war_desire_bonus = 0;
-  pplayer->ai_common.strategy_conquest_worth_pct = 100;
-  pplayer->ai_common.strategy_expires = -1;
+  player_ai_strategy_clear(pplayer);
   player_slots_iterate(pslot) {
     pplayer->ai_common.love[player_slot_index(pslot)] = 1;
   } player_slots_iterate_end;

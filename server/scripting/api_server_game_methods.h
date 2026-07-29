@@ -45,5 +45,15 @@ int api_methods_tag_score(lua_State *L, Player *pplayer, const char *tag);
 int api_methods_love(lua_State *L, Player *pplayer, Player *towards);
 void api_methods_add_love(lua_State *L, Player *pplayer, Player *towards, int amount);
 void api_methods_cancel_pact(lua_State *L, Player *pplayer, Player *towards);
+const char *api_methods_ai_strategy_posture(lua_State *L, Player *pplayer);
+const char *api_methods_ai_strategy_objective(lua_State *L, Player *pplayer);
+Player *api_methods_ai_strategy_target(lua_State *L, Player *pplayer);
+City *api_methods_ai_strategy_city(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_intensity(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_war_bonus(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_conquest_pct(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_expires(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_campaign(lua_State *L, Player *pplayer);
+int api_methods_ai_strategy_integration_until(lua_State *L, Player *pplayer);
 
 #endif /* FC__API_SERVER_GAME_METHODS_H */

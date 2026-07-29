@@ -263,6 +263,106 @@ void api_methods_add_love(lua_State *L, Player *pplayer, Player *towards,
 }
 
 /**********************************************************************//**
+  Return player's current external AI strategy posture.
+**************************************************************************/
+const char *api_methods_ai_strategy_posture(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, "none");
+  LUASCRIPT_CHECK_SELF(L, pplayer, "none");
+  return ai_strategy_posture_name(pplayer->ai_common.strategy_posture);
+}
+
+/**********************************************************************//**
+  Return player's current external AI strategy objective.
+**************************************************************************/
+const char *api_methods_ai_strategy_objective(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, "none");
+  LUASCRIPT_CHECK_SELF(L, pplayer, "none");
+  return ai_strategy_objective_name(pplayer->ai_common.strategy_objective);
+}
+
+/**********************************************************************//**
+  Return player's current external AI strategy target player.
+**************************************************************************/
+Player *api_methods_ai_strategy_target(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, NULL);
+  LUASCRIPT_CHECK_SELF(L, pplayer, NULL);
+  return player_by_number(pplayer->ai_common.strategy_target_player);
+}
+
+/**********************************************************************//**
+  Return player's current external AI strategy target city.
+**************************************************************************/
+City *api_methods_ai_strategy_city(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, NULL);
+  LUASCRIPT_CHECK_SELF(L, pplayer, NULL);
+  return game_city_by_number(pplayer->ai_common.strategy_target_city);
+}
+
+/**********************************************************************//**
+  Return player's current external AI strategy intensity.
+**************************************************************************/
+int api_methods_ai_strategy_intensity(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, 0);
+  LUASCRIPT_CHECK_SELF(L, pplayer, 0);
+  return pplayer->ai_common.strategy_intensity;
+}
+
+/**********************************************************************//**
+  Return player's external AI strategy war-desire bonus.
+**************************************************************************/
+int api_methods_ai_strategy_war_bonus(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, 0);
+  LUASCRIPT_CHECK_SELF(L, pplayer, 0);
+  return pplayer->ai_common.strategy_war_desire_bonus;
+}
+
+/**********************************************************************//**
+  Return player's external AI strategy conquest-worth percentage.
+**************************************************************************/
+int api_methods_ai_strategy_conquest_pct(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, 100);
+  LUASCRIPT_CHECK_SELF(L, pplayer, 100);
+  return pplayer->ai_common.strategy_conquest_worth_pct;
+}
+
+/**********************************************************************//**
+  Return player's current external AI strategy expiry turn.
+**************************************************************************/
+int api_methods_ai_strategy_expires(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, -1);
+  LUASCRIPT_CHECK_SELF(L, pplayer, -1);
+  return pplayer->ai_common.strategy_expires;
+}
+
+/**********************************************************************//**
+  Return player's current external AI strategy campaign identifier.
+**************************************************************************/
+int api_methods_ai_strategy_campaign(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, 0);
+  LUASCRIPT_CHECK_SELF(L, pplayer, 0);
+  return pplayer->ai_common.strategy_campaign_id;
+}
+
+/**********************************************************************//**
+  Return player's current external AI strategy integration lock turn.
+**************************************************************************/
+int api_methods_ai_strategy_integration_until(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, -1);
+  LUASCRIPT_CHECK_SELF(L, pplayer, -1);
+  return pplayer->ai_common.strategy_integration_until;
+}
+
+/**********************************************************************//**
   Try to cancel a pact between players.
 **************************************************************************/
 void api_methods_cancel_pact(lua_State *L, Player *pplayer, Player *towards)

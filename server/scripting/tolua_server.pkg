@@ -216,6 +216,14 @@ module edit {
     @ ai_strategy_target(lua_State *L, Player *pplayer, Player *target,
                          City *pcity, int war_desire_bonus,
                          int conquest_worth_pct, int expires);
+  bool api_edit_ai_strategy_set
+    @ ai_strategy_set(lua_State *L, Player *pplayer,
+                      const char *posture_name,
+                      const char *objective_name,
+                      Player *target, City *pcity, int intensity,
+                      int war_desire_bonus, int conquest_worth_pct,
+                      int expires, int campaign_id,
+                      int integration_until);
   void api_edit_ai_strategy_clear
     @ ai_strategy_clear(lua_State *L, Player *pplayer);
   void api_edit_unit_turn
@@ -598,6 +606,26 @@ module Player {
     @ love (lua_State *L, Player *pplayer, Player *towards);
   void api_methods_add_love
     @ add_love (lua_State *L, Player *pplayer, Player *towards, int amount);
+  const char *api_methods_ai_strategy_posture
+    @ ai_strategy_posture (lua_State *L, Player *pplayer);
+  const char *api_methods_ai_strategy_objective
+    @ ai_strategy_objective (lua_State *L, Player *pplayer);
+  Player *api_methods_ai_strategy_target
+    @ ai_strategy_target_player (lua_State *L, Player *pplayer);
+  City *api_methods_ai_strategy_city
+    @ ai_strategy_target_city (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_intensity
+    @ ai_strategy_intensity (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_war_bonus
+    @ ai_strategy_war_bonus (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_conquest_pct
+    @ ai_strategy_conquest_pct (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_expires
+    @ ai_strategy_expires (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_campaign
+    @ ai_strategy_campaign (lua_State *L, Player *pplayer);
+  int api_methods_ai_strategy_integration_until
+    @ ai_strategy_integration_until (lua_State *L, Player *pplayer);
   void api_methods_cancel_pact
     @ cancel_pact (lua_State *L, Player *pplayer, Player *towards);
 }

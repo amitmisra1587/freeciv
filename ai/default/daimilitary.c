@@ -76,7 +76,8 @@
 static int dai_strategy_conquest_worth_pct(const struct player *pplayer,
                                            const struct city *pcity)
 {
-  if (pplayer->ai_common.strategy_expires < game.info.turn
+  if (!player_ai_strategy_active(pplayer)
+      || pplayer->ai_common.strategy_posture != AI_STRATEGY_OFFENSIVE
       || pplayer->ai_common.strategy_target_player
          != player_number(city_owner(pcity))) {
     return 100;

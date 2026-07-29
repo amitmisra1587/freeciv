@@ -1271,7 +1271,58 @@ bool api_edit_enter_war(lua_State *L, Player *pplayer, Player *pplayer2)
 }
 
 /**********************************************************************//**
-  Set a temporary default-AI strategic focus for feasibility testing.
+  Set an external default-AI strategic directive.
+**************************************************************************/
+bool api_edit_ai_strategy_set(lua_State *L, Player *pplayer,
+                              const char *posture_name,
+                              const char *objective_name,
+                              Player *target, City *pcity,
+                              int intensity, int war_desire_bonus,
+                              int conquest_worth_pct, int expires,
+                              int campaign_id, int integration_until)
+{
+  enum ai_strategy_posture posture;
+  enum ai_strategy_objective objective;
+
+  LUASCRIPT_CHECK_STATE(L, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, posture_name, 3, string, FALSE);
+  LUASCRIPT_CHECK_ARG_NIL(L, objective_name, 4, string, FALSE);
+
+  posture = ai_strategy_posture_by_name(posture_name);
+  objective = ai_strategy_objective_by_name(objective_name);
+  if (posture <= AI_STRATEGY_NONE || posture >= AI_STRATEGY_POSTURE_COUNT
+      || objective <= AI_STRATEGY_OBJECTIVE_NONE
+      || objective >= AI_STRATEGY_OBJECTIVE_COUNT
+      || objective == AI_STRATEGY_OBJECTIVE_REGION
+      || target == NULL || pplayer == target || !target->is_alive
+      || (objective == AI_STRATEGY_OBJECTIVE_PLAYER && pcity != NULL)
+      || (objective == AI_STRATEGY_OBJECTIVE_CITY
+          && (pcity == NULL || city_owner(pcity) != target))
+      || intensity < 0 || intensity > 1000
+      || conquest_worth_pct < 100 || conquest_worth_pct > 2000
+      || expires < game.info.turn || campaign_id < 0) {
+    return FALSE;
+  }
+
+  pplayer->ai_common.strategy_version = AI_STRATEGY_SAVE_VERSION;
+  pplayer->ai_common.strategy_posture = posture;
+  pplayer->ai_common.strategy_objective = objective;
+  pplayer->ai_common.strategy_target_player
+    = target != NULL ? player_number(target) : -1;
+  pplayer->ai_common.strategy_target_city
+    = pcity != NULL ? pcity->id : -1;
+  pplayer->ai_common.strategy_intensity = intensity;
+  pplayer->ai_common.strategy_war_desire_bonus = war_desire_bonus;
+  pplayer->ai_common.strategy_conquest_worth_pct = conquest_worth_pct;
+  pplayer->ai_common.strategy_expires = expires;
+  pplayer->ai_common.strategy_campaign_id = campaign_id;
+  pplayer->ai_common.strategy_integration_until = integration_until;
+  return TRUE;
+}
+
+/**********************************************************************//**
+  Set a temporary offensive target for backwards-compatible spike profiles.
 **************************************************************************/
 bool api_edit_ai_strategy_target(lua_State *L, Player *pplayer,
                                  Player *target, City *pcity,
@@ -1279,39 +1330,24 @@ bool api_edit_ai_strategy_target(lua_State *L, Player *pplayer,
                                  int conquest_worth_pct,
                                  int expires)
 {
-  LUASCRIPT_CHECK_STATE(L, FALSE);
-  LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player, FALSE);
-  LUASCRIPT_CHECK_ARG_NIL(L, target, 3, Player, FALSE);
-
-  if (pplayer == target || !target->is_alive
-      || (pcity != NULL && city_owner(pcity) != target)
-      || conquest_worth_pct < 100 || conquest_worth_pct > 2000
-      || expires < game.info.turn) {
+  if (target == NULL) {
     return FALSE;
   }
-
-  pplayer->ai_common.strategy_target_player = player_number(target);
-  pplayer->ai_common.strategy_target_city
-    = pcity != NULL ? pcity->id : -1;
-  pplayer->ai_common.strategy_war_desire_bonus = war_desire_bonus;
-  pplayer->ai_common.strategy_conquest_worth_pct = conquest_worth_pct;
-  pplayer->ai_common.strategy_expires = expires;
-  return TRUE;
+  return api_edit_ai_strategy_set(L, pplayer, "offensive",
+                                  pcity != NULL ? "city" : "player",
+                                  target, pcity, 1000, war_desire_bonus,
+                                  conquest_worth_pct, expires, 0, -1);
 }
 
 /**********************************************************************//**
-  Clear a temporary default-AI strategic focus.
+  Clear an external default-AI strategic directive.
 **************************************************************************/
 void api_edit_ai_strategy_clear(lua_State *L, Player *pplayer)
 {
   LUASCRIPT_CHECK_STATE(L);
   LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player);
 
-  pplayer->ai_common.strategy_target_player = -1;
-  pplayer->ai_common.strategy_target_city = -1;
-  pplayer->ai_common.strategy_war_desire_bonus = 0;
-  pplayer->ai_common.strategy_conquest_worth_pct = 100;
-  pplayer->ai_common.strategy_expires = -1;
+  player_ai_strategy_clear(pplayer);
 }
 
 /**********************************************************************//**

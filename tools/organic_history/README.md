@@ -190,6 +190,17 @@ on Cusco. Both provide a finite prepared force, then require the target city to
 be captured by the expected attacker through engine combat before the temporary
 directive expires. Script-initiated ownership changes fail the gates.
 
+Run the strategy persistence gate after changing directive state, Lua bindings,
+or player save/load:
+
+```bash
+tools/organic_history/phase63_strategy_persistence_gate.sh
+```
+
+It saves an active overseas offensive directive, checks the versioned savegame
+fields, resumes without reapplying the profile, and verifies Lua read-back
+before resumed AI processing.
+
 Run the Phase 29 diagnostics-only lifecycle probe after editing lifecycle probe
 profiles, contact/discovery diagnostics, or probe reporting:
 

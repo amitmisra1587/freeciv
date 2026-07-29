@@ -3320,7 +3320,41 @@ static void sg_load_player_main(struct loaddata *loading,
   plr->ai_common.fuzzy = 0;
   plr->ai_common.expand = 100;
   plr->ai_common.science_cost = 100;
-
+  if (secfile_lookup_int_default(
+          loading->file, 0, "player%d.ai.strategy_version", plrno)
+      == AI_STRATEGY_SAVE_VERSION) {
+    plr->ai_common.strategy_version = AI_STRATEGY_SAVE_VERSION;
+    plr->ai_common.strategy_posture = secfile_lookup_int_default(
+        loading->file, AI_STRATEGY_NONE,
+        "player%d.ai.strategy_posture", plrno);
+    plr->ai_common.strategy_objective = secfile_lookup_int_default(
+        loading->file, AI_STRATEGY_OBJECTIVE_NONE,
+        "player%d.ai.strategy_objective", plrno);
+    plr->ai_common.strategy_target_player = secfile_lookup_int_default(
+        loading->file, -1, "player%d.ai.strategy_target_player", plrno);
+    plr->ai_common.strategy_target_city = secfile_lookup_int_default(
+        loading->file, -1, "player%d.ai.strategy_target_city", plrno);
+    plr->ai_common.strategy_intensity = secfile_lookup_int_default(
+        loading->file, 0, "player%d.ai.strategy_intensity", plrno);
+    plr->ai_common.strategy_war_desire_bonus = secfile_lookup_int_default(
+        loading->file, 0, "player%d.ai.strategy_war_desire_bonus", plrno);
+    plr->ai_common.strategy_conquest_worth_pct = secfile_lookup_int_default(
+        loading->file, 100, "player%d.ai.strategy_conquest_worth_pct", plrno);
+    plr->ai_common.strategy_expires = secfile_lookup_int_default(
+        loading->file, -1, "player%d.ai.strategy_expires", plrno);
+    plr->ai_common.strategy_campaign_id = secfile_lookup_int_default(
+        loading->file, 0, "player%d.ai.strategy_campaign_id", plrno);
+    plr->ai_common.strategy_integration_until = secfile_lookup_int_default(
+        loading->file, -1, "player%d.ai.strategy_integration_until", plrno);
+    if (plr->ai_common.strategy_posture < AI_STRATEGY_NONE
+        || plr->ai_common.strategy_posture >= AI_STRATEGY_POSTURE_COUNT
+        || plr->ai_common.strategy_objective < AI_STRATEGY_OBJECTIVE_NONE
+        || plr->ai_common.strategy_objective >= AI_STRATEGY_OBJECTIVE_COUNT) {
+      player_ai_strategy_clear(plr);
+    }
+  } else {
+    player_ai_strategy_clear(plr);
+  }
 
   level = secfile_lookup_str_default(loading->file, NULL,
                                      "player%d.ai.level", plrno);

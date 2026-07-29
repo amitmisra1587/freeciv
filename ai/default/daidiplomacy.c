@@ -924,7 +924,9 @@ static int dai_war_desire(struct ai_type *ait, struct player *pplayer,
     want /= 4;
   }
 
-  if (pplayer->ai_common.strategy_expires >= game.info.turn
+  if (player_ai_strategy_active(pplayer)
+      && (pplayer->ai_common.strategy_posture == AI_STRATEGY_PREPARE
+          || pplayer->ai_common.strategy_posture == AI_STRATEGY_OFFENSIVE)
       && pplayer->ai_common.strategy_target_player
          == player_number(target)) {
     want += pplayer->ai_common.strategy_war_desire_bonus;

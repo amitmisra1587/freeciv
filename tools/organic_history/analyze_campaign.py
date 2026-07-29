@@ -391,6 +391,7 @@ CONTACT_FIELDS = [
 OWNERSHIP_CHANGE_FIELDS = [
     "turn",
     "city",
+    "city_id",
     "loser",
     "winner",
     "source",

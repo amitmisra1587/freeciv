@@ -2928,7 +2928,8 @@ void dai_strategy_coordinate_units(struct ai_type *ait,
   int committed = 0;
   int reached = 0;
 
-  if (pplayer->ai_common.strategy_expires < game.info.turn
+  if (!player_ai_strategy_active(pplayer)
+      || pplayer->ai_common.strategy_posture != AI_STRATEGY_OFFENSIVE
       || target_city_id < 0 || target_player_id < 0) {
     return;
   }

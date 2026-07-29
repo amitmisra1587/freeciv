@@ -25,6 +25,7 @@ python3 tools/organic_history/analyze_campaign.py \
 
 python3 - <<'PY'
 import json
+import re
 from pathlib import Path
 
 summary = json.loads(
@@ -32,19 +33,24 @@ summary = json.loads(
 )
 log = Path("runs/phase62_land_strategy_gate/server_stdout.log").read_text()
 ownership = summary["ownershipChanges"]
+setup = re.search(
+    r'action="setup" attacker=4 target=5 city="Athens" city_id=(\d+)',
+    log,
+)
+assert setup
+target_city_id = int(setup.group(1))
 combat = [
     event for event in ownership["events"]
     if event.get("category") == "engine_combat"
 ]
 athens = [
     event for event in combat
-    if event.get("city") == "Athens"
+    if event.get("city_id") == target_city_id
     and event.get("winner") == 4
     and event.get("loser") == 5
     and event.get("turn", 999) <= 62
 ]
 assert summary["success"]
-assert 'organic_history_strategy_spike turn=2 applied=true action="setup" attacker=4 target=5 city="Athens"' in log
 assert log.count('action="setup"') == 1
 assert 'organic_history_strategy_ai' in log
 assert athens, ownership

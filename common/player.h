@@ -110,6 +110,27 @@ struct player_score {
   int game;             /* Total score you get in player dialog. */
 };
 
+#define AI_STRATEGY_SAVE_VERSION 1
+
+enum ai_strategy_posture {
+  AI_STRATEGY_NONE = 0,
+  AI_STRATEGY_RECOVER,
+  AI_STRATEGY_DEFEND,
+  AI_STRATEGY_CONSOLIDATE,
+  AI_STRATEGY_PREPARE,
+  AI_STRATEGY_OFFENSIVE,
+  AI_STRATEGY_EXHAUSTED,
+  AI_STRATEGY_POSTURE_COUNT
+};
+
+enum ai_strategy_objective {
+  AI_STRATEGY_OBJECTIVE_NONE = 0,
+  AI_STRATEGY_OBJECTIVE_PLAYER,
+  AI_STRATEGY_OBJECTIVE_CITY,
+  AI_STRATEGY_OBJECTIVE_REGION,
+  AI_STRATEGY_OBJECTIVE_COUNT
+};
+
 struct player_ai {
   int maxbuycost;
   void *handicaps;
@@ -125,13 +146,19 @@ struct player_ai {
 
   struct ai_trait *traits;
 
-  /* Temporary external strategy focus. Zero-default and ignored by the
-   * standard AI unless explicitly set by a server-side ruleset script. */
+  /* External strategy focus. Ignored by standard AI unless explicitly set by
+   * a server-side ruleset script; persisted for save/load continuity. */
+  int strategy_version;
+  enum ai_strategy_posture strategy_posture;
+  enum ai_strategy_objective strategy_objective;
   int strategy_target_player;
   int strategy_target_city;
+  int strategy_intensity;
   int strategy_war_desire_bonus;
   int strategy_conquest_worth_pct;
   int strategy_expires;
+  int strategy_campaign_id;
+  int strategy_integration_until;
 };
 
 /* Diplomatic states (how one player views another).
@@ -410,6 +437,12 @@ int player_index(const struct player *pplayer);
 int player_number(const struct player *pplayer)
   fc__attribute((nonnull(1)));
 struct player *player_by_number(const int player_id);
+const char *ai_strategy_posture_name(enum ai_strategy_posture posture);
+enum ai_strategy_posture ai_strategy_posture_by_name(const char *name);
+const char *ai_strategy_objective_name(enum ai_strategy_objective objective);
+enum ai_strategy_objective ai_strategy_objective_by_name(const char *name);
+void player_ai_strategy_clear(struct player *pplayer);
+bool player_ai_strategy_active(const struct player *pplayer);
 
 const char *player_name(const struct player *pplayer);
 struct player *player_by_name(const char *name);

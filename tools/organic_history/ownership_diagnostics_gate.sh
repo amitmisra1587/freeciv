@@ -17,9 +17,9 @@ with tempfile.TemporaryDirectory() as tmp:
     (run_dir / "server_stdout.log").write_text(
         "\n".join(
             [
-                '3: organic_history_ownership_change turn=10 city="Roma" loser=1 winner=2 source="engine" category="engine_combat" reason="conquest" success=true',
-                '3: organic_history_ownership_change turn=20 city="Lugdunum" loser=2 winner=3 source="script" category="political_succession" reason="dynastic_transfer" success=true',
-                '3: organic_history_ownership_change turn=30 city="Carthage" loser=4 winner=2 source="script" category="scripted_conquest" reason="conquest_death" success=true',
+                '3: organic_history_ownership_change turn=10 city="Roma" city_id=101 loser=1 winner=2 source="engine" category="engine_combat" reason="conquest" success=true',
+                '3: organic_history_ownership_change turn=20 city="Lugdunum" city_id=102 loser=2 winner=3 source="script" category="political_succession" reason="dynastic_transfer" success=true',
+                '3: organic_history_ownership_change turn=30 city="Carthage" city_id=103 loser=4 winner=2 source="script" category="scripted_conquest" reason="conquest_death" success=true',
             ]
         )
         + "\n",
@@ -33,6 +33,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert ownership["categories"]["political_succession"] == 1
     assert ownership["categories"]["scripted_conquest"] == 1
     assert len(ownership["events"]) == 3
+    assert ownership["events"][0]["city_id"] == 101
 PY
 
 python3 - <<'PY'
