@@ -122,6 +122,11 @@ bool api_edit_ai_strategy_set(lua_State *L, Player *pplayer,
                               int intensity, int war_desire_bonus,
                               int conquest_worth_pct, int expires,
                               int campaign_id, int integration_until);
+bool api_edit_ai_strategy_set_organic(
+    lua_State *L, Player *pplayer, const char *posture_name,
+    const char *objective_name, Player *target, City *pcity,
+    int intensity, int war_desire_bonus, int conquest_worth_pct, int expires,
+    int campaign_id, int integration_until);
 void api_edit_ai_strategy_clear(lua_State *L, Player *pplayer);
 
 

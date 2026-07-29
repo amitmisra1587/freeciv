@@ -1,0 +1,21 @@
+{
+  "acceptedBaseline": false,
+  "baseline": "engine_real_combat_control",
+  "description": "Phase 65 state-machine fixture: Rome selects a claim-based Persian objective, prepares, and enters war through the normal default-AI countdown.",
+  "luaCommands": [
+    "lua cmd organic_history_strategy_market_enabled = true",
+    "lua cmd organic_history_strategy_actor_filter_csv = \"rome\"",
+    "lua cmd organic_history_strategy_market_min_score = 2500",
+    "lua cmd organic_history_strategy_market_max_distance_sq = 2000",
+    "lua cmd organic_history_strategy_market_prepare_turns = 2",
+    "lua cmd organic_history_strategy_market_offensive_turns = 20",
+    "lua cmd organic_history_strategy_market_crisis_limit = 1",
+    "lua cmd organic_history_strategy_market_mandate_floor = 0",
+    "lua cmd organic_history_strategy_market_max_new_campaigns = 1",
+    "lua cmd local rome=find.player(4); local persia=find.player(6); rome:add_love(persia, 1000); persia:add_love(rome, 1000); edit.make_contact(rome, persia)"
+  ],
+  "mode": "strategy_market_feasibility",
+  "name": "phase65_strategy_market_spike",
+  "scope": "earth_ancient_v1",
+  "validatedScenarios": []
+}

@@ -131,6 +131,13 @@ enum ai_strategy_objective {
   AI_STRATEGY_OBJECTIVE_COUNT
 };
 
+enum ai_strategy_source {
+  AI_STRATEGY_SOURCE_NONE = 0,
+  AI_STRATEGY_SOURCE_EXTERNAL,
+  AI_STRATEGY_SOURCE_ORGANIC_HISTORY,
+  AI_STRATEGY_SOURCE_COUNT
+};
+
 struct player_ai {
   int maxbuycost;
   void *handicaps;
@@ -149,6 +156,7 @@ struct player_ai {
   /* External strategy focus. Ignored by standard AI unless explicitly set by
    * a server-side ruleset script; persisted for save/load continuity. */
   int strategy_version;
+  enum ai_strategy_source strategy_source;
   enum ai_strategy_posture strategy_posture;
   enum ai_strategy_objective strategy_objective;
   int strategy_target_player;
@@ -159,6 +167,7 @@ struct player_ai {
   int strategy_expires;
   int strategy_campaign_id;
   int strategy_integration_until;
+  int strategy_planned_war_target;
 };
 
 /* Diplomatic states (how one player views another).
@@ -441,6 +450,7 @@ const char *ai_strategy_posture_name(enum ai_strategy_posture posture);
 enum ai_strategy_posture ai_strategy_posture_by_name(const char *name);
 const char *ai_strategy_objective_name(enum ai_strategy_objective objective);
 enum ai_strategy_objective ai_strategy_objective_by_name(const char *name);
+const char *ai_strategy_source_name(enum ai_strategy_source source);
 void player_ai_strategy_clear(struct player *pplayer);
 bool player_ai_strategy_active(const struct player *pplayer);
 

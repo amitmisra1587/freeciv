@@ -226,6 +226,14 @@ module edit {
                       int war_desire_bonus, int conquest_worth_pct,
                       int expires, int campaign_id,
                       int integration_until);
+    bool api_edit_ai_strategy_set_organic
+      @ ai_strategy_set_organic (lua_State *L, Player *pplayer,
+                              const char *posture_name,
+                              const char *objective_name,
+                              Player *target, City *pcity,
+                              int intensity, int war_desire_bonus,
+                              int conquest_worth_pct, int expires,
+                              int campaign_id, int integration_until);
   void api_edit_ai_strategy_clear
     @ ai_strategy_clear(lua_State *L, Player *pplayer);
   void api_edit_unit_turn
@@ -608,10 +616,16 @@ module Player {
     @ love (lua_State *L, Player *pplayer, Player *towards);
   bool api_methods_player_is_ai
     @ is_ai (lua_State *L, Player *pplayer);
+  bool api_methods_player_is_away
+    @ is_away (lua_State *L, Player *pplayer);
   void api_methods_add_love
     @ add_love (lua_State *L, Player *pplayer, Player *towards, int amount);
   const char *api_methods_ai_strategy_posture
     @ ai_strategy_posture (lua_State *L, Player *pplayer);
+  bool api_methods_ai_strategy_active
+    @ ai_strategy_active (lua_State *L, Player *pplayer);
+  const char *api_methods_ai_strategy_source
+    @ ai_strategy_source (lua_State *L, Player *pplayer);
   const char *api_methods_ai_strategy_objective
     @ ai_strategy_objective (lua_State *L, Player *pplayer);
   Player *api_methods_ai_strategy_target

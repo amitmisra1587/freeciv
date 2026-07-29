@@ -31,6 +31,9 @@
 #include "api_game_find.h"
 #include "luascript.h"
 
+/* ai */
+#include "handicaps.h"
+
 /* server */
 #include "aiiface.h"
 #include "barbarian.h"
@@ -1288,16 +1291,11 @@ bool api_edit_make_contact(lua_State *L, Player *pplayer, Player *pplayer2)
   return player_diplstate_get(pplayer, pplayer2)->type != DS_NO_CONTACT;
 }
 
-/**********************************************************************//**
-  Set an external default-AI strategic directive.
-**************************************************************************/
-bool api_edit_ai_strategy_set(lua_State *L, Player *pplayer,
-                              const char *posture_name,
-                              const char *objective_name,
-                              Player *target, City *pcity,
-                              int intensity, int war_desire_bonus,
-                              int conquest_worth_pct, int expires,
-                              int campaign_id, int integration_until)
+static bool api_edit_ai_strategy_set_source(
+    lua_State *L, Player *pplayer, const char *posture_name,
+    const char *objective_name, Player *target, City *pcity,
+    int intensity, int war_desire_bonus, int conquest_worth_pct, int expires,
+    int campaign_id, int integration_until, enum ai_strategy_source source)
 {
   enum ai_strategy_posture posture;
   enum ai_strategy_objective objective;
@@ -1309,7 +1307,9 @@ bool api_edit_ai_strategy_set(lua_State *L, Player *pplayer,
 
   posture = ai_strategy_posture_by_name(posture_name);
   objective = ai_strategy_objective_by_name(objective_name);
-  if (!is_ai(pplayer)
+  if (!is_ai(pplayer) || has_handicap(pplayer, H_AWAY)
+      || source <= AI_STRATEGY_SOURCE_NONE
+      || source >= AI_STRATEGY_SOURCE_COUNT
       || posture <= AI_STRATEGY_NONE || posture >= AI_STRATEGY_POSTURE_COUNT
       || objective < AI_STRATEGY_OBJECTIVE_NONE
       || objective >= AI_STRATEGY_OBJECTIVE_COUNT
@@ -1346,6 +1346,7 @@ bool api_edit_ai_strategy_set(lua_State *L, Player *pplayer,
   }
 
   pplayer->ai_common.strategy_version = AI_STRATEGY_SAVE_VERSION;
+  pplayer->ai_common.strategy_source = source;
   pplayer->ai_common.strategy_posture = posture;
   pplayer->ai_common.strategy_objective = objective;
   pplayer->ai_common.strategy_target_player
@@ -1359,6 +1360,38 @@ bool api_edit_ai_strategy_set(lua_State *L, Player *pplayer,
   pplayer->ai_common.strategy_campaign_id = campaign_id;
   pplayer->ai_common.strategy_integration_until = integration_until;
   return TRUE;
+}
+
+/**********************************************************************//**
+  Set an external default-AI strategic directive.
+**************************************************************************/
+bool api_edit_ai_strategy_set(lua_State *L, Player *pplayer,
+                              const char *posture_name,
+                              const char *objective_name,
+                              Player *target, City *pcity,
+                              int intensity, int war_desire_bonus,
+                              int conquest_worth_pct, int expires,
+                              int campaign_id, int integration_until)
+{
+  return api_edit_ai_strategy_set_source(
+      L, pplayer, posture_name, objective_name, target, pcity, intensity,
+      war_desire_bonus, conquest_worth_pct, expires, campaign_id,
+      integration_until, AI_STRATEGY_SOURCE_EXTERNAL);
+}
+
+/**********************************************************************//**
+  Set an organic-history-owned default-AI strategic directive.
+**************************************************************************/
+bool api_edit_ai_strategy_set_organic(
+    lua_State *L, Player *pplayer, const char *posture_name,
+    const char *objective_name, Player *target, City *pcity,
+    int intensity, int war_desire_bonus, int conquest_worth_pct, int expires,
+    int campaign_id, int integration_until)
+{
+  return api_edit_ai_strategy_set_source(
+      L, pplayer, posture_name, objective_name, target, pcity, intensity,
+      war_desire_bonus, conquest_worth_pct, expires, campaign_id,
+      integration_until, AI_STRATEGY_SOURCE_ORGANIC_HISTORY);
 }
 
 /**********************************************************************//**
@@ -1384,10 +1417,14 @@ bool api_edit_ai_strategy_target(lua_State *L, Player *pplayer,
 **************************************************************************/
 void api_edit_ai_strategy_clear(lua_State *L, Player *pplayer)
 {
+  int planned_war_target;
+
   LUASCRIPT_CHECK_STATE(L);
   LUASCRIPT_CHECK_ARG_NIL(L, pplayer, 2, Player);
 
+  planned_war_target = pplayer->ai_common.strategy_planned_war_target;
   player_ai_strategy_clear(pplayer);
+  pplayer->ai_common.strategy_planned_war_target = planned_war_target;
 }
 
 /**********************************************************************//**

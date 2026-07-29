@@ -267,6 +267,42 @@ organic_history_strategy_spike_war_started =
     organic_history_strategy_spike_war_started or nil
 organic_history_strategy_spike_completed =
     organic_history_strategy_spike_completed or false
+-- Phase 65 condition-driven strategic directives (OFF by default).
+if organic_history_strategy_market_enabled == nil then
+  organic_history_strategy_market_enabled = false
+end
+organic_history_strategy_market_min_score =
+    organic_history_strategy_market_min_score or 4200
+organic_history_strategy_market_min_cities =
+    organic_history_strategy_market_min_cities or 2
+organic_history_strategy_market_max_distance_sq =
+    organic_history_strategy_market_max_distance_sq or 1600
+organic_history_strategy_market_prepare_turns =
+    organic_history_strategy_market_prepare_turns or 4
+organic_history_strategy_market_offensive_turns =
+    organic_history_strategy_market_offensive_turns or 32
+organic_history_strategy_market_defend_turns =
+    organic_history_strategy_market_defend_turns or 8
+organic_history_strategy_market_consolidate_turns =
+    organic_history_strategy_market_consolidate_turns or 10
+organic_history_strategy_market_exhausted_turns =
+    organic_history_strategy_market_exhausted_turns or 8
+organic_history_strategy_market_recover_turns =
+    organic_history_strategy_market_recover_turns or 8
+organic_history_strategy_market_crisis_limit =
+    organic_history_strategy_market_crisis_limit or 0.58
+organic_history_strategy_market_recovery_crisis =
+    organic_history_strategy_market_recovery_crisis or 0.66
+organic_history_strategy_market_mandate_floor =
+    organic_history_strategy_market_mandate_floor or 0.16
+organic_history_strategy_market_max_new_campaigns =
+    organic_history_strategy_market_max_new_campaigns or 2
+organic_history_strategy_market_war_bonus =
+    organic_history_strategy_market_war_bonus or 6000
+organic_history_strategy_market_campaign_base =
+    organic_history_strategy_market_campaign_base or 100000
+organic_history_strategy_actor_filter_csv =
+    organic_history_strategy_actor_filter_csv or ""
 -- Phase 45 settlement containment (OFF by default; CONCLUDED NEGATIVE).
 -- Experiment: for listed over-expander actors, cap how many cities they may hold
 -- in explicitly-foreign regions (deep in another power's space, far outside their
@@ -929,7 +965,6 @@ function organic_history_turn_begin(turn, year)
   organic_history_check_near_east_handoffs(turn)
   organic_history_check_conquest_targets(turn)
   organic_history_check_objectives(turn)
-  organic_history_check_strategy_spike(turn)
   organic_history_check_core_consolidation(turn)
   organic_history_log_collapse_diagnostics(turn)
   organic_history_check_independent_absorption(turn)
@@ -937,6 +972,8 @@ function organic_history_turn_begin(turn, year)
   organic_history_log_flavor_diagnostics(turn)
   organic_history_check_dynastic_transfers(turn)
   organic_history_check_civil_wars(turn)
+  organic_history_check_strategy_market(turn)
+  organic_history_check_strategy_spike(turn)
 end
 
 signal.connect('turn_begin', 'organic_history_turn_begin')
@@ -9055,6 +9092,499 @@ function organic_history_player_for_actor_id(actor_id)
   end
 
   return nil
+end
+
+function organic_history_strategy_market_player_enabled(player, actor_id)
+  if organic_history_strategy_actor_filter_csv == "" then
+    return true
+  end
+
+  local player_id = tostring(organic_history_player_id(player))
+
+  for token in string.gmatch(organic_history_strategy_actor_filter_csv,
+                             "[^,%s]+") do
+    if token == actor_id or token == player_id then
+      return true
+    end
+  end
+
+  return false
+end
+
+function organic_history_strategy_market_campaign_id(turn, player, target, city)
+  local value = turn * 1000003
+      + organic_history_player_id(player) * 1009
+      + organic_history_player_id(target) * 101
+      + city.id
+
+  return organic_history_strategy_market_campaign_base
+      + (value % 1900000000)
+end
+
+function organic_history_strategy_market_claim_weight(claim_type)
+  local weights = {
+    core = 5200,
+    respawn = 4800,
+    historical = 3600,
+    contested = 2600,
+    colonial = 2000,
+    cultural = 1800
+  }
+
+  return weights[claim_type] or 0
+end
+
+function organic_history_strategy_market_lifecycle_bonus(lifecycle_type)
+  local bonuses = {
+    steppe_conqueror = 1000,
+    imperial_claimant = 800,
+    regional_kingdom = 450,
+    dynastic_successor = 350,
+    maritime_trader = 300,
+    initial_core = 200,
+    nubian_regional_kingdom = 150,
+    tribal_horizon = -200,
+    island_core = -400
+  }
+
+  return bonuses[lifecycle_type] or 0
+end
+
+function organic_history_strategy_market_distance_sq(player, city)
+  local best = nil
+
+  for own_city in player:cities_iterate() do
+    local distance = own_city.tile:sq_distance(city.tile)
+
+    if best == nil or distance < best then
+      best = distance
+    end
+  end
+
+  return best or 2147483647
+end
+
+function organic_history_strategy_market_city_defenders(city, owner)
+  local defenders = 0
+
+  for unit in city.tile:units_iterate() do
+    if unit.owner ~= nil and unit.owner.id == owner.id then
+      defenders = defenders + 1
+    end
+  end
+
+  return defenders
+end
+
+function organic_history_strategy_market_candidate(player, actor_id)
+  local claims = organic_history_active_actor_region_claims()[actor_id]
+  local lifecycle_type, lifecycle = organic_history_actor_lifecycle(actor_id)
+  local state = organic_history_state_capacity[player.id] or {}
+  local mandate_state = organic_history_mandates[player.id] or {}
+  local mandate = mandate_state.mandate or state.mandate or 0.5
+  local recovery = state.recovery or 0.5
+  local crisis = state.crisis or 0
+  local overextension = state.overextension or 0
+  local birth_turn = organic_history_actor_birth_turn(actor_id,
+                                                       game.current_turn())
+  local age = math.max(0, game.current_turn() - birth_turn)
+  local target_min = nil
+  local target_max = nil
+  local best = nil
+
+  if claims == nil then
+    return nil
+  end
+  if lifecycle ~= nil then
+    target_min, target_max =
+        organic_history_lifecycle_target_range(lifecycle, age)
+  end
+  if target_max ~= nil and player:num_cities() >= target_max then
+    return nil
+  end
+
+  for target in players_iterate() do
+    local relation = player:diplstate(target)
+
+    if target.id ~= player.id and target.is_alive and target:num_cities() > 0
+       and relation ~= "Never met" and relation ~= "Team"
+       and relation ~= "Alliance" and relation ~= "War" then
+      local target_state = organic_history_state_capacity[target.id] or {}
+      local target_crisis = target_state.crisis or 0
+      local target_wars = organic_history_war_count(target)
+      local force_delta = math.max(-10, math.min(
+          10, player:num_units() - target:num_units()))
+
+      for city in target:cities_iterate() do
+        local region_id = organic_history_region_for_city(city)
+        local claim_type = organic_history_region_claim_type(claims, region_id)
+        local claim_weight =
+            organic_history_strategy_market_claim_weight(claim_type)
+        local distance_sq =
+            organic_history_strategy_market_distance_sq(player, city)
+
+        if claim_weight > 0
+           and distance_sq <= organic_history_strategy_market_max_distance_sq then
+          local defenders =
+              organic_history_strategy_market_city_defenders(city, target)
+          local score = claim_weight
+              + math.max(0, 1200 - math.floor(distance_sq / 2))
+              + (city.size or 1) * 80
+              + math.floor(target_crisis * 1200)
+              + target_wars * 150
+              + force_delta * 80
+              + math.floor(mandate * 700)
+              + math.floor(recovery * 500)
+              - defenders * 250
+              - math.floor(crisis * 1600)
+              - math.floor(overextension * 1000)
+              + organic_history_strategy_market_lifecycle_bonus(
+                  lifecycle_type)
+
+          if target_min ~= nil and player:num_cities() < target_min then
+            score = score + (target_min - player:num_cities()) * 300
+          end
+
+          if best == nil or score > best.score
+             or (score == best.score and target.id < best.target.id)
+             or (score == best.score and target.id == best.target.id
+                 and city.id < best.city.id) then
+            best = {
+              city = city,
+              claim_type = claim_type,
+              distance_sq = distance_sq,
+              defenders = defenders,
+              lifecycle_type = lifecycle_type or "none",
+              region_id = region_id,
+              relation = relation,
+              score = score,
+              target = target
+            }
+          end
+        end
+      end
+    end
+  end
+
+  return best
+end
+
+function organic_history_strategy_market_apply(turn, player, actor_id, action,
+                                                posture, objective, target, city,
+                                                intensity, war_bonus,
+                                                conquest_pct, expires,
+                                                campaign_id, integration_until,
+                                                reason, candidate)
+  local applied = edit.ai_strategy_set_organic(
+      player, posture, objective, target, city, intensity, war_bonus,
+      conquest_pct, expires, campaign_id, integration_until)
+  local target_id = organic_history_player_id(target)
+  local city_id = city ~= nil and city.id or -1
+  local score = candidate ~= nil and candidate.score or -1
+  local claim_type = candidate ~= nil and candidate.claim_type or "none"
+  local region_id = candidate ~= nil and candidate.region_id or "unknown"
+  local distance_sq = candidate ~= nil and candidate.distance_sq or -1
+
+  log.normal('organic_history_strategy_state turn=%d player=%d actor=%q action=%q posture=%q reason=%q target=%d city_id=%d campaign=%d intensity=%d expires=%d integration_until=%d score=%d claim=%q region=%q distance_sq=%d applied=%s',
+             turn, player.id, actor_id, action, posture, reason, target_id,
+             city_id, campaign_id, intensity, expires, integration_until,
+             score, claim_type, region_id, distance_sq, tostring(applied))
+  return applied
+end
+
+function organic_history_strategy_market_clear(turn, player, actor_id, reason)
+  local campaign_id = player:ai_strategy_campaign()
+  local posture = player:ai_strategy_posture()
+
+  edit.ai_strategy_clear(player)
+  log.normal('organic_history_strategy_state turn=%d player=%d actor=%q action="clear" posture=%q reason=%q target=-1 city_id=-1 campaign=%d intensity=0 expires=-1 integration_until=-1 score=-1 claim="none" region="unknown" distance_sq=-1 applied=true',
+             turn, player.id, actor_id, posture, reason, campaign_id)
+end
+
+function organic_history_strategy_market_transition(turn, player, actor_id)
+  local posture = player:ai_strategy_posture()
+  local campaign_id = player:ai_strategy_campaign()
+
+  if posture == "none" then
+    return false
+  elseif player:ai_strategy_source() ~= "organic_history" then
+    return player:ai_strategy_active()
+  end
+
+  local target = player:ai_strategy_target_player()
+  local city = player:ai_strategy_target_city()
+  local intensity = player:ai_strategy_intensity()
+  local expires = player:ai_strategy_expires()
+  local integration_until = player:ai_strategy_integration_until()
+  local relation = target ~= nil and player:diplstate(target) or "none"
+
+  if posture == "prepare" then
+    if city ~= nil and city.owner.id == player.id then
+      local objective = target ~= nil and target.is_alive and "player" or "none"
+      local consolidation_target =
+          objective == "player" and target or nil
+
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "consolidate", "consolidate", objective,
+          consolidation_target, nil, intensity, 0, 100,
+          turn + organic_history_strategy_market_consolidate_turns,
+          campaign_id,
+          turn + organic_history_strategy_market_consolidate_turns,
+          "objective_complete", nil)
+    elseif target == nil or not target.is_alive or city == nil then
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "recover", "recover", "none", nil, nil,
+          intensity, 0, 100,
+          turn + organic_history_strategy_market_recover_turns,
+          campaign_id, integration_until, "prepare_target_lost", nil)
+    elseif city.owner.id ~= target.id
+           or relation == "Team" or relation == "Alliance" then
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "recover", "recover", "none", nil, nil,
+          intensity, 0, 100,
+          turn + organic_history_strategy_market_recover_turns,
+          campaign_id, integration_until, "prepare_target_changed", nil)
+    elseif relation == "War" or turn >= expires then
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "offensive", "offensive", "city",
+          target, city, intensity,
+          organic_history_strategy_market_war_bonus,
+          math.min(900, 200 + math.floor(intensity * 0.6)),
+          turn + organic_history_strategy_market_offensive_turns,
+          campaign_id, integration_until, "preparation_complete", nil)
+    end
+    return true
+  elseif posture == "offensive" then
+    if city ~= nil and city.owner.id == player.id then
+      local objective = target ~= nil and target.is_alive and "player" or "none"
+      local consolidation_target =
+          objective == "player" and target or nil
+
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "consolidate", "consolidate", objective,
+          consolidation_target, nil, intensity, 0, 100,
+          turn + organic_history_strategy_market_consolidate_turns,
+          campaign_id,
+          turn + organic_history_strategy_market_consolidate_turns,
+          "objective_complete", nil)
+    elseif target == nil or not target.is_alive or city == nil then
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "recover", "recover", "none", nil, nil,
+          intensity, 0, 100,
+          turn + organic_history_strategy_market_recover_turns,
+          campaign_id, integration_until, "offensive_target_lost", nil)
+    elseif city.owner.id ~= target.id
+           or relation == "Team" or relation == "Alliance" then
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "recover", "recover", "none", nil, nil,
+          intensity, 0, 100,
+          turn + organic_history_strategy_market_recover_turns,
+          campaign_id, integration_until, "offensive_target_changed", nil)
+    elseif turn >= expires then
+      if relation == "War" then
+        return organic_history_strategy_market_apply(
+            turn, player, actor_id, "exhausted", "exhausted", "player",
+            target, nil, intensity, -8000, 100,
+            turn + organic_history_strategy_market_exhausted_turns,
+            campaign_id, integration_until, "offensive_timeout", nil)
+      end
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "recover", "recover", "none", nil, nil,
+          intensity, 0, 100,
+          turn + organic_history_strategy_market_recover_turns,
+          campaign_id, integration_until, "offensive_timeout_no_war", nil)
+    end
+    return true
+  elseif posture == "consolidate" then
+    if turn >= expires then
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "recover", "recover", "none", nil, nil,
+          intensity, 0, 100,
+          turn + organic_history_strategy_market_recover_turns,
+          campaign_id, integration_until, "consolidation_complete", nil)
+    end
+    return true
+  elseif posture == "exhausted" then
+    if target == nil or not target.is_alive or relation ~= "War" then
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "recover", "recover", "none", nil, nil,
+          intensity, 0, 100,
+          turn + organic_history_strategy_market_recover_turns,
+          campaign_id, integration_until, "peace_obtained", nil)
+    elseif turn >= expires then
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "exhausted", "exhausted", "player",
+          target, nil, intensity, -8000, 100,
+          turn + organic_history_strategy_market_exhausted_turns,
+          campaign_id, integration_until, "exhaustion_continues", nil)
+    end
+    return true
+  elseif posture == "defend" then
+    if target == nil or not target.is_alive or relation ~= "War" then
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "recover", "recover", "none", nil, nil,
+          intensity, 0, 100,
+          turn + organic_history_strategy_market_recover_turns,
+          campaign_id, integration_until, "defense_complete", nil)
+    elseif turn >= expires then
+      return organic_history_strategy_market_apply(
+          turn, player, actor_id, "defend", "defend", "player", target, nil,
+          intensity, 0, 100,
+          turn + organic_history_strategy_market_defend_turns,
+          campaign_id, integration_until, "defense_continues", nil)
+    end
+    return true
+  elseif posture == "recover" then
+    if turn >= expires then
+      organic_history_strategy_market_clear(turn, player, actor_id,
+                                            "recovery_complete")
+    end
+    return true
+  end
+
+  return true
+end
+
+function organic_history_strategy_market_war_enemy(player)
+  local enemy = nil
+
+  for target in players_iterate() do
+    if target.id ~= player.id and target.is_alive
+       and player:diplstate(target) == "War"
+       and (enemy == nil or target.id < enemy.id) then
+      enemy = target
+    end
+  end
+
+  return enemy
+end
+
+function organic_history_strategy_market_start(turn, player, actor_id,
+                                               allow_new_campaign)
+  local state = organic_history_state_capacity[player.id] or {}
+  local mandate_state = organic_history_mandates[player.id] or {}
+  local crisis = state.crisis or 0
+  local recovery = state.recovery or 0.5
+  local mandate = mandate_state.mandate or state.mandate or 0.5
+  local enemy = organic_history_strategy_market_war_enemy(player)
+  local campaign_id
+  local intensity
+
+  if enemy ~= nil then
+    campaign_id = organic_history_strategy_market_campaign_base
+        + ((turn * 1000003 + player.id * 1009 + enemy.id * 101)
+           % 1900000000)
+    intensity = math.floor(organic_history_clamp(
+        450 + crisis * 500 + (1 - recovery) * 300, 300, 1000))
+    if crisis >= organic_history_strategy_market_recovery_crisis
+       or mandate < organic_history_strategy_market_mandate_floor then
+      organic_history_strategy_market_apply(
+          turn, player, actor_id, "exhausted", "exhausted", "player",
+          enemy, nil, intensity, -8000, 100,
+          turn + organic_history_strategy_market_exhausted_turns,
+          campaign_id, -1, "war_crisis", nil)
+    else
+      organic_history_strategy_market_apply(
+          turn, player, actor_id, "defend", "defend", "player", enemy, nil,
+          intensity, 0, 100,
+          turn + organic_history_strategy_market_defend_turns,
+          campaign_id, -1, "existing_war", nil)
+    end
+    return false
+  end
+
+  if crisis >= organic_history_strategy_market_recovery_crisis
+     or mandate < organic_history_strategy_market_mandate_floor then
+    campaign_id = organic_history_strategy_market_campaign_base
+        + ((turn * 1000003 + player.id * 1009) % 1900000000)
+    intensity = math.floor(organic_history_clamp(
+        400 + crisis * 500 + (1 - recovery) * 300, 250, 1000))
+    organic_history_strategy_market_apply(
+        turn, player, actor_id, "recover", "recover", "none", nil, nil,
+        intensity, 0, 100,
+        turn + organic_history_strategy_market_recover_turns,
+        campaign_id, -1, "domestic_crisis", nil)
+    return false
+  end
+
+  if player:num_cities() < organic_history_strategy_market_min_cities
+     or crisis > organic_history_strategy_market_crisis_limit
+     or mandate < organic_history_strategy_market_mandate_floor
+     or not allow_new_campaign then
+    return false
+  end
+
+  local candidate =
+      organic_history_strategy_market_candidate(player, actor_id)
+  if candidate == nil
+     or candidate.score < organic_history_strategy_market_min_score then
+    return false
+  end
+
+  intensity = math.floor(organic_history_clamp(
+      350
+      + (candidate.score - organic_history_strategy_market_min_score) / 6
+      + mandate * 200 - crisis * 200, 300, 1000))
+  campaign_id = organic_history_strategy_market_campaign_id(
+      turn, player, candidate.target, candidate.city)
+  organic_history_strategy_market_apply(
+      turn, player, actor_id, "prepare", "prepare", "city",
+      candidate.target, candidate.city, intensity,
+      organic_history_strategy_market_war_bonus,
+      math.min(900, 200 + math.floor(intensity * 0.6)),
+      turn + organic_history_strategy_market_prepare_turns,
+      campaign_id, -1, "opportunity_selected", candidate)
+  return true
+end
+
+function organic_history_check_strategy_market(turn)
+  local scenario_active = organic_history_scenario_metadata_active()
+  local market_active = organic_history_strategy_market_enabled
+      and not organic_history_strategy_spike_enabled
+      and edit.ai_strategy_set_organic ~= nil
+      and scenario_active
+  local new_campaigns = 0
+
+  for player in players_iterate() do
+    local _, actor_id = organic_history_actor_metadata_for(player)
+    local eligible = market_active and player.is_alive and player:is_ai()
+        and not player:is_away() and player:num_cities() > 0
+        and actor_id ~= nil
+        and organic_history_strategy_market_player_enabled(player, actor_id)
+
+    if player:ai_strategy_source() == "organic_history" and not eligible then
+      local reason = "player_ineligible"
+
+      if not organic_history_strategy_market_enabled then
+        reason = "market_disabled"
+      elseif organic_history_strategy_spike_enabled then
+        reason = "spike_override"
+      elseif not scenario_active then
+        reason = "scenario_ineligible"
+      elseif actor_id ~= nil
+             and not organic_history_strategy_market_player_enabled(
+                 player, actor_id) then
+        reason = "actor_filtered"
+      elseif player:is_away() then
+        reason = "human_away"
+      end
+      organic_history_strategy_market_clear(
+          turn, player, actor_id or "unknown", reason)
+    elseif eligible then
+      local handled =
+          organic_history_strategy_market_transition(turn, player, actor_id)
+
+      if not handled then
+        local allow_new_campaign = new_campaigns
+            < organic_history_strategy_market_max_new_campaigns
+
+        if organic_history_strategy_market_start(
+            turn, player, actor_id, allow_new_campaign) then
+          new_campaigns = new_campaigns + 1
+        end
+      end
+    end
+  end
 end
 
 function organic_history_strategy_spike_city(player, name)

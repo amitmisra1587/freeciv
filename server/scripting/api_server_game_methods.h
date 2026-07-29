@@ -44,9 +44,12 @@ int api_methods_tag_score(lua_State *L, Player *pplayer, const char *tag);
 
 int api_methods_love(lua_State *L, Player *pplayer, Player *towards);
 bool api_methods_player_is_ai(lua_State *L, Player *pplayer);
+bool api_methods_player_is_away(lua_State *L, Player *pplayer);
 void api_methods_add_love(lua_State *L, Player *pplayer, Player *towards, int amount);
 void api_methods_cancel_pact(lua_State *L, Player *pplayer, Player *towards);
 const char *api_methods_ai_strategy_posture(lua_State *L, Player *pplayer);
+bool api_methods_ai_strategy_active(lua_State *L, Player *pplayer);
+const char *api_methods_ai_strategy_source(lua_State *L, Player *pplayer);
 const char *api_methods_ai_strategy_objective(lua_State *L, Player *pplayer);
 Player *api_methods_ai_strategy_target(lua_State *L, Player *pplayer);
 City *api_methods_ai_strategy_city(lua_State *L, Player *pplayer);

@@ -602,11 +602,26 @@ enum ai_strategy_objective ai_strategy_objective_by_name(const char *name)
 }
 
 /**********************************************************************//**
+  Return stable rule name for an external AI strategy source.
+**************************************************************************/
+const char *ai_strategy_source_name(enum ai_strategy_source source)
+{
+  static const char *const names[AI_STRATEGY_SOURCE_COUNT] = {
+    "none", "external", "organic_history"
+  };
+
+  return source >= AI_STRATEGY_SOURCE_NONE
+         && source < AI_STRATEGY_SOURCE_COUNT
+         ? names[source] : names[AI_STRATEGY_SOURCE_NONE];
+}
+
+/**********************************************************************//**
   Reset external AI strategy state to its inert defaults.
 **************************************************************************/
 void player_ai_strategy_clear(struct player *pplayer)
 {
   pplayer->ai_common.strategy_version = AI_STRATEGY_SAVE_VERSION;
+  pplayer->ai_common.strategy_source = AI_STRATEGY_SOURCE_NONE;
   pplayer->ai_common.strategy_posture = AI_STRATEGY_NONE;
   pplayer->ai_common.strategy_objective = AI_STRATEGY_OBJECTIVE_NONE;
   pplayer->ai_common.strategy_target_player = -1;
@@ -617,6 +632,7 @@ void player_ai_strategy_clear(struct player *pplayer)
   pplayer->ai_common.strategy_expires = -1;
   pplayer->ai_common.strategy_campaign_id = 0;
   pplayer->ai_common.strategy_integration_until = -1;
+  pplayer->ai_common.strategy_planned_war_target = -1;
 }
 
 /**********************************************************************//**
@@ -626,6 +642,7 @@ bool player_ai_strategy_active(const struct player *pplayer)
 {
   return pplayer->ai_common.strategy_version == AI_STRATEGY_SAVE_VERSION
          && pplayer->ai_common.strategy_posture != AI_STRATEGY_NONE
+         && pplayer->ai_common.skill_level != AI_LEVEL_AWAY
          && pplayer->ai_common.strategy_expires >= game.info.turn;
 }
 

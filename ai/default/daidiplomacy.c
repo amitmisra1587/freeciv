@@ -96,6 +96,8 @@ static void dai_incident_nuclear_self(struct player *receiver,
 static void clear_old_treaty(struct player *pplayer, struct player *aplayer);
 static bool dai_strategy_war_desired(const struct player *pplayer,
                                      const struct player *aplayer);
+static bool dai_strategy_blocks_new_war(const struct player *pplayer,
+                                        const struct player *aplayer);
 static bool dai_strategy_ceasefire_intent(const struct player *pplayer,
                                           const struct player *aplayer);
 static bool dai_strategy_ceasefire_desired(const struct player *pplayer,
@@ -977,6 +979,31 @@ static bool dai_strategy_war_desired(const struct player *pplayer,
             == player_number(aplayer);
 }
 
+static bool dai_strategy_blocks_new_war(const struct player *pplayer,
+                                        const struct player *aplayer)
+{
+  if (!player_ai_strategy_active(pplayer)) {
+    return FALSE;
+  }
+
+  switch (pplayer->ai_common.strategy_posture) {
+  case AI_STRATEGY_OFFENSIVE:
+    return pplayer->ai_common.strategy_target_player
+           != player_number(aplayer);
+  case AI_STRATEGY_PREPARE:
+  case AI_STRATEGY_DEFEND:
+  case AI_STRATEGY_CONSOLIDATE:
+  case AI_STRATEGY_RECOVER:
+  case AI_STRATEGY_EXHAUSTED:
+    return TRUE;
+  case AI_STRATEGY_NONE:
+  case AI_STRATEGY_POSTURE_COUNT:
+    return FALSE;
+  }
+
+  return FALSE;
+}
+
 static bool dai_strategy_ceasefire_desired(const struct player *pplayer,
                                            const struct player *aplayer)
 {
@@ -1681,6 +1708,82 @@ static void war_countdown(struct ai_type *ait, struct player *pplayer,
 }
 
 /******************************************************************//**
+  Cancel a war countdown that was owned by a directive no longer in force.
+**********************************************************************/
+static void dai_strategy_cancel_stale_war_plan(struct ai_type *ait,
+                                               struct player *pplayer)
+{
+  const int target_id = pplayer->ai_common.strategy_planned_war_target;
+  struct player *target;
+  struct ai_dip_intel *adip;
+  bool keep;
+
+  if (target_id < 0) {
+    return;
+  }
+
+  target = player_by_number(target_id);
+  if (target == nullptr) {
+    pplayer->ai_common.strategy_planned_war_target = -1;
+    return;
+  }
+
+  adip = dai_diplomacy_get(ait, pplayer, target);
+  keep = player_ai_strategy_active(pplayer)
+         && pplayer->ai_common.strategy_posture == AI_STRATEGY_OFFENSIVE
+         && pplayer->ai_common.strategy_target_player == target_id
+         && target->is_alive && !WAR(pplayer, target);
+  if (!keep) {
+    if (adip->countdown >= 0) {
+      log_normal("organic_history_strategy_war_plan turn=%d player=%d "
+                 "target=%d campaign=%d result=\"cancelled\"",
+                 game.info.turn, player_number(pplayer), target_id,
+                 pplayer->ai_common.strategy_campaign_id);
+      adip->countdown = -1;
+    }
+    pplayer->ai_common.strategy_planned_war_target = -1;
+  }
+}
+
+/******************************************************************//**
+  Start a normal AI war countdown for an active offensive directive.
+**********************************************************************/
+static void dai_strategy_plan_offensive_war(struct ai_type *ait,
+                                            struct player *pplayer)
+{
+  struct player *target;
+  struct ai_dip_intel *adip;
+  int countdown;
+
+  if (!player_ai_strategy_active(pplayer)
+      || pplayer->ai_common.strategy_posture != AI_STRATEGY_OFFENSIVE
+      || pplayer->ai_common.strategy_target_player < 0) {
+    return;
+  }
+
+  target = player_by_number(pplayer->ai_common.strategy_target_player);
+  if (target == nullptr || !target->is_alive || target == pplayer
+      || NEVER_MET(pplayer, target) || players_on_same_team(pplayer, target)
+      || WAR(pplayer, target)) {
+    return;
+  }
+
+  adip = dai_diplomacy_get(ait, pplayer, target);
+  if (adip->countdown != -1) {
+    return;
+  }
+
+  countdown = MAX(1, 5 - pplayer->ai_common.strategy_intensity / 250);
+  log_normal("organic_history_strategy_war_plan turn=%d player=%d target=%d "
+             "campaign=%d countdown=%d intensity=%d",
+             game.info.turn, player_number(pplayer), player_number(target),
+             pplayer->ai_common.strategy_campaign_id, countdown,
+             pplayer->ai_common.strategy_intensity);
+  war_countdown(ait, pplayer, target, countdown, DAI_WR_NONE);
+  pplayer->ai_common.strategy_planned_war_target = player_number(target);
+}
+
+/******************************************************************//**
   Do diplomatic actions. Must be called only after calculate function
   above has been run for _all_ AI players.
 
@@ -1708,7 +1811,9 @@ void dai_diplomacy_actions(struct ai_type *ait, struct player *pplayer)
     return;
   }
 
+  dai_strategy_cancel_stale_war_plan(ait, pplayer);
   (void) dai_strategy_offer_ceasefire(pplayer);
+  dai_strategy_plan_offensive_war(ait, pplayer);
 
   players_iterate_alive(aplayer) {
     if (dai_strategy_ceasefire_intent(pplayer, aplayer)) {
@@ -1719,7 +1824,8 @@ void dai_diplomacy_actions(struct ai_type *ait, struct player *pplayer)
   /*** If we are greviously insulted, go to war immediately. ***/
 
   players_iterate_alive(aplayer) {
-    if (!dai_strategy_ceasefire_intent(pplayer, aplayer)
+    if (!dai_strategy_blocks_new_war(pplayer, aplayer)
+        && !dai_strategy_ceasefire_intent(pplayer, aplayer)
         && pplayer->ai_common.love[player_index(aplayer)] < 0
         && player_diplstate_get(pplayer, aplayer)->has_reason_to_cancel >= 2
         && dai_diplomacy_get(ait, pplayer, aplayer)->countdown == -1) {
@@ -1739,6 +1845,7 @@ void dai_diplomacy_actions(struct ai_type *ait, struct player *pplayer)
       struct player_spaceship *ship = &aplayer->spaceship;
 
       if (aplayer == pplayer
+          || dai_strategy_blocks_new_war(pplayer, aplayer)
           || dai_strategy_ceasefire_intent(pplayer, aplayer)
           || adip->countdown != -1  /* Already counting down to war */
           || ship->state == SSHIP_NONE
@@ -1792,6 +1899,7 @@ void dai_diplomacy_actions(struct ai_type *ait, struct player *pplayer)
     int turns; /* Turns since contact */
 
     if (NEVER_MET(pplayer, aplayer)
+        || dai_strategy_blocks_new_war(pplayer, aplayer)
         || dai_strategy_ceasefire_intent(pplayer, aplayer)) {
       continue;
     }
@@ -1838,7 +1946,8 @@ void dai_diplomacy_actions(struct ai_type *ait, struct player *pplayer)
   players_iterate_alive(aplayer) {
     struct ai_dip_intel *adip = dai_diplomacy_get(ait, pplayer, aplayer);
 
-    if (!dai_strategy_ceasefire_intent(pplayer, aplayer)
+    if (!dai_strategy_blocks_new_war(pplayer, aplayer)
+        && !dai_strategy_ceasefire_intent(pplayer, aplayer)
         && adip->at_war_with_ally
         && adip->countdown == -1
         && !adip->is_allied_with_ally
@@ -1858,8 +1967,13 @@ void dai_diplomacy_actions(struct ai_type *ait, struct player *pplayer)
     if (!players_on_same_team(pplayer, aplayer)) {
       struct ai_dip_intel *adip = dai_diplomacy_get(ait, pplayer, aplayer);
 
-      if (dai_strategy_ceasefire_intent(pplayer, aplayer)) {
+      if (dai_strategy_blocks_new_war(pplayer, aplayer)
+          || dai_strategy_ceasefire_intent(pplayer, aplayer)) {
         adip->countdown = -1;
+        if (pplayer->ai_common.strategy_planned_war_target
+            == player_number(aplayer)) {
+          pplayer->ai_common.strategy_planned_war_target = -1;
+        }
         continue;
       }
       if (!aplayer->is_alive) {
@@ -1872,6 +1986,11 @@ void dai_diplomacy_actions(struct ai_type *ait, struct player *pplayer)
         if (!WAR(pplayer, aplayer)) {
           DIPLO_LOG(ait, LOG_DIPL2, pplayer, aplayer, "Declaring war!");
           dai_go_to_war(ait, pplayer, aplayer, adip->war_reason);
+          if (WAR(pplayer, aplayer)
+              && pplayer->ai_common.strategy_planned_war_target
+                 == player_number(aplayer)) {
+            pplayer->ai_common.strategy_planned_war_target = -1;
+          }
         }
       } else if (adip->countdown < -1) {
         /* Negative countdown less than -1 is war stubbornness */

@@ -260,6 +260,17 @@ bool api_methods_player_is_ai(lua_State *L, Player *pplayer)
 }
 
 /**********************************************************************//**
+  Return whether a human player is temporarily delegated to the AI.
+**************************************************************************/
+bool api_methods_player_is_away(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, FALSE);
+  LUASCRIPT_CHECK_SELF(L, pplayer, FALSE);
+
+  return is_ai(pplayer) && pplayer->ai_common.skill_level == AI_LEVEL_AWAY;
+}
+
+/**********************************************************************//**
   Add player love towards another.
 **************************************************************************/
 void api_methods_add_love(lua_State *L, Player *pplayer, Player *towards,
@@ -281,6 +292,26 @@ const char *api_methods_ai_strategy_posture(lua_State *L, Player *pplayer)
   LUASCRIPT_CHECK_STATE(L, "none");
   LUASCRIPT_CHECK_SELF(L, pplayer, "none");
   return ai_strategy_posture_name(pplayer->ai_common.strategy_posture);
+}
+
+/**********************************************************************//**
+  Return whether the player's external AI strategy is active this turn.
+**************************************************************************/
+bool api_methods_ai_strategy_active(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, FALSE);
+  LUASCRIPT_CHECK_SELF(L, pplayer, FALSE);
+  return player_ai_strategy_active(pplayer);
+}
+
+/**********************************************************************//**
+  Return the owner of the player's current external AI strategy.
+**************************************************************************/
+const char *api_methods_ai_strategy_source(lua_State *L, Player *pplayer)
+{
+  LUASCRIPT_CHECK_STATE(L, "none");
+  LUASCRIPT_CHECK_SELF(L, pplayer, "none");
+  return ai_strategy_source_name(pplayer->ai_common.strategy_source);
 }
 
 /**********************************************************************//**

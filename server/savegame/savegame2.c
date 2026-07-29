@@ -3327,6 +3327,11 @@ static void sg_load_player_main(struct loaddata *loading,
     plr->ai_common.strategy_posture = secfile_lookup_int_default(
         loading->file, AI_STRATEGY_NONE,
         "player%d.ai.strategy_posture", plrno);
+    plr->ai_common.strategy_source = secfile_lookup_int_default(
+        loading->file,
+        plr->ai_common.strategy_posture == AI_STRATEGY_NONE
+        ? AI_STRATEGY_SOURCE_NONE : AI_STRATEGY_SOURCE_EXTERNAL,
+        "player%d.ai.strategy_source", plrno);
     plr->ai_common.strategy_objective = secfile_lookup_int_default(
         loading->file, AI_STRATEGY_OBJECTIVE_NONE,
         "player%d.ai.strategy_objective", plrno);
@@ -3346,8 +3351,13 @@ static void sg_load_player_main(struct loaddata *loading,
         loading->file, 0, "player%d.ai.strategy_campaign_id", plrno);
     plr->ai_common.strategy_integration_until = secfile_lookup_int_default(
         loading->file, -1, "player%d.ai.strategy_integration_until", plrno);
+    plr->ai_common.strategy_planned_war_target = secfile_lookup_int_default(
+        loading->file, -1,
+        "player%d.ai.strategy_planned_war_target", plrno);
     if (plr->ai_common.strategy_posture < AI_STRATEGY_NONE
         || plr->ai_common.strategy_posture >= AI_STRATEGY_POSTURE_COUNT
+        || plr->ai_common.strategy_source < AI_STRATEGY_SOURCE_NONE
+        || plr->ai_common.strategy_source >= AI_STRATEGY_SOURCE_COUNT
         || plr->ai_common.strategy_objective < AI_STRATEGY_OBJECTIVE_NONE
         || plr->ai_common.strategy_objective >= AI_STRATEGY_OBJECTIVE_COUNT) {
       player_ai_strategy_clear(plr);
